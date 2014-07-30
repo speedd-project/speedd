@@ -12,7 +12,7 @@ import org.speedd.kafka.JsonEventDecoder;
 public class JsonDecoderTest {
 	@Test
 	public void decodeEvent(){
-		String jsonStr = "{\"timestamp\":1404110725281,\"eventName\":\"TestEvent\",\"attributes\":{\"timestamp\":1404110725281,\"intval1\":5,\"strattr1\":\"strval1\",\"arrval1\":[0,1,2,3,4,5,6,7,8,9],\"floatval1\":1.2}}";
+		String jsonStr = "{\"timestamp\":1404110725281,\"Name\":\"TestEvent\",\"attributes\":{\"timestamp\":1404110725281,\"intval1\":5,\"strattr1\":\"strval1\",\"arrval1\":[0,1,2,3,4,5,6,7,8,9],\"floatval1\":1.2}}";
 
 		JsonEventDecoder decoder = new JsonEventDecoder();
 		

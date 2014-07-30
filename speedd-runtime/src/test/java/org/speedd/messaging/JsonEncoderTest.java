@@ -7,6 +7,7 @@ import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.junit.Test;
+import org.speedd.Fields;
 import org.speedd.data.Event;
 import org.speedd.data.EventFactory;
 import org.speedd.data.impl.SpeeddEventFactory;
@@ -14,7 +15,7 @@ import org.speedd.kafka.JsonEventEncoder;
 
 import static org.junit.Assert.*;
 
-public class JsonEncoderTest {
+public class JsonEncoderTest implements Fields {
 	private static final EventFactory eventFactory = SpeeddEventFactory.getInstance();
 	
 	@Test
@@ -49,10 +50,10 @@ public class JsonEncoderTest {
 		JSONObject json = (JSONObject)new JSONParser().parse(jsonStr);
 		assertNotNull(json);
 		
-		assertEquals(eventName, json.get("eventName"));
-		assertEquals(timestamp, json.get("timestamp"));
+		assertEquals(eventName, json.get(FIELD_NAME));
+		assertEquals(timestamp, json.get(FIELD_TIMESTAMP));
 		
-		JSONObject attrJson = (JSONObject)json.get("attributes");
+		JSONObject attrJson = (JSONObject)json.get(FIELD_ATTRIBUTES);
 		assertNotNull(attrJson);
 		
 		assertEquals("strval1", attrJson.get("strattr1"));

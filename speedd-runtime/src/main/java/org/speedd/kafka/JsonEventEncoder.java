@@ -3,6 +3,7 @@ package org.speedd.kafka;
 import java.lang.reflect.Array;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.UUID;
 
 import kafka.serializer.Encoder;
 import kafka.serializer.StringEncoder;
@@ -10,10 +11,15 @@ import kafka.utils.VerifiableProperties;
 
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
+import org.speedd.Fields;
 import org.speedd.data.Event;
 
 
-public class JsonEventEncoder implements Encoder<Object> {
+/**
+ * @author kofman
+ *
+ */
+public class JsonEventEncoder implements Encoder<Object>, Fields {
 	private StringEncoder stringEncoder;
 	
 	public JsonEventEncoder(VerifiableProperties properties) {
@@ -35,9 +41,9 @@ public class JsonEventEncoder implements Encoder<Object> {
 	
 	public byte[] eventToBytes(Event event) {
 		JSONObject jsonObj = new JSONObject();
-		jsonObj.put("eventName", event.getEventName());
-		jsonObj.put("timestamp", event.getTimestamp());
-		jsonObj.put("attributes", encodeAttributes(event.getAttributes()));
+		jsonObj.put(FIELD_NAME, event.getEventName());
+		jsonObj.put(FIELD_TIMESTAMP, event.getTimestamp());
+		jsonObj.put(FIELD_ATTRIBUTES, encodeAttributes(event.getAttributes()));
 		
 		return jsonObj.toJSONString().getBytes();
 	}
@@ -58,10 +64,24 @@ public class JsonEventEncoder implements Encoder<Object> {
 				attrJson.put(attrName, arr);
 			}
 			else {
-				attrJson.put(attrName, attrVal);
+				attrJson.put(attrName, jsonizeVal(attrVal));
 			}
 		}
 		
 		return attrJson;
+	}
+
+	/**
+	 * Currently the main reason for this is that UUID should be converted to String in order
+	 * to be serialized correctly
+	 * 
+	 * @param attrVal
+	 * @return
+	 */
+	private Object jsonizeVal(Object attrVal) {
+		if(attrVal instanceof UUID){
+			return String.valueOf(attrVal);
+		}
+		return attrVal;
 	}
 }

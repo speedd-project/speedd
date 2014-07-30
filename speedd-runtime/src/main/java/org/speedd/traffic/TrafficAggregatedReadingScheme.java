@@ -11,7 +11,7 @@ import backtype.storm.spout.Scheme;
 import backtype.storm.tuple.Fields;
 import backtype.storm.tuple.Values;
 
-public class TrafficAggregatedReadingScheme implements Scheme {
+public class TrafficAggregatedReadingScheme implements Scheme, org.speedd.Fields {
 	private static final long serialVersionUID = 1L;
 	
 	private static final TrafficAggregatedReadingCsv2Event parser = new TrafficAggregatedReadingCsv2Event(SpeeddEventFactory.getInstance());
@@ -30,7 +30,7 @@ public class TrafficAggregatedReadingScheme implements Scheme {
 
 	@Override
 	public Fields getOutputFields() {
-		return new Fields("eventName", "timestamp", "attributes");
+		return new Fields(FIELD_NAME, FIELD_TIMESTAMP, FIELD_ATTRIBUTES);
 	}
 
 }

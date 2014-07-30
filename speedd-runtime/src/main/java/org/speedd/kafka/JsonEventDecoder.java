@@ -1,5 +1,6 @@
 package org.speedd.kafka;
 
+import java.io.Serializable;
 import java.lang.reflect.Array;
 import java.util.HashMap;
 import java.util.Map;
@@ -11,12 +12,13 @@ import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
+import org.speedd.Fields;
 import org.speedd.ParsingError;
 import org.speedd.data.Event;
 import org.speedd.data.EventFactory;
 import org.speedd.data.impl.SpeeddEventFactory;
 
-public class JsonEventDecoder implements Decoder<Event> {
+public class JsonEventDecoder implements Decoder<Event>, Fields, Serializable {
 	private static final EventFactory eventFactory = SpeeddEventFactory.getInstance();
 	
 	@Override
@@ -26,10 +28,10 @@ public class JsonEventDecoder implements Decoder<Event> {
 		try {
 			JSONObject json = (JSONObject)parser.parse(new String(eventAsBytes));
 			
-			String eventName = (String)json.get("eventName");
-			long timestamp = (Long)json.get("timestamp");
+			String eventName = (String)json.get(FIELD_NAME);
+			long timestamp = json.containsKey(FIELD_TIMESTAMP)? (Long)json.get(FIELD_TIMESTAMP) : 0;
 			
-			Map<String, Object> attributes = decodeAttributes((JSONObject)json.get("attributes"));
+			Map<String, Object> attributes = decodeAttributes((JSONObject)json.get(FIELD_ATTRIBUTES));
 			
 			return eventFactory.createEvent(eventName, timestamp, attributes);
 		} catch (ParseException e) {
