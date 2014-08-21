@@ -10,8 +10,8 @@ Project speedd-runtime contains the code for the runtime platform for SPEEDD. It
 │   └───JSON
 │       └───0.1.0
 └───proton
-    ├───Proton
-    │   └───0.1.0
-    └───ProtonOnStorm
-        └───1.0-SNAPSHOT
+        ├───Proton
+        │       └───0.1.0
+        └───ProtonOnStorm
+            └───1.0-SNAPSHOT
  </pre>
