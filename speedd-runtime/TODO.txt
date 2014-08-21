@@ -1,2 +1,6 @@
 Write to separate topics for out-events, actions, and confirmed-actions
 
+anchor emitted tuples to enable storm reliable processing (use emit(tuple, new Values(...)))
+use ack/fail to commit processing
+ - consider necessity for reliable processing because it has performance implications. From what I heard - noone uses it because of poor performance
+

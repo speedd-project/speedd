@@ -6,8 +6,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.speedd.cep.ProtonOutputConsumerBolt;
 import org.speedd.data.Event;
-import org.speedd.dm.DMPlaceholderBolt;
-import org.speedd.traffic.TrafficAggregatedReadingScheme;
 
 import storm.kafka.BrokerHosts;
 import storm.kafka.KafkaSpout;
@@ -54,15 +52,15 @@ public class SpeeddTopology {
 	public SpeeddTopology(SpeeddConfig configuration) {
 		this.speeddConfig = configuration;
 		brokerHosts = new ZkHosts(speeddConfig.zkConnect);
+		
+		logger.info("EPN Path: " + configuration.epnPath);
 	}
 
 	private BaseRichSpout createInputEventReaderSpout(String schemeClassName) {
 		SpoutConfig kafkaConfig = new SpoutConfig(brokerHosts, TOPIC_IN_EVENTS,
 				"", IN_EVENT_READER);
 		try {
-			//schemeClassName = TrafficAggregatedReadingScheme.class.getCanonicalName();
 			Class<? extends Scheme> clazz = (Class<Scheme>)SpeeddTopology.class.getClassLoader().loadClass(schemeClassName);
-			//Class<? extends Scheme> clazz = (Class<Scheme>)Class.forName(schemeClassName, true, SpeeddTopology.class.getClassLoader());
 			kafkaConfig.scheme = new SchemeAsMultiScheme(clazz.newInstance());
 		} catch (Exception e) {
 			throw new RuntimeException("Creating a scheme instance failed", e);
@@ -79,8 +77,6 @@ public class SpeeddTopology {
 
 		trafficReaderSpout = createInputEventReaderSpout(speeddConfig.inEventScheme);
 		
-		builder.setSpout(IN_EVENT_READER, trafficReaderSpout);
-
 		KafkaBolt<String, Event> eventWriterBolt = new KafkaBolt<String, Event>(CONFIG_KEY_OUT_EVENTS_TOPIC);
 		
 		ProtonOutputConsumerBolt protonOutputConsumerBolt = new ProtonOutputConsumerBolt();
@@ -90,12 +86,6 @@ public class SpeeddTopology {
 		protonTopologyBuilder.buildProtonTopology(builder, trafficReaderSpout, protonOutputConsumerBolt, CEP_EVENT_CONSUMER, speeddConfig.epnPath);
 
 		builder.setBolt(OUT_EVENT_WRITER, eventWriterBolt).shuffleGrouping(CEP_EVENT_CONSUMER);
-//		
-//		builder.setBolt(EVENT_PROCESSOR, new CEPPlaceholderBolt())
-//				.shuffleGrouping(IN_EVENT_READER);
-
-//		builder.setBolt(OUT_EVENT_WRITER, new KafkaBolt<String, Event>(CONFIG_KEY_OUT_EVENTS_TOPIC))
-//				.shuffleGrouping(EVENT_PROCESSOR);
 
 //FIXME add DM to the topology		
 //		builder.setBolt(DECISION_MAKER, new DMPlaceholderBolt()).shuffleGrouping(EVENT_PROCESSOR);
@@ -129,8 +119,6 @@ public class SpeeddTopology {
 		conf.setDebug(true);
 
 		conf.put(KafkaBolt.KAFKA_BROKER_PROPERTIES, properties);
-
-//		conf.put("topic", TOPIC_OUT_EVENTS);
 
 		conf.setMaxTaskParallelism(1);
 

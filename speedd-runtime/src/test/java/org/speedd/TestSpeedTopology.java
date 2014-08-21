@@ -6,6 +6,7 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
@@ -40,12 +41,16 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.mortbay.jetty.security.Password;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.speedd.data.Event;
 import org.speedd.data.impl.SpeeddEventFactory;
 import org.speedd.kafka.JsonEventDecoder;
 import org.speedd.test.TestUtil;
+
+import com.netflix.curator.test.TestingServer;
+import com.netflix.curator.test.TestingZooKeeperMain;
 
 import scala.tools.nsc.io.Path;
 import storm.kafka.Broker;
@@ -68,49 +73,82 @@ public class TestSpeedTopology {
 	private int brokerPort;
 	private int zookeeperPort;
 	private KafkaServer kafkaServer;
+	private String kafkaLogDir = null;
+	private LocalCluster storm = null;
+	private TestingServer kafkaZookeeper;
 
-	private static Logger logger = LoggerFactory.getLogger(TestSpeedTopology.class);
-	
+	private static Logger logger = LoggerFactory
+			.getLogger(TestSpeedTopology.class);
+
 	@Before
 	public void setup() {
 		zookeeperPort = TestUtils.choosePort();
-		
+
 		brokerPort = TestUtils.choosePort();
-		
-		setupKafkaServer();
-		
+
+		try {
+			setupKafkaServer();
+		} catch (Exception e){
+			logger.error("Failed to start kafka server", e);
+			fail("Failed to start kafka server");
+		}
+
 		setupKafkaConsumers();
+		
+		storm = new LocalCluster();
 	}
 
 	@After
 	public void shutdown() throws Exception {
+		logger.info("Shutting down the test");
 		shutdownConsumers();
-		if(kafkaServer != null)
+		
+		if(storm != null){
+			logger.info("Shutting down speedd storm");
+			storm.killTopology("speedd");
+			storm.shutdown();
+		}
+		
+		if (kafkaServer != null)
+			logger.info("Shutting down kafka server");
 			kafkaServer.shutdown();
+		// wait to kafka server to shut down
+		 Thread.sleep(5000);
+
+		 if(!TestUtil.deleteFolder(new File(kafkaLogDir))){
+			 logger.warn("Could not delete kafka log dir: " + kafkaLogDir);
+		 }
+
+		 kafkaZookeeper.close();
+		 logger.info("Test shut down complete");
 	}
 
 	private void shutdownConsumers() {
-		if(outEventConsumer != null) 
+		logger.info("Shutting down kafka consumers");
+		if (outEventConsumer != null)
 			outEventConsumer.close();
-		
-		if(actionConsumer != null)
+
+		if (actionConsumer != null)
 			actionConsumer.close();
 	}
-	
-	private void setupKafkaServer() {
-		TestUtil.startEmbeddedZookeeper(zookeeperPort);
 
-		//wait till zookeper running
+	private void setupKafkaServer() throws Exception {
+		kafkaZookeeper = TestUtil.startEmbeddedZkServer(zookeeperPort);
+
+		// wait till zookeper running
 		try {
 			Thread.sleep(5000);
 		} catch (InterruptedException e) {
 		}
 
-		ZkClient zkClient = new ZkClient("localhost:" + zookeeperPort, 30000, 30000,
-				ZKStringSerializer$.MODULE$);
+		ZkClient zkClient = new ZkClient("localhost:" + zookeeperPort, 30000,
+				30000, ZKStringSerializer$.MODULE$);
 
 		Properties props = TestUtils.createBrokerConfig(brokerId, brokerPort);
+
 		props.setProperty("zookeeper.connect", "localhost:" + zookeeperPort);
+
+		kafkaLogDir = props.getProperty("log.dir");
 
 		kafka.server.KafkaConfig config = new kafka.server.KafkaConfig(props);
 		Time mock = new MockTime();
@@ -135,7 +173,7 @@ public class TestSpeedTopology {
 
 	private void setupKafkaConsumers() {
 		logger.info("Setting up kafka consumers");
-		
+
 		GlobalPartitionInformation globalPartitionInformation = new GlobalPartitionInformation();
 		globalPartitionInformation.addPartition(0,
 				Broker.fromString("localhost:" + brokerPort));
@@ -144,32 +182,31 @@ public class TestSpeedTopology {
 		outEventsKafkaConfig = new KafkaConfig(brokerHosts,
 				SpeeddTopology.TOPIC_OUT_EVENTS);
 
-		outEventConsumer = new SimpleConsumer("localhost", brokerPort, 60000, 1024,
-				"outEventConsumer");
-		
-		logger.info(String.format(
-				"OutEventsConsumer details: host=%s, brokerPort=%s, clientName=%s",
-				outEventConsumer.host(), outEventConsumer.port(),
-				outEventConsumer.clientId()));
+		outEventConsumer = new SimpleConsumer("localhost", brokerPort, 60000,
+				1024, "outEventConsumer");
 
+		logger.info(String
+				.format("OutEventsConsumer details: host=%s, brokerPort=%s, clientName=%s",
+						outEventConsumer.host(), outEventConsumer.port(),
+						outEventConsumer.clientId()));
 
 		actionsKafkaConfig = new KafkaConfig(brokerHosts,
 				SpeeddTopology.TOPIC_ACTIONS);
 
-		actionConsumer = new SimpleConsumer("localhost", brokerPort, 60000, 1024,
-				"actionConsumer");
+		actionConsumer = new SimpleConsumer("localhost", brokerPort, 60000,
+				1024, "actionConsumer");
 
-		logger.info(String.format(
-				"ActionsConsumer details: host=%s, brokerPort=%s, clientName=%s",
-				actionConsumer.host(), actionConsumer.port(),
-				actionConsumer.clientId()));
-	
+		logger.info(String
+				.format("ActionsConsumer details: host=%s, brokerPort=%s, clientName=%s",
+						actionConsumer.host(), actionConsumer.port(),
+						actionConsumer.clientId()));
+
 	}
 
 	@Test
 	@Ignore
 	public void executeForSingleTrafficEvent() throws Exception {
-		// Start a local cluster, submit speedd topology
+		// Start a local storm, submit speedd topology
 		// send a single event to the speedd-in-events topic
 		// verify that both speedd-out-events and speedd-actions topics have
 		// events arrived, check contents
@@ -186,15 +223,16 @@ public class TestSpeedTopology {
 				"localhost:" + brokerPort, "kafka.producer.DefaultPartitioner");
 
 		ProducerConfig pConfig = new ProducerConfig(producerProperties);
-		
-		Producer<String, String> producer = new Producer<String, String>(pConfig);
+
+		Producer<String, String> producer = new Producer<String, String>(
+				pConfig);
 
 		KeyedMessage<String, String> message = new KeyedMessage<String, String>(
 				"speedd-in-events", trafficReadingCsv);
 
 		producer.send(message);
 
-		//wait till propagation of the message through SPEEDD topology
+		// wait till propagation of the message through SPEEDD topology
 		try {
 			Thread.sleep(1000);
 		} catch (InterruptedException e) {
@@ -202,14 +240,34 @@ public class TestSpeedTopology {
 
 		Map<String, Object> expectedAttrs = new HashMap<String, Object>();
 		expectedAttrs.put("location", "0024a4dc0000343e");
-		Event expectedEvent = SpeeddEventFactory.getInstance().createEvent("TrafficCongestion", 1397365200000l, expectedAttrs);
-		
+		Event expectedEvent = SpeeddEventFactory.getInstance().createEvent(
+				"TrafficCongestion", 1397365200000l, expectedAttrs);
+
 		verifyEvent(expectedEvent);
 	}
 
+//	@Test
+//	@Ignore
+//	public void verifyNodeExistsIssueSolved() throws Exception {
+//		shutdown();
+//
+//		for (int i = 0; i < 5; ++i) {
+//			logger.info("PASS #" + i);
+//			setup();
+//			testProtonIntegrationOnSimpleEvent();
+//			shutdown();
+//			try {
+//				Thread.sleep(5000);
+//			} catch (InterruptedException e) {
+//
+//			}
+//		}
+//
+//	}
+
 	@Test
 	public void testProtonIntegrationOnSimpleEvent() throws Exception {
-		// Start a local cluster, submit speedd topology
+		// Start a local storm, submit speedd topology
 		// send a single event to the speedd-in-events topic
 		// verify that both speedd-out-events and speedd-actions topics have
 		// events arrived, check contents
@@ -220,29 +278,32 @@ public class TestSpeedTopology {
 		Thread.sleep(5000);
 
 		char[] buf = new char[1000];
-		
-		BufferedReader reader = new BufferedReader(new InputStreamReader(TestSpeedTopology.class.getClassLoader().getResourceAsStream("simple-event.json"))); 
-		
+
+		BufferedReader reader = new BufferedReader(new InputStreamReader(
+				TestSpeedTopology.class.getClassLoader().getResourceAsStream(
+						"simple-event.json")));
+
 		int length = reader.read(buf);
-		
+
 		reader.close();
-		
+
 		String inEventStr = new String(buf, 0, length);
-		
+
 		// setup producer
 		Properties producerProperties = TestUtils.getProducerConfig(
 				"localhost:" + brokerPort, "kafka.producer.DefaultPartitioner");
 
 		ProducerConfig pConfig = new ProducerConfig(producerProperties);
-		
-		Producer<String, String> producer = new Producer<String, String>(pConfig);
+
+		Producer<String, String> producer = new Producer<String, String>(
+				pConfig);
 
 		KeyedMessage<String, String> message = new KeyedMessage<String, String>(
 				"speedd-in-events", inEventStr);
 
 		producer.send(message);
 
-		//wait till propagation of the message through SPEEDD topology
+		// wait till propagation of the message through SPEEDD topology
 		try {
 			Thread.sleep(10000);
 		} catch (InterruptedException e) {
@@ -250,61 +311,63 @@ public class TestSpeedTopology {
 
 		Map<String, Object> expectedAttrs = new HashMap<String, Object>();
 		expectedAttrs.put("A1", 80.0);
-		Event expectedEvent = SpeeddEventFactory.getInstance().createEvent("OutputEvent", 0, expectedAttrs);
-		
+		Event expectedEvent = SpeeddEventFactory.getInstance().createEvent(
+				"OutputEvent", 0, expectedAttrs);
+
 		verifyEvent(expectedEvent);
 	}
 
 	private void verifyEvent(Event expectedEvent) {
 		logger.info("Verifying event");
-		
+
 		long lastMessageOffset = TestUtil.getLastOffset(outEventConsumer,
 				"speedd-out-events", 0, OffsetRequest.LatestTime() - 1,
 				"speeddTest");
-		
+
 		logger.info("Last message offset: " + lastMessageOffset);
 
 		ByteBufferMessageSet messageAndOffsets = KafkaUtils.fetchMessages(
-				outEventsKafkaConfig,
-				outEventConsumer,
-				new Partition(Broker.fromString("localhost:" + zookeeperPort), 0), lastMessageOffset);
+				outEventsKafkaConfig, outEventConsumer,
+				new Partition(Broker.fromString("localhost:" + zookeeperPort),
+						0), lastMessageOffset);
 
-		assertTrue("There must be at least one message", messageAndOffsets.iterator().hasNext());
-		
+		assertTrue("There must be at least one message", messageAndOffsets
+				.iterator().hasNext());
+
 		MessageAndOffset messageAndOffset = messageAndOffsets.iterator().next();
 
 		Message kafkaMessage = messageAndOffset.message();
-		
+
 		ByteBuffer payload = kafkaMessage.payload();
 
 		byte[] bytes = new byte[payload.limit()];
-		
+
 		payload.get(bytes);
-		
-	    try {
-	    	String eventStr = new String(bytes, "UTF-8");
-	    	
-	    	logger.info("Event message: " + eventStr);
-	    	
+
+		try {
+			String eventStr = new String(bytes, "UTF-8");
+
+			logger.info("Event message: " + eventStr);
+
 		} catch (UnsupportedEncodingException e) {
 		}
-	    
+
 		Event event = new JsonEventDecoder().fromBytes(bytes);
 
 		assertNotNull("Event must not be null", event);
 
 		assertEquals(expectedEvent.getEventName(), event.getEventName());
-//		assertEquals(expectedEvent.getTimestamp(), event.getTimestamp());
-		
+		// assertEquals(expectedEvent.getTimestamp(), event.getTimestamp());
+
 		Map<String, Object> attrs = event.getAttributes();
 		Map<String, Object> expectedAttrs = expectedEvent.getAttributes();
-		
+
 		for (Entry<String, Object> entry : expectedAttrs.entrySet()) {
 			String attrName = entry.getKey();
 			Object attrValue = entry.getValue();
 			assertEquals(expectedAttrs.get(attrName), attrs.get(attrName));
 		}
-		
+
 	}
 
 	private void startSpeeddTopology(String configPath) {
@@ -318,24 +381,30 @@ public class TestSpeedTopology {
 			fail("Failed to start SPEEDD topology");
 		}
 
-		properties.setProperty("metadata.broker.list", "localhost:" + brokerPort);
-		properties.setProperty("zookeeper.connect", "localhost:" + zookeeperPort);
-		
+		properties.setProperty("metadata.broker.list", "localhost:"
+				+ brokerPort);
+		properties.setProperty("zookeeper.connect", "localhost:"
+				+ zookeeperPort);
+
 		SpeeddConfig speeddConfiguration = new SpeeddConfig();
-		speeddConfiguration.zkConnect = properties.getProperty("zookeeper.connect");
-		
+		speeddConfiguration.zkConnect = properties
+				.getProperty("zookeeper.connect");
+
 		String epnPath = properties.getProperty("proton.epnPath");
-		
+
 		try {
-			URI epnUri = this.getClass().getClassLoader().getResource(epnPath).toURI();
-			
-			speeddConfiguration.epnPath = Paths.get(epnUri).toAbsolutePath().toString();
-			
+			URI epnUri = this.getClass().getClassLoader().getResource(epnPath)
+					.toURI();
+
+			speeddConfiguration.epnPath = Paths.get(epnUri).toAbsolutePath()
+					.toString();
+
 		} catch (URISyntaxException e) {
 			fail("Cannot read epnPath property as a path: " + e.getMessage());
 		}
-		
-		speeddConfiguration.inEventScheme = (String) properties.getProperty("sppeedd.inEventScheme");
+
+		speeddConfiguration.inEventScheme = (String) properties
+				.getProperty("sppeedd.inEventScheme");
 
 		SpeeddTopology speeddTopology = new SpeeddTopology(speeddConfiguration);
 
@@ -353,8 +422,7 @@ public class TestSpeedTopology {
 
 		stormConfig.setMaxTaskParallelism(1);
 
-		LocalCluster cluster = new LocalCluster();
-		cluster.submitTopology("speedd", stormConfig,
+		storm.submitTopology("speedd", stormConfig,
 				speeddTopology.buildTopology());
 
 		logger.info("Submitted topology - should start listening on incoming events");
