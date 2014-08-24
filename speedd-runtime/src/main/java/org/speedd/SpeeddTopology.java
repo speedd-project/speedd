@@ -6,6 +6,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.speedd.cep.ProtonOutputConsumerBolt;
 import org.speedd.data.Event;
+import org.speedd.dm.DMPlaceholderBolt;
 
 import storm.kafka.BrokerHosts;
 import storm.kafka.KafkaSpout;
@@ -86,13 +87,11 @@ public class SpeeddTopology {
 		protonTopologyBuilder.buildProtonTopology(builder, trafficReaderSpout, protonOutputConsumerBolt, CEP_EVENT_CONSUMER, speeddConfig.epnPath);
 
 		builder.setBolt(OUT_EVENT_WRITER, eventWriterBolt).shuffleGrouping(CEP_EVENT_CONSUMER);
+		
+		builder.setBolt(DECISION_MAKER, new DMPlaceholderBolt()).shuffleGrouping(CEP_EVENT_CONSUMER);
+		
+		builder.setBolt(DECISION_WRITER, new KafkaBolt<String, Event>(CONFIG_KEY_ACTIONS_TOPIC)).shuffleGrouping(DECISION_MAKER);
 
-//FIXME add DM to the topology		
-//		builder.setBolt(DECISION_MAKER, new DMPlaceholderBolt()).shuffleGrouping(EVENT_PROCESSOR);
-//		
-//		//FIXME Write decision to a separate topic (curr. same as out events) - need to modify KafkaBolt for that		
-//		builder.setBolt(DECISION_WRITER, new KafkaBolt<String, Event>(CONFIG_KEY_ACTIONS_TOPIC)).shuffleGrouping(DECISION_MAKER);
-//
 		return builder.createTopology();
 	}
 

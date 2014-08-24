@@ -17,6 +17,12 @@ import backtype.storm.tuple.Fields;
 import backtype.storm.tuple.Tuple;
 import backtype.storm.tuple.Values;
 
+/**
+ * A placeholder for DM lightweight in-storm decision making component.
+ * 
+ * @author kofman
+ *
+ */
 public class DMPlaceholderBolt extends BaseRichBolt {
 	private static final long serialVersionUID = 1L;
 	
@@ -38,10 +44,6 @@ public class DMPlaceholderBolt extends BaseRichBolt {
 		Event event = (Event)input.getValueByField("message");
 		
 		String eventName = event.getEventName();
-		
-		if(!eventName.equals("TrafficCongestion")){
-			return;
-		}
 		
 		long timestamp = event.getTimestamp();
 		

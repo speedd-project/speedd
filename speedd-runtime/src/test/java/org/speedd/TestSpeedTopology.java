@@ -41,7 +41,6 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
-import org.mortbay.jetty.security.Password;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.speedd.data.Event;
@@ -49,10 +48,6 @@ import org.speedd.data.impl.SpeeddEventFactory;
 import org.speedd.kafka.JsonEventDecoder;
 import org.speedd.test.TestUtil;
 
-import com.netflix.curator.test.TestingServer;
-import com.netflix.curator.test.TestingZooKeeperMain;
-
-import scala.tools.nsc.io.Path;
 import storm.kafka.Broker;
 import storm.kafka.BrokerHosts;
 import storm.kafka.KafkaConfig;
@@ -63,6 +58,8 @@ import storm.kafka.bolt.KafkaBolt;
 import storm.kafka.trident.GlobalPartitionInformation;
 import backtype.storm.Config;
 import backtype.storm.LocalCluster;
+
+import com.netflix.curator.test.TestingServer;
 
 public class TestSpeedTopology {
 	private KafkaConfig outEventsKafkaConfig;
@@ -243,7 +240,7 @@ public class TestSpeedTopology {
 		Event expectedEvent = SpeeddEventFactory.getInstance().createEvent(
 				"TrafficCongestion", 1397365200000l, expectedAttrs);
 
-		verifyEvent(expectedEvent);
+		verifyEvent(outEventConsumer, outEventsKafkaConfig, expectedEvent);
 	}
 
 //	@Test
@@ -314,21 +311,27 @@ public class TestSpeedTopology {
 		Event expectedEvent = SpeeddEventFactory.getInstance().createEvent(
 				"OutputEvent", 0, expectedAttrs);
 
-		verifyEvent(expectedEvent);
+		verifyEvent(outEventConsumer, outEventsKafkaConfig, expectedEvent);
+		
+		
+		expectedAttrs = new HashMap<String, Object>();
+		expectedAttrs.put("decision", "do something");
+		Event expectedAction = SpeeddEventFactory.getInstance().createEvent("Action", 0, expectedAttrs);
+		verifyEvent(actionConsumer, actionsKafkaConfig, expectedAction);
 	}
 
-	private void verifyEvent(Event expectedEvent) {
-		logger.info("Verifying event");
+	private void verifyEvent(SimpleConsumer consumer, KafkaConfig kafkaConfig, Event expectedEvent) {
+		logger.info("Verifying event on topic " + kafkaConfig.topic);
 
-		long lastMessageOffset = TestUtil.getLastOffset(outEventConsumer,
-				"speedd-out-events", 0, OffsetRequest.LatestTime() - 1,
+		long lastMessageOffset = TestUtil.getLastOffset(consumer,
+				kafkaConfig.topic, 0, OffsetRequest.LatestTime() - 1,
 				"speeddTest");
 
 		logger.info("Last message offset: " + lastMessageOffset);
 
 		ByteBufferMessageSet messageAndOffsets = KafkaUtils.fetchMessages(
-				outEventsKafkaConfig, outEventConsumer,
-				new Partition(Broker.fromString("localhost:" + zookeeperPort),
+				kafkaConfig, consumer,
+				new Partition(Broker.fromString(kafkaZookeeper.getConnectString()),
 						0), lastMessageOffset);
 
 		assertTrue("There must be at least one message", messageAndOffsets
@@ -365,7 +368,7 @@ public class TestSpeedTopology {
 		for (Entry<String, Object> entry : expectedAttrs.entrySet()) {
 			String attrName = entry.getKey();
 			Object attrValue = entry.getValue();
-			assertEquals(expectedAttrs.get(attrName), attrs.get(attrName));
+			assertEquals(expectedAttrs.get(attrName), attrValue);
 		}
 
 	}
