@@ -1,4 +1,4 @@
-package org.speedd.test;
+package org.speedd.util;
 
 import java.util.List;
 
