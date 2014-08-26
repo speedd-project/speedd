@@ -1,0 +1,165 @@
+{
+	"epn": {
+		"events": [{
+			"name": "AggregatedReading",
+			"createdDate": "Tue Aug 26 2014",
+			"attributes": [{
+				"name": "Certainty",
+				"type": "Double",
+				"defaultValue": "1",
+				"dimension": 0,
+				"description": "The certainty that this event happen (value between 0 to 1)"
+			},
+			{
+				"name": "OccurrenceTime",
+				"type": "Date",
+				"dimension": 0,
+				"description": "No value means it equals the event detection time, other option is to use one of the defined distribution functions with parameters"
+			},
+			{
+				"name": "ExpirationTime",
+				"type": "Date",
+				"dimension": 0
+			},
+			{
+				"name": "Cost",
+				"type": "Double",
+				"dimension": 0,
+				"description": "The cost of this event occurrence. Negative if this is an opportunity"
+			},
+			{
+				"name": "Duration",
+				"type": "Double",
+				"defaultValue": "0",
+				"dimension": 0,
+				"description": "Used in case the this event occur within an interval"
+			},
+			{
+				"name": "location",
+				"type": "String",
+				"dimension": 0
+			},
+			{
+				"name": "lane",
+				"type": "String",
+				"dimension": 0
+			},
+			{
+				"name": "occupancy",
+				"type": "Double",
+				"dimension": 0
+			},
+			{
+				"name": "vehicles",
+				"type": "Long",
+				"dimension": 0
+			},
+			{
+				"name": "median_speed",
+				"type": "Double",
+				"dimension": 0
+			},
+			{
+				"name": "avg_speed",
+				"type": "Double",
+				"dimension": 0
+			},
+			{
+				"name": "speed_histogram",
+				"type": "Long",
+				"dimension": "1"
+			},
+			{
+				"name": "length_histogram",
+				"type": "Long",
+				"dimension": "1"
+			}]
+		},
+		{
+			"name": "TrafficCongestion",
+			"createdDate": "Tue Aug 26 2014",
+			"attributes": [{
+				"name": "Certainty",
+				"type": "Double",
+				"defaultValue": "1",
+				"dimension": 0,
+				"description": "The certainty that this event happen (value between 0 to 1)"
+			},
+			{
+				"name": "OccurrenceTime",
+				"type": "Date",
+				"dimension": 0,
+				"description": "No value means it equals the event detection time, other option is to use one of the defined distribution functions with parameters"
+			},
+			{
+				"name": "ExpirationTime",
+				"type": "Date",
+				"dimension": 0
+			},
+			{
+				"name": "Cost",
+				"type": "Double",
+				"dimension": 0,
+				"description": "The cost of this event occurrence. Negative if this is an opportunity"
+			},
+			{
+				"name": "Duration",
+				"type": "Double",
+				"defaultValue": "0",
+				"dimension": 0,
+				"description": "Used in case the this event occur within an interval"
+			},
+			{
+				"name": "location",
+				"type": "String",
+				"dimension": 0
+			},
+			{
+				"name": "density",
+				"type": "Double",
+				"dimension": 0
+			}]
+		}],
+		"epas": [{
+			"name": "TrafficCongestionDetector",
+			"createdDate": "Tue Aug 26 2014",
+			"epaType": "All",
+			"context": "SameLane",
+			"inputEvents": [{
+				"name": "AggregatedReading",
+				"alias": "reading",
+				"consumptionPolicy": "Consume",
+				"instanceSelectionPolicy": "First"
+			}],
+			"computedVariables": [],
+			"assertion": "reading.vehicles > 5",
+			"evaluationPolicy": "Immediate",
+			"cardinalityPolicy": "Single",
+			"internalSegmentation": [],
+			"derivedEvents": [{
+				"name": "TrafficCongestion",
+				"reportParticipants": false,
+				"expressions": {
+					"Duration": "0",
+					"location": "reading.location",
+					"density": "reading.vehicles / reading.avg_speed"
+				}
+			}]
+		}],
+		"contexts": {
+			"temporal": [],
+			"segmentation": [{
+				"name": "SameLane",
+				"createdDate": "Tue Aug 26 2014",
+				"participantEvents": [{
+					"name": "AggregatedReading",
+					"expression": "AggregatedReading.location"
+				}]
+			}],
+			"composite": []
+		},
+		"consumers": [],
+		"producers": [],
+		"name": "SPEEDD Traffic"
+	}
+}

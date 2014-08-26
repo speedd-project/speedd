@@ -407,7 +407,7 @@ public class TestSpeedTopology {
 		}
 
 		speeddConfiguration.inEventScheme = (String) properties
-				.getProperty("sppeedd.inEventScheme");
+				.getProperty("speedd.inEventScheme");
 
 		SpeeddTopology speeddTopology = new SpeeddTopology(speeddConfiguration);
 

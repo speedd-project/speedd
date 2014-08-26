@@ -1,5 +1,8 @@
 package org.speedd;
 
+import java.io.FileInputStream;
+import java.util.Iterator;
+import java.util.Map.Entry;
 import java.util.Properties;
 
 import org.slf4j.Logger;
@@ -15,6 +18,7 @@ import storm.kafka.ZkHosts;
 import storm.kafka.bolt.KafkaBolt;
 import backtype.storm.Config;
 import backtype.storm.LocalCluster;
+import backtype.storm.StormSubmitter;
 import backtype.storm.generated.StormTopology;
 import backtype.storm.spout.Scheme;
 import backtype.storm.spout.SchemeAsMultiScheme;
@@ -25,7 +29,7 @@ import com.ibm.hrl.proton.ProtonTopologyBuilder;
 
 public class SpeeddTopology {
 	private BrokerHosts brokerHosts;
-	
+
 	private SpeeddConfig speeddConfig;
 
 	public static final String TOPIC_IN_EVENTS = "speedd-in-events";
@@ -37,23 +41,24 @@ public class SpeeddTopology {
 	private static final String EVENT_PROCESSOR = "event-processor";
 
 	private static final String OUT_EVENT_WRITER = "out-event-writer";
-	
+
 	private static final String CEP_EVENT_CONSUMER = "cep-event-consumer";
 
 	private static final String DECISION_MAKER = "dm";
 
 	private static final String DECISION_WRITER = "decision-writer";
-	
+
 	public static final String CONFIG_KEY_OUT_EVENTS_TOPIC = "topic.out.events";
-	
+
 	public static final String CONFIG_KEY_ACTIONS_TOPIC = "topic.actions";
-	
-	private static Logger logger = LoggerFactory.getLogger(SpeeddTopology.class); 
-	
+
+	private static Logger logger = LoggerFactory
+			.getLogger(SpeeddTopology.class);
+
 	public SpeeddTopology(SpeeddConfig configuration) {
 		this.speeddConfig = configuration;
 		brokerHosts = new ZkHosts(speeddConfig.zkConnect);
-		
+
 		logger.info("EPN Path: " + configuration.epnPath);
 	}
 
@@ -61,7 +66,8 @@ public class SpeeddTopology {
 		SpoutConfig kafkaConfig = new SpoutConfig(brokerHosts, TOPIC_IN_EVENTS,
 				"", IN_EVENT_READER);
 		try {
-			Class<? extends Scheme> clazz = (Class<Scheme>)SpeeddTopology.class.getClassLoader().loadClass(schemeClassName);
+			Class<? extends Scheme> clazz = (Class<Scheme>) SpeeddTopology.class
+					.getClassLoader().loadClass(schemeClassName);
 			kafkaConfig.scheme = new SchemeAsMultiScheme(clazz.newInstance());
 		} catch (Exception e) {
 			throw new RuntimeException("Creating a scheme instance failed", e);
@@ -70,47 +76,69 @@ public class SpeeddTopology {
 		return new KafkaSpout(kafkaConfig);
 	}
 
-	//FIXME carefully choose grouping strategy
+	// FIXME carefully choose grouping strategy
 	public StormTopology buildTopology() {
 		TopologyBuilder builder = new TopologyBuilder();
 
 		BaseRichSpout trafficReaderSpout;
 
 		trafficReaderSpout = createInputEventReaderSpout(speeddConfig.inEventScheme);
-		
-		KafkaBolt<String, Event> eventWriterBolt = new KafkaBolt<String, Event>(CONFIG_KEY_OUT_EVENTS_TOPIC);
-		
+
+		KafkaBolt<String, Event> eventWriterBolt = new KafkaBolt<String, Event>(
+				CONFIG_KEY_OUT_EVENTS_TOPIC);
+
 		ProtonOutputConsumerBolt protonOutputConsumerBolt = new ProtonOutputConsumerBolt();
 
 		ProtonTopologyBuilder protonTopologyBuilder = new ProtonTopologyBuilder();
-		
-		protonTopologyBuilder.buildProtonTopology(builder, trafficReaderSpout, protonOutputConsumerBolt, CEP_EVENT_CONSUMER, speeddConfig.epnPath);
 
-		builder.setBolt(OUT_EVENT_WRITER, eventWriterBolt).shuffleGrouping(CEP_EVENT_CONSUMER);
-		
-		builder.setBolt(DECISION_MAKER, new DMPlaceholderBolt()).shuffleGrouping(CEP_EVENT_CONSUMER);
-		
-		builder.setBolt(DECISION_WRITER, new KafkaBolt<String, Event>(CONFIG_KEY_ACTIONS_TOPIC)).shuffleGrouping(DECISION_MAKER);
+		protonTopologyBuilder.buildProtonTopology(builder, trafficReaderSpout,
+				protonOutputConsumerBolt, CEP_EVENT_CONSUMER,
+				speeddConfig.epnPath);
+
+		builder.setBolt(OUT_EVENT_WRITER, eventWriterBolt).shuffleGrouping(
+				CEP_EVENT_CONSUMER);
+
+		builder.setBolt(DECISION_MAKER, new DMPlaceholderBolt())
+				.shuffleGrouping(CEP_EVENT_CONSUMER);
+
+		builder.setBolt(DECISION_WRITER,
+				new KafkaBolt<String, Event>(CONFIG_KEY_ACTIONS_TOPIC))
+				.shuffleGrouping(DECISION_MAKER);
 
 		return builder.createTopology();
 	}
 
 	public static void main(String[] args) {
-		Properties properties = new Properties();
-		try {
-			properties.load(SpeeddTopology.class.getClassLoader()
-					.getResourceAsStream("speedd.properties"));
-			System.out.println("Properties loaded:" + properties.toString());
-		} catch (Exception e) {
-			e.printStackTrace();
+		if (args.length == 0) {
+			System.err.println("Missing config file path");
 			System.exit(1);
 		}
 
-		
+		String confPath = args[0];
+
+		boolean localMode = true;
+
+		if (args.length == 2 && args[1].equals("remote")) {
+			localMode = false;
+		}
+
+		Properties properties = new Properties();
+		try {
+			properties.load(new FileInputStream(confPath));
+			logger.info("Configuration loaded: " + properties.toString());
+		} catch (Exception e) {
+			System.err.println("Cannot load configuration: " + e.getMessage());
+			logger.error("Cannot load configuration", e);
+			System.exit(1);
+		}
+
 		SpeeddConfig configuration = new SpeeddConfig();
-		configuration.zkConnect = (String) properties.getProperty("zookeeper.connect");
-		configuration.epnPath = (String) properties.getProperty("proton.epnPath");
-		configuration.inEventScheme = (String) properties.getProperty("sppeedd.inEventScheme");
+		configuration.zkConnect = (String) properties
+				.getProperty("zookeeper.connect");
+		configuration.epnPath = (String) properties
+				.getProperty("proton.epnPath");
+		configuration.inEventScheme = (String) properties
+				.getProperty("speedd.inEventScheme");
 
 		SpeeddTopology speeddTopology = new SpeeddTopology(configuration);
 
@@ -119,27 +147,48 @@ public class SpeeddTopology {
 
 		conf.put(KafkaBolt.KAFKA_BROKER_PROPERTIES, properties);
 
+		for (Iterator iter = properties.entrySet().iterator(); iter.hasNext();) {
+			Entry<String, String> entry = (Entry<String, String>) iter.next();
+			if (entry.getKey().startsWith("topic.")) {
+				conf.put(entry.getKey(), entry.getValue());
+			}
+		}
+
 		conf.setMaxTaskParallelism(1);
 
-		// FIXME if storm cluster details provided (arguments) - connect to the
-		// external cluster
-		// FIXME admin capabilities? - shutdown the cluster? needed when working
-		// with external cluster?
-		LocalCluster cluster = new LocalCluster();
-		cluster.submitTopology("speedd", conf,
-				speeddTopology.buildTopology());
+		StormTopology topology = speeddTopology.buildTopology();
+		
+		if(localMode){
+			runLocally(conf, topology);
+		} else{
+			runRemotely(conf, topology);
+		}
+	}
 
-		System.out.println("Listening on the topic");
+	private static void runRemotely(Config conf, StormTopology speeddTopology) {
 		try {
+			logger.info("Running remotely");
+			StormSubmitter.submitTopologyWithProgressBar("speedd-runtime",
+					conf, speeddTopology);
+		} catch (Exception e1) {
+			System.err.println("Submit topology faield: " + e1.getMessage());
+			logger.error("Submit topology failed", e1);
+		}
+	}
+
+	private static void runLocally(Config conf, StormTopology speeddTopology) {
+		LocalCluster cluster = new LocalCluster();
+		cluster.submitTopology("speedd", conf, speeddTopology);
+
+		try {
+			logger.info("Running locally");
 			while (true) {
 				Thread.sleep(5000);
 			}
 		} catch (InterruptedException e) {
-			System.out.println("Interrupted - exiting.");
 		} finally {
 			System.out.println("Shutting down the storm cluster");
 			cluster.shutdown();
 		}
-
 	}
 }
