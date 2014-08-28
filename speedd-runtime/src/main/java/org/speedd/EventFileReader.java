@@ -1,8 +1,9 @@
 package org.speedd;
 
 import java.io.BufferedReader;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 
 import kafka.javaapi.producer.Producer;
 import kafka.producer.KeyedMessage;
@@ -27,13 +28,17 @@ public class EventFileReader {
 	}
 
 	public void open() throws EventReaderException {
-		reader = new BufferedReader(new InputStreamReader(this.getClass().getClassLoader().getResourceAsStream(path)));
+		try {
+		reader = new BufferedReader(new FileReader(path));
 
 		logger.info(String.format("Open file %s for read.", path));
 		
 		producer = new Producer<String, String>(producerConfig);
 		
 		logger.info(String.format("Open producer to send to kafka: %s", producerConfig.toString()));
+		} catch (FileNotFoundException e){
+			throw new EventReaderException(e);
+		}
 	}
 
 	public void streamEvents(int delayMillis) {

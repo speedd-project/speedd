@@ -83,8 +83,7 @@ public class EventFileReaderTest {
 
 		ProducerConfig pConfig = new ProducerConfig(producerProperties);
 
-		EventFileReader eventFileReader = new EventFileReader(
-				"test-events.csv", topic, pConfig);
+		EventFileReader eventFileReader = new EventFileReader(this.getClass().getClassLoader().getResource("test-events.csv").getPath(), topic, pConfig);
 
 		eventFileReader.streamEvents(1000);
 
