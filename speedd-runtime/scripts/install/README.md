@@ -4,7 +4,7 @@ The scripts in this directory required to configure storm and kafka as services 
   2. For every script do as follows: 
 	  1. Copy the script into /etc/init.d
 	  2. chmod 755 \<name\> - for all scripts copied in the previous step
-	  3. chconfig --add \<script-name\>
+	  3. chkconfig --add \<script-name\>
   3. mkdir /var/log/kafka
   4. mkdir /var/log/storm
 
