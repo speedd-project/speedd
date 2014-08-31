@@ -72,11 +72,12 @@ public class EventPlayer {
 			
 			List<String> argList = cmd.getArgList();
 
-			eventFile = argList.get(0);
-
 			if (argList.isEmpty()) {
 				throw new ParseException("Event file missing");
 			}
+
+			eventFile = argList.get(0);
+
 		} catch (ParseException e) {
 			System.out.println(e.getMessage());
 			HelpFormatter helpFormatter = new HelpFormatter();
@@ -85,7 +86,9 @@ public class EventPlayer {
 			System.exit(1);
 		}
 
+		System.out.println("Loading producer configuration from " + configPath);
 		System.out.println("Event file: " + eventFile);
+		System.out.println("Sending events to topic: " + topic);
 		
 		EventPlayer player = new EventPlayer(configPath, topic);
 		
