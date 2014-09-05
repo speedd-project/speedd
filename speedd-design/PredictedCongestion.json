@@ -1,0 +1,20 @@
+{
+	"timestamp": 1409901066030,
+	"Name": "PredictedCongestion",
+	"attributes": {
+		"density": 1.7333333333333334,
+		"location": "0024a4dc00003354",
+		"EventId": "3c391980-a776-4f0c-871d-fba05e6c1e79",
+		"Chronon": null,
+		"DetectionTime": 1409901066030,
+		"lane": "fast",
+		"Cost": 0.0,
+		"Certainty": 0.5,
+		"Name": "PredictedCongestion",
+		"EventSource": "",
+		"OccurrenceTime": 1409901066030,
+		"Duration": 0,
+		"Annotation": "",
+		"ExpirationTime": null
+	}
+}
