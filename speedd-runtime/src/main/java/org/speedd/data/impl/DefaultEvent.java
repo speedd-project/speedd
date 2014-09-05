@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.speedd.data.Event;
+import org.speedd.kafka.JsonEventEncoder;
 
 public class DefaultEvent implements Event {
 	private String eventName;
@@ -30,5 +31,11 @@ public class DefaultEvent implements Event {
 
 	public Map<String, Object> getAttributes() {
 		return attrMap;
+	}
+	
+	@Override
+	public String toString() {
+		JsonEventEncoder encoder = new JsonEventEncoder(null);
+		return new String(encoder.eventToBytes(this));
 	}
 }

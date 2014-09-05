@@ -44,7 +44,7 @@ public class TrafficAggregatedReadingCsv2EventTest {
 		assertEquals(12.16, attrs.get("occupancy"));
 		assertEquals(Long.valueOf(7), attrs.get("vehicles"));
 		assertNull(attrs.get("median_speed"));
-		assertEquals(60.0, attrs.get("avg_speed"));
+		assertEquals(60.0, attrs.get("average_speed"));
 		
 		Long[] speedHistogram = (Long[])attrs.get("speed_histogram");
 		assertNotNull(speedHistogram);

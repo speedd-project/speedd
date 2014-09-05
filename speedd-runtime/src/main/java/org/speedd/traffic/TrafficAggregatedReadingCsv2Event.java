@@ -1,6 +1,7 @@
 package org.speedd.traffic;
 
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
 import java.util.HashMap;
 
 import org.speedd.ParsingError;
@@ -15,7 +16,7 @@ public class TrafficAggregatedReadingCsv2Event implements Constants {
 	private static final String ATTR_VEHICLES = "vehicles";
 	private static final String ATTR_LENGTH_HISTOGRAM = "length_histogram";
 	private static final String ATTR_TIMESTAMP = "timestamp";
-	private static final String ATTR_AVG_SPEED = "avg_speed";
+	private static final String ATTR_AVG_SPEED = "average_speed";
 	private static final String ATTR_MEDIAN_SPEED = "median_speed";
 
 	
@@ -33,6 +34,9 @@ public class TrafficAggregatedReadingCsv2Event implements Constants {
 	private static final int SPEED_HISTOGRAM_BINCOUNT = 20;
 	private static final int LENGTH_HISTOGRAM_BINCOUNT = 100;
 	
+	//total expected number of fields in a csv line. Assuming here that the length histogram is the ending part of csv
+	private static final int NUM_FIELDS = ATTR_LENGTH_INDEX + SPEED_HISTOGRAM_BINCOUNT + LENGTH_HISTOGRAM_BINCOUNT;
+	
 	private static final SimpleDateFormat dateTimeFormat = new SimpleDateFormat("yyyy-MM-dd,HH:mm:ss"); 
 	
 	private EventFactory eventFactory;
@@ -47,6 +51,17 @@ public class TrafficAggregatedReadingCsv2Event implements Constants {
 		try {
 
 			String[] tuple = csv.split(",");
+			
+			int tupleLength = tuple.length;
+			
+			//extend to expected length padding the rest with nulls
+			if(tupleLength < NUM_FIELDS){
+				String[] padded = Arrays.copyOf(tuple, NUM_FIELDS);
+				
+				Arrays.fill(padded, tupleLength, NUM_FIELDS-1, "0");
+				
+				tuple = padded;
+			}
 
 			String dateTimeStr = String.format("%s,%s", tuple[ATTR_DATE_INDEX], tuple[ATTR_TIME_INDEX]);
 
