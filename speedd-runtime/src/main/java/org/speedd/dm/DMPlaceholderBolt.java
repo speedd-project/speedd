@@ -53,12 +53,19 @@ public class DMPlaceholderBolt extends BaseRichBolt {
 		
 		outAttrs.put("decision", "do something");
 		
+		outAttrs.put("newMeterRate", computeTheNewRate(attributes));
+		
 		Event outEvent = eventFactory.createEvent("Action", timestamp, outAttrs);
 
 		logger.debug("Emitting out event: " + outEvent.getEventName());
 		
 		//FIXME use meaningful value for the 'key' field. It'll be used by kafka for partitioning
 		collector.emit(new Values("1", outEvent));
+	}
+
+	private double computeTheNewRate(Map<String, Object> attributes) {
+		// TODO Auto-generated method stub
+		return 2;
 	}
 
 	@Override
