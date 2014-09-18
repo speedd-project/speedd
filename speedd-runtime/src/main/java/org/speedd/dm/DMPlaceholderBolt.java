@@ -47,17 +47,24 @@ public class DMPlaceholderBolt extends BaseRichBolt {
 		
 		long timestamp = event.getTimestamp();
 		
+		String location = (String)event.getAttributes().get("location");
+		
+		String lane = (String)event.getAttributes().get("lane");
+		
+		Double density = (Double)event.getAttributes().get("density");
+		
 		Map<String, Object> attributes = event.getAttributes();
 		
 		Map<String, Object> outAttrs = new HashMap<String, Object>();
 		
-		outAttrs.put("decision", "do something");
+		outAttrs.put("newMeteringRate", computeTheNewRate(attributes));
+		outAttrs.put("location", location);
+		outAttrs.put("density", density);
+		outAttrs.put("lane", lane);
 		
-		outAttrs.put("newMeterRate", computeTheNewRate(attributes));
-		
-		Event outEvent = eventFactory.createEvent("Action", timestamp, outAttrs);
+		Event outEvent = eventFactory.createEvent("UpdateMeteringRateAction", timestamp, outAttrs);
 
-		logger.debug("Emitting out event: " + outEvent.getEventName());
+		logger.debug("Emitting out event: " + outEvent);
 		
 		//FIXME use meaningful value for the 'key' field. It'll be used by kafka for partitioning
 		collector.emit(new Values("1", outEvent));
