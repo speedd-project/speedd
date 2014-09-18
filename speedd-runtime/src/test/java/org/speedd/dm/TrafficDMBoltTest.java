@@ -70,7 +70,7 @@ public class TrafficDMBoltTest {
 		
 		Event actionEvent = (Event)outTuple.get(1);
 		
-		double meterRate = (double)actionEvent.getAttributes().get("newMeterRate");
+		Double meterRate = (Double)actionEvent.getAttributes().get("newMeterRate");
 		
 		assertEquals(2, meterRate, 0);
 	}
