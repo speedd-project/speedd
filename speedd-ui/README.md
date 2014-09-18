@@ -1,4 +1,4 @@
-To Install
+= To Install =
 
 1. open terminal
 2. run: chmod +x installUI.sh
@@ -7,10 +7,9 @@ To Install
 5. After set up is complete, open browser and navigate to localhost:3000
 
 
-To Stop
+= To Stop =
 
 1. In the terminal running the server press "Ctrl+C"
-
 
 To Run - not needed after immediate installation
 
