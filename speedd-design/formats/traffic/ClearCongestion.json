@@ -1,0 +1,14 @@
+{
+	"name": "ClearCongestion",
+	"createdDate": "Sun Aug 31 2014",
+	"attributes": [{
+		"name": "location",
+		"type": "String",
+		"dimension": 0
+	},
+	{
+		"name": "problem_id",
+		"type": "String",
+		"dimension": 0
+	}]
+}

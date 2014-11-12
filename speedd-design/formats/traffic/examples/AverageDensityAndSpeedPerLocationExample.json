@@ -1,0 +1,10 @@
+{
+	"timestamp": 1409901066030,
+	"name": "AverageDensityAndSpeedPerLocation",
+	"attributes": {
+		"location": "0024a4dc00003354",
+		"average_flow": "2.5",
+		"average_density": "0.2",
+		"average_speed": 50.0
+	}
+}

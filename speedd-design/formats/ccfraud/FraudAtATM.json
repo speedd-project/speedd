@@ -1,0 +1,16 @@
+{
+	"name": "FraudAtATM",
+	"createdDate": "Tue Aug 05 2014",
+	"attributes": [{
+		"name": "Certainty",
+		"type": "Double",
+		"defaultValue": "1",
+		"dimension": 0,
+		"description": "The certainty that this event happen (value between 0 to 1)"
+	},
+	{
+		"name": "terminal_id",
+		"type": "Double",
+		"dimension": 0
+	}]
+}

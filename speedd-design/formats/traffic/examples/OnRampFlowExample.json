@@ -1,0 +1,10 @@
+{
+	"name": "OnRampFlow",
+	"timestamp": 1409901066030,
+	"attributes": {
+		"location": "0024a4dc00003354",
+		"average_flow": "10.0",
+		"average_speed": "45.0",
+		"average_density": 1.7333333333333334
+	}
+}

@@ -1,0 +1,12 @@
+{
+	"name": "Transaction",
+	"timestamp": 1409901066030,
+	"attributes": {
+		"card_pan": "1234-1234",
+		"terminal_id": "123456578",
+		"cvv_validation": 10,
+		"amount_eur": "120.5",
+		"acquirer_country": 972,
+		"is_cnp": 1
+	}
+}

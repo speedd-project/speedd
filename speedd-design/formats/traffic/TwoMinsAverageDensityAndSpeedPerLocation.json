@@ -1,0 +1,24 @@
+{
+	"name": "2minsAverageDensityAndSpeedPerLocation",
+	"createdDate": "Sun Aug 31 2014",
+	"attributes": [{
+		"name": "location",
+		"type": "String",
+		"dimension": 0
+	},
+	{
+		"name": "average_flow",
+		"type": "Double",
+		"dimension": 0
+	},
+	{
+		"name": "average_density",
+		"type": "Double",
+		"dimension": 0
+	},
+	{
+		"name": "average_speed",
+		"type": "Double",
+		"dimension": 0
+	}]
+}

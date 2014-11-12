@@ -1,0 +1,29 @@
+{
+	"name": "AggregatedSensorRead",
+	"createdDate": "Tue Aug 19 2014",
+	"attributes": [{
+		"name": "location",
+		"type": "String",
+		"dimension": 0
+	},
+	{
+		"name": "lane",
+		"type": "String",
+		"dimension": 0
+	},
+	{
+		"name": "occupancy",
+		"type": "Double",
+		"dimension": 0
+	},
+	{
+		"name": "vehicles",
+		"type": "Integer",
+		"dimension": 0
+	},
+	{
+		"name": "average_speed",
+		"type": "Double",
+		"dimension": 0
+	}]
+}

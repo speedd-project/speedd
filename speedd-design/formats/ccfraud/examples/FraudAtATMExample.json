@@ -1,0 +1,8 @@
+{
+	"name": "FraudAtATM",
+	"timestamp": 1409901066030,
+	"attributes": {
+		"Certainty": "0.8",
+		"terminal_id": 12345678
+	}
+}

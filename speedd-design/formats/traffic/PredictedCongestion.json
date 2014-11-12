@@ -1,0 +1,26 @@
+{
+	"name": "PredictedCongestion",
+	"createdDate": "Sun Aug 31 2014",
+	"attributes": [{
+		"name": "Certainty",
+		"type": "Double",
+		"defaultValue": "1",
+		"dimension": 0,
+		"description": "The certainty that this event happen (value between 0 to 1)"
+	},
+	{
+		"name": "location",
+		"type": "String",
+		"dimension": 0
+	},
+	{
+		"name": "average_density",
+		"type": "Double",
+		"dimension": 0
+	},
+	{
+		"name": "problem_id",
+		"type": "String",
+		"dimension": 0
+	}]
+}

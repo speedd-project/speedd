@@ -1,0 +1,10 @@
+{
+	"name": "IncreasingAmounts",
+	"timestamp": 1409901066030,
+	"attributes": {
+		"Certainty": "1",
+		"card_pan": "1235-1234",
+		"terminal_id": 12345567,
+		"TrendCount": 1.2
+	}
+}
