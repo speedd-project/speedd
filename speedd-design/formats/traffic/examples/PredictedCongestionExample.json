@@ -1,0 +1,10 @@
+{
+	"Name": "PredictedCongestion",
+	"timestamp": 1409901066030,
+	"attributes": {
+		"problem_id": "pcong-123",
+		"average_density": 1.7333333333333334,
+		"location": "0024a4dc00003354",
+		"Certainty": 0.5
+	}
+}
