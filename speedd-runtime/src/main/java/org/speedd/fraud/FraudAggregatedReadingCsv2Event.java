@@ -2,6 +2,7 @@ package org.speedd.fraud;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.speedd.EventParser;
 import org.speedd.ParsingError;
 import org.speedd.data.Event;
 import org.speedd.data.EventFactory;
@@ -9,7 +10,7 @@ import org.speedd.data.EventFactory;
 import java.util.Arrays;
 import java.util.HashMap;
 
-public class FraudAggregatedReadingCsv2Event implements Constants {
+public class FraudAggregatedReadingCsv2Event implements EventParser, Constants {
     private static final String ATTR_TIMESTAMP            = "timestamp";
     private static final String ATTR_TRANSACTION_ID       = "transaction_id";
     private static final String ATTR_IS_CNP               = "is_cnp";
@@ -77,12 +78,12 @@ public class FraudAggregatedReadingCsv2Event implements Constants {
 
     private static Logger logger = LoggerFactory.getLogger(FraudAggregatedReadingCsv2Event.class);
 
-	public Event csv2event(String csv) throws ParsingError {
+	public Event fromBytes(byte[] bytes) throws ParsingError {
 		String name = TRANSACTION;
 
 		try {
 
-			String[] tuple = csv.split(",");
+			String[] tuple = new String(bytes).split(",");
 			
 			int tupleLength = tuple.length;
 

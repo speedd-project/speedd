@@ -394,8 +394,8 @@ public class TestSpeedTopology {
 
 		ProducerConfig pConfig = new ProducerConfig(producerProperties);
 
-		EventFileReader eventReader = new EventFileReader(TestSpeedTopology.class.getClassLoader().getResource("inputCNRS.csv").getPath(), "speedd-in-events", pConfig);
-		eventReader.streamEvents(100);
+		EventFileReader eventReader = new EventFileReader(TestSpeedTopology.class.getClassLoader().getResource("inputCNRS.csv").getPath(), "speedd-in-events", pConfig, 1000);
+		eventReader.streamEvents();
 		
 		// wait till propagation of the message through SPEEDD topology
 		try {

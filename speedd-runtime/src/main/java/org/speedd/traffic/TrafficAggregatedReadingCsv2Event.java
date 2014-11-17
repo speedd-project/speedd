@@ -4,11 +4,12 @@ import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.HashMap;
 
+import org.speedd.EventParser;
 import org.speedd.ParsingError;
 import org.speedd.data.Event;
 import org.speedd.data.EventFactory;
 
-public class TrafficAggregatedReadingCsv2Event implements Constants {
+public class TrafficAggregatedReadingCsv2Event implements EventParser, Constants {
 	private static final String ATTR_LOCATION = "location";
 	private static final String ATTR_LANE = "lane";
 	private static final String ATTR_SPEED_HISTOGRAM = "speed_histogram";
@@ -45,12 +46,12 @@ public class TrafficAggregatedReadingCsv2Event implements Constants {
 		this.eventFactory = eventFactory;
 	}
 
-	public Event csv2event(String csv) throws ParsingError {
+	public Event fromBytes(byte[] bytes) throws ParsingError {
 		String name = TRAFFIC_SENSOR_READING_AGGREGATED;
 
 		try {
-
-			String[] tuple = csv.split(",");
+			
+			String[] tuple = new String(bytes).split(",");
 			
 			int tupleLength = tuple.length;
 			

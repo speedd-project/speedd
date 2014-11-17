@@ -3,6 +3,7 @@ package org.speedd;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -23,17 +24,20 @@ import kafka.utils.TestUtils;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.speedd.EventFileReader.EventMessageRecord;
+import org.speedd.data.impl.SpeeddEventFactory;
 import org.speedd.test.TestUtil;
+import org.speedd.traffic.TrafficAggregatedReadingCsv2Event;
 
 import scala.actors.threadpool.AtomicInteger;
 
 import com.netflix.curator.test.TestingServer;
 
-public class EventFileReaderTest {
+public class TimedEventFileReaderTest {
 	private int brokerId = 0;
 	private String topic = "test";
 	Logger logger = LoggerFactory
-			.getLogger(EventFileReaderTest.class.getName());
+			.getLogger(TimedEventFileReaderTest.class.getName());
 
 	private static class TestConsumer implements Runnable {
 		private KafkaStream<byte[], byte[]> stream;
@@ -60,9 +64,33 @@ public class EventFileReaderTest {
 			return count.intValue() == 10;
 		}
 	}
+	
+	private static class TimedEventListener implements EventFileReader.EventListener {
+		private long expectedDelays[];
+		
+		private long actualDelays[];
+		
+		private int i = 0;
+		
+		public void setExpectedDelays(long values[]){
+			expectedDelays = Arrays.copyOf(values, values.length);
+			actualDelays = new long[values.length];
+		}
+		
+		@Override
+		public void onEvent(EventMessageRecord eventMessageRecord) {
+			actualDelays[i++] = eventMessageRecord.sendDelayMillis;
+		}
+		
+		public void verifyDelays(){
+			for (int j=0; j<expectedDelays.length; ++j) {
+				assertEquals("Message send delays do not match for index: " + j, expectedDelays[j], actualDelays[j]);
+			}
+		}
+	}
 
 	@Test
-	public void producerTest() throws Exception {
+	public void testSendingTimedEvents() throws Exception {
 		int zookeeperPort = TestUtils.choosePort();
 		
 		String zkConnect = "localhost:" + zookeeperPort; 
@@ -83,7 +111,13 @@ public class EventFileReaderTest {
 
 		ProducerConfig pConfig = new ProducerConfig(producerProperties);
 
-		EventFileReader eventFileReader = new EventFileReader(this.getClass().getClassLoader().getResource("test-events.csv").getPath(), topic, pConfig);
+		TimedEventFileReader eventFileReader = new TimedEventFileReader(this.getClass().getClassLoader().getResource("test-events.csv").getPath(), topic, pConfig, new TrafficAggregatedReadingCsv2Event(SpeeddEventFactory.getInstance()));
+		
+		TimedEventListener eventListener = new TimedEventListener();
+		
+		eventListener.setExpectedDelays(new long[] {0,2000,0,1000,2000,5000,2000,1000,0,0});
+		
+		eventFileReader.addListener(eventListener);
 
 		eventFileReader.streamEvents();
 
@@ -118,5 +152,7 @@ public class EventFileReaderTest {
 		kafkaServer.shutdown();
 		zkServer.stop();
 		zkServer.close();
+		
+		eventListener.verifyDelays();
 	}
 }

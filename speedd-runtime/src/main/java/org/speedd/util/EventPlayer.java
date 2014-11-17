@@ -2,6 +2,7 @@ package org.speedd.util;
 
 import java.io.FileReader;
 import java.io.IOException;
+import java.lang.reflect.Constructor;
 import java.util.List;
 import java.util.Properties;
 
@@ -13,7 +14,10 @@ import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
-import org.speedd.EventFileReader;
+import org.speedd.EventParser;
+import org.speedd.TimedEventFileReader;
+import org.speedd.data.EventFactory;
+import org.speedd.data.impl.SpeeddEventFactory;
 
 public class EventPlayer {
 	public static final String EVENT_FILE = "test-events.csv";
@@ -21,31 +25,34 @@ public class EventPlayer {
 
 	public static final String DEFAULT_CONFIG_PATH = "producer.properties";
 
-	private String configPath;
-	
 	private ProducerConfig kafkaProducerConfig;
-	
+
 	private String topic;
 
-	public void playEventsFromFile(String path) throws Exception {
-		EventFileReader eventFileReader = new EventFileReader(path, DEFAULT_TOPIC,
-				kafkaProducerConfig);
+	private EventParser eventParser;
 
-		eventFileReader.streamEvents(1000);
+	public void playEventsFromFile(String path) throws Exception {
+		TimedEventFileReader eventFileReader = new TimedEventFileReader(path,
+				topic, kafkaProducerConfig, eventParser);
+
+		eventFileReader.streamEvents();
 
 		System.out.println("Event playback complete.");
 	}
 
-	public EventPlayer(String configPath, String topic) throws IOException {
+	public EventPlayer(String configPath, String topic, EventParser eventParser)
+			throws IOException {
 		Properties properties = new Properties();
-		
+
 		properties.load(new FileReader(configPath));
 
 		System.out.println("Properties loaded:" + properties.toString());
 
 		kafkaProducerConfig = new ProducerConfig(properties);
-		
+
 		this.topic = topic;
+
+		this.eventParser = eventParser;
 	}
 
 	public static void main(String[] args) throws Exception {
@@ -53,14 +60,17 @@ public class EventPlayer {
 
 		options.addOption("c", "configuration", true, "configuration file");
 		options.addOption("t", "topic", true, "topic");
+		options.addOption("p", "parser", true, "event parser class name (FQN)");
 
 		CommandLineParser clParser = new BasicParser();
 
 		String eventFile = null;
-		
+
 		String configPath = null;
-		
+
 		String topic = null;
+
+		String eventParserClassName = null;
 
 		try {
 			CommandLine cmd = clParser.parse(options, args);
@@ -68,8 +78,16 @@ public class EventPlayer {
 			configPath = cmd.hasOption('c') ? cmd.getOptionValue('c')
 					: DEFAULT_CONFIG_PATH;
 
-			topic = cmd.hasOption('t')? cmd.getOptionValue('t') : DEFAULT_TOPIC;
-			
+			topic = cmd.hasOption('t') ? cmd.getOptionValue('t')
+					: DEFAULT_TOPIC;
+
+			if (cmd.hasOption('p')) {
+				eventParserClassName = cmd.getOptionValue('p');
+			} else {
+				throw new ParseException("Event parser class name missing");
+			}
+
+			@SuppressWarnings("unchecked")
 			List<String> argList = cmd.getArgList();
 
 			if (argList.isEmpty()) {
@@ -89,38 +107,14 @@ public class EventPlayer {
 		System.out.println("Loading producer configuration from " + configPath);
 		System.out.println("Event file: " + eventFile);
 		System.out.println("Sending events to topic: " + topic);
-		
-		EventPlayer player = new EventPlayer(configPath, topic);
-		
+
+		Constructor constructor = Class.forName(eventParserClassName).getDeclaredConstructor(EventFactory.class);
+		EventPlayer player = new EventPlayer(configPath, topic,
+				(EventParser) constructor.newInstance(SpeeddEventFactory.getInstance()));
+
 		player.playEventsFromFile(eventFile);
 
 		return;
-
-		/*
-		 * File eventJsonFile = new File(eventFile);
-		 * 
-		 * // if(args.length > 0){ // eventJsonFile = new File(args[0]); // } //
-		 * else { // eventJsonFile = new
-		 * File(TestSpeedTopology.class.getClassLoader
-		 * ().getResource("simple-event.json").toURI()); // } // // char[] buf =
-		 * new char[1000];
-		 * 
-		 * String inEventStr = Files.contentOf(eventJsonFile, "UTF-8");
-		 * 
-		 * // setup producer Properties producerProperties =
-		 * TestUtils.getProducerConfig( "localhost:" + 9092,
-		 * "kafka.producer.DefaultPartitioner");
-		 * 
-		 * ProducerConfig pConfig = new ProducerConfig(producerProperties);
-		 * 
-		 * Producer<String, String> producer = new Producer<String, String>(
-		 * pConfig);
-		 * 
-		 * KeyedMessage<String, String> message = new KeyedMessage<String,
-		 * String>( "speedd-in-events", inEventStr);
-		 * 
-		 * producer.send(message);
-		 */
 	}
 
 }

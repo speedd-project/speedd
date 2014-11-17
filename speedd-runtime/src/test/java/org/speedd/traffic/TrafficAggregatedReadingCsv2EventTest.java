@@ -4,6 +4,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
+import java.nio.charset.Charset;
 import java.sql.Date;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
@@ -22,7 +23,7 @@ public class TrafficAggregatedReadingCsv2EventTest {
 	public void testCsv2Event() throws Exception {
 		String eventCsv = "2014-04-13,08:00:00,0024a4dc0000343e,right,12.16,7,\\N,60.0,0,0,0,0,0,4,0,2,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,2,3,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0";
 		
-		Event event = parser.csv2event(eventCsv);
+		Event event = parser.fromBytes(eventCsv.getBytes(Charset.forName("UTF-8")));
 		
 		assertNotNull(event);
 		

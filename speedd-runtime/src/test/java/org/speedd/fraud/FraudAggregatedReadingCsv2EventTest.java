@@ -4,6 +4,7 @@ import org.junit.Test;
 import org.speedd.data.Event;
 import org.speedd.data.impl.SpeeddEventFactory;
 
+import java.nio.charset.Charset;
 import java.util.Map;
 
 import static org.junit.Assert.*;
@@ -15,7 +16,7 @@ public class FraudAggregatedReadingCsv2EventTest {
 	public void testCsv2Event() throws Exception {
 		String eventCsv = "1423150200000,TXN_ID,1,250,567745453,201702,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,1532322,201801,17,18,0";
 		
-		Event event = parser.csv2event(eventCsv);
+		Event event = parser.fromBytes(eventCsv.getBytes(Charset.forName("UTF-8")));
 		
 		assertNotNull(event);
 
