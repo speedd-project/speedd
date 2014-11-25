@@ -1,0 +1,600 @@
+{
+  "epn": {
+    "events": [
+      {
+        "name": "AggregatedSensorRead",
+        "createdDate": "Tue Aug 19 2014",
+        "attributes": [
+          {
+            "name": "Certainty",
+            "type": "Double",
+            "defaultValue": "1",
+            "dimension": 0,
+            "description": "The certainty that this event happen (value between 0 to 1)"
+          },
+          {
+            "name": "OccurrenceTime",
+            "type": "Date",
+            "dimension": 0,
+            "description": "No value means it equals the event detection time, other option is to use one of the defined distribution functions with parameters"
+          },
+          {
+            "name": "ExpirationTime",
+            "type": "Date",
+            "dimension": 0
+          },
+          {
+            "name": "Cost",
+            "type": "Double",
+            "dimension": 0,
+            "description": "The cost of this event occurrence. Negative if this is an opportunity"
+          },
+          {
+            "name": "Duration",
+            "type": "Double",
+            "defaultValue": "0",
+            "dimension": 0,
+            "description": "Used in case the this event occur within an interval"
+          },
+          {
+            "name": "location",
+            "type": "String",
+            "dimension": 0
+          },
+          {
+            "name": "lane",
+            "type": "String",
+            "dimension": 0
+          },
+          {
+            "name": "occupancy",
+            "type": "Double",
+            "dimension": 0
+          },
+          {
+            "name": "vehicles",
+            "type": "Integer",
+            "dimension": 0
+          },
+          {
+            "name": "average_speed",
+            "type": "Double",
+            "dimension": 0
+          }
+        ]
+      },
+      {
+        "name": "Congestion",
+        "createdDate": "Sun Aug 31 2014",
+        "attributes": [
+          {
+            "name": "Certainty",
+            "type": "Double",
+            "defaultValue": "1",
+            "dimension": 0,
+            "description": "The certainty that this event happen (value between 0 to 1)"
+          },
+          {
+            "name": "OccurrenceTime",
+            "type": "Date",
+            "dimension": 0,
+            "description": "No value means it equals the event detection time, other option is to use one of the defined distribution functions with parameters"
+          },
+          {
+            "name": "ExpirationTime",
+            "type": "Date",
+            "dimension": 0,
+            "description": "Only till this time the cost and certainty parameters of the event are valid, and only till this time a proactive action is considered"
+          },
+          {
+            "name": "Cost",
+            "type": "Double",
+            "dimension": 0,
+            "description": "The cost of this event occurrence. Negative if this is an opportunity"
+          },
+          {
+            "name": "Duration",
+            "type": "Double",
+            "defaultValue": "0",
+            "dimension": 0,
+            "description": "Used in case the this event occur within an interval"
+          },
+          {
+            "name": "location",
+            "type": "String",
+            "dimension": 0
+          },
+          {
+            "name": "average_density",
+            "type": "Double",
+            "dimension": 0
+          },
+          {
+            "name": "problem_id",
+            "type": "String",
+            "dimension": 0
+          }
+        ]
+      },
+      {
+        "name": "PredictedCongestion",
+        "createdDate": "Sun Aug 31 2014",
+        "attributes": [
+          {
+            "name": "Certainty",
+            "type": "Double",
+            "defaultValue": "1",
+            "dimension": 0,
+            "description": "The certainty that this event happen (value between 0 to 1)"
+          },
+          {
+            "name": "OccurrenceTime",
+            "type": "Date",
+            "dimension": 0,
+            "description": "No value means it equals the event detection time, other option is to use one of the defined distribution functions with parameters"
+          },
+          {
+            "name": "ExpirationTime",
+            "type": "Date",
+            "dimension": 0,
+            "description": "Only till this time the cost and certainty parameters of the event are valid, and only till this time a proactive action is considered"
+          },
+          {
+            "name": "Cost",
+            "type": "Double",
+            "dimension": 0,
+            "description": "The cost of this event occurrence. Negative if this is an opportunity"
+          },
+          {
+            "name": "Duration",
+            "type": "Double",
+            "defaultValue": "0",
+            "dimension": 0,
+            "description": "Used in case the this event occur within an interval"
+          },
+          {
+            "name": "location",
+            "type": "String",
+            "dimension": 0
+          },
+          {
+            "name": "average_density",
+            "type": "Double",
+            "dimension": 0
+          },
+          {
+            "name": "problem_id",
+            "type": "String",
+            "dimension": 0
+          }
+        ]
+      },
+      {
+        "name": "ClearCongestion",
+        "createdDate": "Sun Aug 31 2014",
+        "attributes": [
+          {
+            "name": "Certainty",
+            "type": "Double",
+            "defaultValue": "1",
+            "dimension": 0,
+            "description": "The certainty that this event happen (value between 0 to 1)"
+          },
+          {
+            "name": "OccurrenceTime",
+            "type": "Date",
+            "dimension": 0,
+            "description": "No value means it equals the event detection time, other option is to use one of the defined distribution functions with parameters"
+          },
+          {
+            "name": "ExpirationTime",
+            "type": "Date",
+            "dimension": 0,
+            "description": "Only till this time the cost and certainty parameters of the event are valid, and only till this time a proactive action is considered"
+          },
+          {
+            "name": "Cost",
+            "type": "Double",
+            "dimension": 0,
+            "description": "The cost of this event occurrence. Negative if this is an opportunity"
+          },
+          {
+            "name": "Duration",
+            "type": "Double",
+            "defaultValue": "0",
+            "dimension": 0,
+            "description": "Used in case the this event occur within an interval"
+          },
+          {
+            "name": "location",
+            "type": "String",
+            "dimension": 0
+          },
+          {
+            "name": "problem_id",
+            "type": "String",
+            "dimension": 0
+          }
+        ]
+      },
+      {
+        "name": "OnRampFlow",
+        "createdDate": "Sun Aug 31 2014",
+        "attributes": [
+          {
+            "name": "Certainty",
+            "type": "Double",
+            "defaultValue": "1",
+            "dimension": 0,
+            "description": "The certainty that this event happen (value between 0 to 1)"
+          },
+          {
+            "name": "OccurrenceTime",
+            "type": "Date",
+            "dimension": 0,
+            "description": "No value means it equals the event detection time, other option is to use one of the defined distribution functions with parameters"
+          },
+          {
+            "name": "ExpirationTime",
+            "type": "Date",
+            "dimension": 0,
+            "description": "Only till this time the cost and certainty parameters of the event are valid, and only till this time a proactive action is considered"
+          },
+          {
+            "name": "Cost",
+            "type": "Double",
+            "dimension": 0,
+            "description": "The cost of this event occurrence. Negative if this is an opportunity"
+          },
+          {
+            "name": "Duration",
+            "type": "Double",
+            "defaultValue": "0",
+            "dimension": 0,
+            "description": "Used in case the this event occur within an interval"
+          },
+          {
+            "name": "location",
+            "type": "String",
+            "dimension": 0
+          },
+          {
+            "name": "average_flow",
+            "type": "Double",
+            "dimension": 0
+          },
+          {
+            "name": "average_speed",
+            "type": "Double",
+            "dimension": 0
+          },
+          {
+            "name": "average_density",
+            "type": "Double",
+            "dimension": 0
+          }
+        ]
+      },
+      {
+        "name": "AverageDensityAndSpeedPerLocation",
+        "createdDate": "Sun Aug 31 2014",
+        "attributes": [
+          {
+            "name": "Certainty",
+            "type": "Double",
+            "defaultValue": "1",
+            "dimension": 0,
+            "description": "The certainty that this event happen (value between 0 to 1)"
+          },
+          {
+            "name": "OccurrenceTime",
+            "type": "Date",
+            "dimension": 0,
+            "description": "No value means it equals the event detection time, other option is to use one of the defined distribution functions with parameters"
+          },
+          {
+            "name": "ExpirationTime",
+            "type": "Date",
+            "dimension": 0,
+            "description": "Only till this time the cost and certainty parameters of the event are valid, and only till this time a proactive action is considered"
+          },
+          {
+            "name": "Cost",
+            "type": "Double",
+            "dimension": 0,
+            "description": "The cost of this event occurrence. Negative if this is an opportunity"
+          },
+          {
+            "name": "Duration",
+            "type": "Double",
+            "defaultValue": "0",
+            "dimension": 0,
+            "description": "Used in case the this event occur within an interval"
+          },
+          {
+            "name": "location",
+            "type": "String",
+            "dimension": 0
+          },
+          {
+            "name": "average_flow",
+            "type": "Double",
+            "dimension": 0
+          },
+          {
+            "name": "average_density",
+            "type": "Double",
+            "dimension": 0
+          },
+          {
+            "name": "average_speed",
+            "type": "Double",
+            "dimension": 0
+          }
+             
+        ]
+      },
+      {
+        "name": "2minsAverageDensityAndSpeedPerLocation",
+        "createdDate": "Sun Aug 31 2014",
+        "attributes": [
+          {
+            "name": "Certainty",
+            "type": "Double",
+            "defaultValue": "1",
+            "dimension": 0,
+            "description": "The certainty that this event happen (value between 0 to 1)"
+          },
+          {
+            "name": "OccurrenceTime",
+            "type": "Date",
+            "dimension": 0,
+            "description": "No value means it equals the event detection time, other option is to use one of the defined distribution functions with parameters"
+          },
+          {
+            "name": "ExpirationTime",
+            "type": "Date",
+            "dimension": 0,
+            "description": "Only till this time the cost and certainty parameters of the event are valid, and only till this time a proactive action is considered"
+          },
+          {
+            "name": "Cost",
+            "type": "Double",
+            "dimension": 0,
+            "description": "The cost of this event occurrence. Negative if this is an opportunity"
+          },
+          {
+            "name": "Duration",
+            "type": "Double",
+            "defaultValue": "0",
+            "dimension": 0,
+            "description": "Used in case the this event occur within an interval"
+          },
+          {
+            "name": "location",
+            "type": "String",
+            "dimension": 0
+          },
+          {
+            "name": "average_flow",
+            "type": "Double",
+            "dimension": 0
+          },
+          {
+            "name": "average_density",
+            "type": "Double",
+            "dimension": 0
+          },
+          {
+            "name": "average_speed",
+            "type": "Double",
+            "dimension": 0
+          }
+        ]
+      },
+      {
+        "name": "PredictedTrend",
+        "createdDate": "Mon Nov 10 2014",
+        "attributes": [
+          {
+            "name": "Certainty",
+            "type": "Double",
+            "defaultValue": "1",
+            "dimension": 0,
+            "description": "The certainty that this event happen (value between 0 to 1)"
+          },
+          {
+            "name": "OccurrenceTime",
+            "type": "Date",
+            "dimension": 0,
+            "description": "No value means it equals the event detection time, other option is to use one of the defined distribution functions with parameters"
+          },
+          {
+            "name": "ExpirationTime",
+            "type": "Date",
+            "dimension": 0,
+            "description": "Only till this time the cost and certainty parameters of the event are valid, and only till this time a proactive action is considered"
+          },
+          {
+            "name": "Cost",
+            "type": "Double",
+            "dimension": 0,
+            "description": "The cost of this event occurrence. Negative if this is an opportunity"
+          },
+          {
+            "name": "Duration",
+            "type": "Double",
+            "defaultValue": "0",
+            "dimension": 0,
+            "description": "Used in case the this event occur within an interval"
+          },
+          {
+            "name": "location",
+            "type": "String",
+            "dimension": 0
+          },
+          {
+            "name": "problem_id",
+            "type": "String",
+            "dimension": 0
+          }         
+        ]
+      }
+    ],
+    "epas": [      
+      {
+        "name": "TransformEPA",
+        "createdDate": "Mon Nov 10 2014",
+        "epaType": "Basic",
+        "context": "TemporalAlways",
+        "inputEvents": [
+          {
+            "name": "AggregatedSensorRead",            
+            "consumptionPolicy": "Consume",
+            "instanceSelectionPolicy": "First"
+          }
+        ],
+        "computedVariables": [],
+        "evaluationPolicy": "Immediate",
+        "cardinalityPolicy": "Unrestricted",
+        "internalSegmentation": [],
+        "derivedEvents": [
+          {
+            "name": "PredictedCongestion",
+            "reportParticipants": false,
+            "expressions": {
+              "Duration": "0",              
+              "location": "AggregatedSensorRead.location",
+              "average_density": "AggregatedSensorRead.vehicles/(AggregatedSensorRead.average_speed*1000/3600)",
+              "problem_id": "AggregatedSensorRead.location"              
+            }
+          }
+        ],
+        "derivedActions": []
+      }
+    ],
+    "contexts": {
+      "temporal": [
+        {
+          "name": "TemporalAlways",
+          "createdDate": "Sun Nov 09 2014",
+          "type": "TemporalInterval",
+          "atStartup": true,
+          "neverEnding": true,
+          "initiators": [
+            {              
+            }
+          ],
+          "terminators": [
+            {              
+            }
+          ]
+        }
+      ],
+      "segmentation": [        
+      ],
+      "composite": [
+       
+      ]
+    },
+    "consumers": 
+    [
+    	{
+        "name": "TextConsumer",
+        "createdDate": "Sun Aug 31 2014",
+        "type": "File",
+        "properties": [
+          {
+            "name": "filename",
+            "value": "D:\\EP\\Projects\\EU\\SPEEDD\\usecases\\CNRS\\exampleOutput.txt"
+          },
+          {
+            "name": "formatter",
+            "value": "tag"
+          },
+          {
+            "name": "delimiter",
+            "value": ";"
+          },
+          {
+            "name": "tagDataSeparator",
+            "value": "="
+          },
+          {
+            "name": "SendingDelay",
+            "value": "1000"
+          },
+          {
+            "name": "dateFormat",
+            "value": "dd/MM/yyyy-HH:mm:ss"
+          }
+        ],
+        "events": [
+          {
+            "name": "PredictedCongestion"
+          },
+          {
+            "name": "PredictedTrend"
+          },
+          {       
+            "name": "Congestion"
+          },
+          {
+            "name": "ClearCongestion"
+          },
+    	  {
+            "name": "OnRampFlow"
+          },
+          {
+            "name": "AverageDensityAndSpeedPerLocation"
+          },
+           {
+            "name": "2minsAverageDensityAndSpeedPerLocation"
+          }              
+        ],
+        "actions": []
+      }
+    ],
+    "producers": 
+    [
+    	      {
+        "name": "TextProducer",
+        "createdDate": "Sun Aug 31 2014",
+        "type": "File",
+        "properties": [
+          {
+            "name": "filename",
+            "value": "D:\\EP\\Projects\\EU\\SPEEDD\\usecases\\CNRS\\exampleInput.txt"
+          },
+          {
+            "name": "pollingInterval",
+            "value": "500"
+          },
+          {
+            "name": "sendingDelay",
+            "value": "4000"
+          },
+          {
+            "name": "formatter",
+            "value": "tag"
+          },
+          {
+            "name": "delimiter",
+            "value": ";"
+          },
+          {
+            "name": "tagDataSeparator",
+            "value": "="
+          },
+          {
+            "name": "dateFormat",
+            "value": "dd/MM/yyyy-HH:mm:ss"
+          }
+        ],
+        "events": []
+      }
+    ],
+    "actions": [],
+    "name": "CNRSnew"
+  }
+}
