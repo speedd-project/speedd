@@ -1,0 +1,8 @@
+{
+	"name": "setMeteringRateLimits",
+	"timestamp": 1409901066030,
+	"attributes": {
+		"location": "0024a4dc00003354",
+		"upperLimit": 500
+	}
+} 
