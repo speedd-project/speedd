@@ -1,5 +1,5 @@
 {
-	"Name": "PredictedCongestion",
+	"name": "PredictedCongestion",
 	"timestamp": 1409901066030,
 	"attributes": {
 		"problem_id": "pcong-123",

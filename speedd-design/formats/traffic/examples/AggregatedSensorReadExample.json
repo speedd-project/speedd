@@ -1,6 +1,6 @@
 {
 	"timestamp":0,
-	"Name":"AggregatedSensorRead",
+	"name":"AggregatedSensorRead",
 	"attributes":	{
 		"timestamp": 1393628490000,
 		"location":	"0024a4dc00003354",

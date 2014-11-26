@@ -1,6 +1,6 @@
 {
 	"timestamp": 0,
-	"Name": "UpdateMeteringRateAction",
+	"name": "UpdateMeteringRateAction",
 	"attributes": {
 		"density": 1.7333333333333334,
 		"location": "0024a4dc00003354",
