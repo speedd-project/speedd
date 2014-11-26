@@ -108,6 +108,7 @@ function initialize() {
 
     // add selection button to map ------------------- button doesnt stay on the map, it refreshes and gets on top of the img if div appended to #map-canvas
     // if appended to body, doesn't scale properly (overlapping)
+/*
     var divButton = d3.select("body").append("div")
                     .attr("id", "divMapButton")
                     .style("width", "50px")
@@ -131,7 +132,7 @@ function initialize() {
                     .on("mouseover", function () { imgButton.style("cursor", "pointer") })
                     .on("click", addAreaOfInterest)
                     .on("contextmenu", removeAreaOfInterest);
-
+*/
 
     //   map.controls[google.maps.ControlPosition.TOP_RIGHT].push(divButton);
     /////////////////////////////////////////////////////////////////////////////////
