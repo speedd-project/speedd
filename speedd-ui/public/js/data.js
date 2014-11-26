@@ -80,7 +80,7 @@ function computeValues()
     // update all graphs
     updateGraphs();
     // this is to implement scroll through data history
-    timeSlide();
+//    timeSlide();
 }
 
 function randomInt(min, max) // function that generates a random int between min and max

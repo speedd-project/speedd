@@ -2,212 +2,211 @@
 
 function drawControl() // draws default control panel
 {
-    removeControl();
+//    removeControl();
 
     var margin = { top: 20, right: 15, bottom: 60, left: 60 }
-    , width = parseInt(d3.select('#controlInfo').style('width')) - margin.left - margin.right
-    , height = parseInt(d3.select('#controlInfo').style('height')) - margin.top - margin.bottom;
+    , width = parseInt(d3.select('#divControl2').style('width')) - margin.left - margin.right
+    , height = parseInt(d3.select('#divControl2').style('height')) - margin.top - margin.bottom;
+
+    var svgControl = d3.select("#svgControl");
+    var divControl = d3.select("#divControl2");
 
 
-    var divContainer = d3.select("#controlInfo").append("div").attr("id", "control1")
-                    .attr('width', width)
-                    .attr('height', height);
+    var title = d3.select("#divControlHead").append("text").attr("id", "titleControl").text("Ramp Metering Control").style("font-weight", "bold").style("font-size", "20px").style("color", "black");
 
-    var controlSvg = divContainer.append("svg")
-                    .attr('width', 60)
-                    .attr('height', 220)
-
-    // add icons for controllable signs
-    controlSvg.append("image")
-        .attr("xlink:href", "img/speed_icon2.png")
-        .attr("width", 60)
-        .attr("height", 60)
-        .attr("x", 0)
-        .attr("y", 20);
-
-    controlSvg.append("image")
-        .attr("xlink:href", "img/road_icon.png")
-        .attr("width", 60)
-        .attr("height", 60)
-        .attr("x", 0)
-        .attr("y", 90);
-
-    controlSvg.append("image")
-        .attr("xlink:href", "img/gp_sign.png")
-        .attr("width", 60)
-        .attr("height", 60)
-        .attr("x", 0)
-        .attr("y", 160);
-
-    divContainer.append("text")
-        .text("Current")
-        .style("position", "absolute")
-        .style("top", "5px")
-        .style("left", "30%");
-
-    divContainer.append("text")
-        .text("New")
-        .style("position", "absolute")
-        .style("top", "5px")
-        .style("right", "20%");
-
-    // speed control
-    divContainer.append("text").attr("id", "currentSpeed")
-        .style("position", "absolute")
-        .style("top", "35px")
-        .style("left", "30%");
-    divContainer.append("input").attr("id", "newSpeed")
-        .attr("type","number")
-        .style("position", "absolute")
-        .style("top", "35px")
-        .style("right", "5%");
-
-    // lanes control
-/*    divContainer.append("text").attr("id", "currentLanes")
-        .style("position", "absolute")
-        .style("top", "105px")
-        .style("left", "30%");
-    divContainer.append("input").attr("id", "newLanes")
-        .attr("type", "text")
-        .style("position", "absolute")
-        .style("top", "105px")
-        .style("right", "5%");
-        */
-
-    ////////////////////////////////////////////////////////////////////////////
- /*   
-    var lanesSvg = divContainer.append("svg").attr("id", "lanesSvg")
-        .attr("width", 60)
-        .attr("height", 60)
-        .style("position", "absolute")
-        .style("top", "95px")
-        .style("right", "40%");
-
-    lanesSvg.append("line")
-        .attr("x1", 0)
-        .attr("y1", 0)
-        .attr("x2", 0)
-        .attr("y2", 60)
-        .style("stroke", "black")
-        .style("stroke-width", 3);
-    lanesSvg.append("rect")
-        .attr("height", 30)
-        .attr("width", 15)
-        .attr("x", 2.5)
-        .attr("y", 15)
-        .style("fill", "green")
-        .on("mouseover", function () { d3.select(this).style("cursor", "pointer") })
-        //.on("mouseout", function (d) { d3.select(this).style("fill", "green"); })
-        .on("click", function () {
-            if (d3.select(this).style("fill") == "rgb(0, 128, 0)")
-                d3.select(this).style("fill", "red");
-            else
-                d3.select(this).style("fill", "green");
-        });
-    lanesSvg.append("image")
-        .attr("xlink:href", "img/2d_car_lightgrey.png")
-        .attr("width", 20)
-        .attr("height", 40)
-        .attr("x", 20)
-        .attr("y", 15)
-            .on("mouseover", function () { d3.select(this).style("cursor", "pointer") })
-            //.on("mouseout", function (d) { d3.select(this).style("fill", "green"); })
-            .on("click", function () {d3.select(this).remove();
-            });
- 
-    lanesSvg.append("line")
-        .attr("x1", 20)
-        .attr("y1", 0)
-        .attr("x2", 20)
-        .attr("y2", 60)
-        .style("stroke", "black")
-        .style("stroke-width", 2)
-        .style("stroke-dasharray", ("4,3"));
-    lanesSvg.append("line")
-        .attr("x1", 40)
-        .attr("y1", 0)
-        .attr("x2", 40)
-        .attr("y2", 60)
-        .style("stroke", "black")
-        .style("stroke-width", 2)
-        .style("stroke-dasharray", ("4,3"));
-    lanesSvg.append("line")
-        .attr("x1", 60)
-        .attr("y1", 0)
-        .attr("x2", 60)
-        .attr("y2", 60)
-        .style("stroke", "black")
-        .style("stroke-width", 3);
-        
-        */
-    /////////////////////////////////////////////////////////////////////////////////////////
-
-    // general purpose control
-    divContainer.append("text").attr("id", "currentGeneralPurpose")
-        .style("position", "absolute")
-        .style("top", "175px")
-        .style("left", "30%");
-    divContainer.append("input").attr("id", "newGeneralPurpose")
-        .attr("type", "text")
-        .style("position", "absolute")
-        .style("top", "175px")
-        .style("right", "5%");
-
-    // submit changes button
-    divContainer.append("button").attr("id", "submitButton")
-        .text("Submit Changes")
-        .style("width", "130px")
-        .style("height", "25px")
-        .style("position", "absolute")
-        .style("bottom", "10px")
-        .style("right", "40%")
-            .on("click", submitControl);
     // controller id display        
-    divContainer.append("text").attr("id","controlId")
+    divControl.append("text").attr("id", "textRampId")
+        .text("Controller ID: ")
+        .style("font-weight", "bold")
+        .style("font-size", "18px")
         .style("position", "absolute")
-        .style("bottom", "40px")
-        .style("left", "0px");
-}
+        .style("top", "20px")
+        .style("left", "10px");
 
-function removeControl()
-{
-    // removes defaul control panel
-    d3.select("#controlInfo").select("#control1").remove();
-    // removes ramp metering control
-    d3.select("#controlInfo").select("#control2").remove();
-}
+    divControl.append("text").attr("id", "rampId")
+        .text("No Controller Selected")
+        .style("font-weight", "bold")
+        .style("font-size", "18px")
+        .style("position", "absolute")
+        .style("top", "20px")
+        .style("right", "5%");
 
-function drawControlRamp(id)
-{
-    removeControl();
+    // ramp max rate text
 
-    var margin = { top: 20, right: 15, bottom: 60, left: 60 }
-    , width = parseInt(d3.select('#controlInfo').style('width')) - margin.left - margin.right
-    , height = parseInt(d3.select('#controlInfo').style('height')) - margin.top - margin.bottom;
+    // ramp min rate text
 
-
-    var divContainer = d3.select("#controlInfo").append("div").attr("id", "control2")
-                    .attr('width', width)
-                    .attr('height', height);
-
-    var controlSvg = divContainer.append("svg")
-                    .attr('width', width)
-                    .attr('height', height)
-
-    var text = controlSvg.append("text")
-                    .text(function () { return "Controller Selected:  " + id })
-                    .attr("x", 0)
-                    .attr("y", 15);
+    // ramp rate control
+    divControl.append("text").attr("id", "textCurrentRampMaxRate")
+        .text("Current Maximum Rate")
+        .style("font-size", "18px")
+        .style("position", "absolute")
+        .style("top", "60px")
+        .style("left", "30px");
+    divControl.append("text").attr("id", "currentRampMaxRate")
+        .text("N/A")
+        .style("position", "absolute")
+        .style("top", "60px")
+        .style("right", "5%");
 
 
+    divControl.append("text").attr("id", "textNewRampMaxRate")
+        .text("New Maximum Rate")
+        .style("font-size", "18px")
+        .style("position", "absolute")
+        .style("top", "90px")
+        .style("left", "30px");
+    divControl.append("input").attr("id", "newRampMaxRate")
+        .attr("type", "number")
+        .style("width", "80px")
+        .style("position", "absolute")
+        .style("top", "90px")
+        .style("right", "5%");
+///////////////////////////////////////////////////////////////////////
+    divControl.append("text").attr("id", "textCurrentRampMinRate")
+        .text("Current Minimum Rate")
+        .style("font-size", "18px")
+        .style("position", "absolute")
+        .style("top", "150px")
+        .style("left", "30px");
+    divControl.append("text").attr("id", "currentRampMinRate")
+        .text("N/A")
+        .style("position", "absolute")
+        .style("top", "150px")
+        .style("right", "5%");
 
+    
+    divControl.append("text").attr("id", "textNewRampMinRate")
+        .text("New Minimum Rate")
+        .style("font-size", "18px")
+        .style("position", "absolute")
+        .style("top", "180px")
+        .style("left", "30px");
+    divControl.append("input").attr("id", "newRampMinRate")
+        .attr("type", "number")
+        .style("width", "80px")
+        .style("position", "absolute")
+        .style("top", "180px")
+        .style("right", "5%");
+/////////////////////////////////////////////////////////////////////////
     // submit changes button
-    divContainer.append("button").attr("id", "submitButton")
+    divControl.append("button").attr("id", "submitButton")
         .text("Submit Changes")
         .style("width", "130px")
         .style("height", "25px")
         .style("position", "absolute")
-        .style("bottom", "10px")
-        .style("right", "40%")
-            .on("click", function () { alert("button Pushed"); });//submitControl);
+        .style("bottom", "20px")
+        .style("right", "5%")
+            .on("click", submitControl)
+            .on("mouseover", function () { d3.select(this).style("cursor", "pointer");});
+    
+}
+
+function selectController(ramp)
+{
+    var divControl = d3.select("#divControl2");
+
+    divControl.select("#rampId").text(ramp.id+ " (" + ramp.sensorId + ")" );
+
+    divControl.select("#currentRampMaxRate").text(ramp.upperLimit);
+    divControl.select("#currentRampMinRate").text(ramp.lowerLimit);       
+}
+
+
+function submitControl() // WORKS but does not update the control panel view immediately
+{
+    var changes = 0;    // tracks changes
+    var upperLimitChanged = 0;
+    var lowerLimitChanged = 0;
+
+    var isControllerSelected = 0;
+    var rampId = (d3.select("#rampId").text().substring(0, 2)).toInt();
+
+    var divControl = d3.select("#divControl2");
+
+    var id = parseInt(divControl.select("#rampId").text());
+    if (divControl.select("#rampId").text() != "No Controller Selected")
+        isControllerSelected++;
+    
+
+    if ((divControl.select("#newRampMinRate").property("value") != "") && (isControllerSelected!=0))
+    {
+        // updates control display
+        if (divControl.select("#newRampMinRate").property("value") == -1)
+            divControl.select("#currentRampMinRate").text("Auto");
+        else
+            divControl.select("#currentRampMinRate").text(divControl.select("#newRampMinRate").property("value"));
+
+        // updates the ramp
+        dataRampMetering[rampId].lowerLimit = divControl.select("#newRampMinRate").property("value");
+        lowerLimitChanged++;
+        changes++; // track changes
+    }
+        
+    if ((divControl.select("#newRampMaxRate").property("value") != "") && (isControllerSelected!=0))
+    {
+        // updates control display
+        if (divControl.select("#newRampMaxRate").property("value") == -1)
+            divControl.select("#currentRampMaxRate").text("Auto");
+        else
+            divControl.select("#currentRampMaxRate").text(divControl.select("#newRampMaxRate").property("value"));
+
+        // updates the ramp
+        dataRampMetering[rampId].upperLimit = divControl.select("#newRampMaxRate").property("value");
+        upperLimitChanged++;
+        changes++;  // track changes
+    }
+
+    if (changes != 0 && isControllerSelected != 0)
+    {
+        alert("Override Accepted");
+        // clear new rate space
+        divControl.select("#newRampMinRate").property("value", "")
+        divControl.select("#newRampMaxRate").property("value", "");
+
+
+        // SEND MESSAGE TO SERVER
+        if (changes == 2)
+        {
+            // format the message
+            var messageToSend = {
+                "name": "setMeteringRateLimits", "attributes":
+                    {
+                        "location": dataRampMetering[rampId].sensorId,
+                        "upperLimit": dataRampMetering[rampId].upperLimit,
+                        "lowerLimit": dataRampMetering[rampId].lowerLimit
+                    }
+            }
+            // send the message
+//            console.log(messageToSend);
+        }
+        else if (changes==1 && lowerLimitChanged)
+        {
+            // format the message
+            var messageToSend = {
+                "name": "setMeteringRateLimits", "attributes":
+                    {
+                        "location": dataRampMetering[rampId].sensorId,
+                        "lowerLimit": dataRampMetering[rampId].lowerLimit
+                    }
+            }
+            // send the message
+//            console.log(messageToSend);
+        }
+        else if (changes == 1 && upperLimitChanged) {
+            // format the message
+            var messageToSend = {
+                "name": "setMeteringRateLimits", "attributes":
+                    {
+                        "location": dataRampMetering[rampId].sensorId,
+                        "upperLimit": dataRampMetering[rampId].upperLimit
+                    }
+            }
+            // send the message
+//            console.log(messageToSend);
+        }
+    }
+    else if (changes == 0 && isControllerSelected != 0)
+        alert("ERROR: No values entered");
+    else
+        alert("ERROR: No controller selected!")
 }

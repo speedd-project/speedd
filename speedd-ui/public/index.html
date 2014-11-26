@@ -4,6 +4,15 @@
     <title>Traffic Management</title>
     <meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
     <style type="text/css">
+        [draggable] {
+            -moz-user-select: none;
+            -khtml-user-select: none;
+            -webkit-user-select: none;
+            user-select: none;
+            /* Required to make elements draggable in old WebKit */
+            -khtml-user-drag: element;
+            -webkit-user-drag: element;
+        }
         html {
             height: 100%;
         }
@@ -14,12 +23,6 @@
             padding: 0;
         }
 
-        #map-canvas {
-            position:absolute;
-            height: 50%;
-            width: 50%;
-            left:25%;
-        }
         #divPlot {
             width: 500px;
             height: 500px;
@@ -58,6 +61,24 @@
             stroke: black;
             stroke-width: 1px;
         }
+        .borders-style {
+            box-sizing: border-box;
+            -moz-box-sizing: border-box;
+            -webkit-box-sizing: border-box;
+            border: 10px solid #a1a1a1;
+            border-radius: 25px;
+            float: left;
+            text-align: center;
+        }
+        .heads-style {
+            color: #C4C4C4;
+            border-top-left-radius: 15px;
+            border-top-right-radius: 15px;
+            cursor: move;
+        }
+        .borders-style.over {
+            border: 2px dashed #000;
+        }
     </style>
 
     <script type="text/javascript"
@@ -72,76 +93,53 @@
 
     <script src="js/gmaps_script.js"></script>
     <script src="js/data.js"></script>
-    <script src="js/graph2d_old.js"></script>
-    <script src="js/driversplot_final.js"></script>
     <script src="js/control.js"></script>
-    <script src="js/sensorData.js"></script>
+    <script src="js/ramp_metering.js"></script>
     <script src="js/kmessage.js"></script>
+    <script src="js/dash_behaviour.js"></script>
+    <script src="js/ramp_sensor_data.js"></script>
 </head>
 
 <body bgcolor="#C4C4C4">
     <script type="text/javascript">
-  var source = new EventSource('/events');
+        var source = new EventSource('/events');
 
-  source.addEventListener('message', function(e) {
-    parseKafkaMessage(JSON.parse(e.data));
-  }, false);
-</script>
+        source.addEventListener('message', function(e) {
+            parseKafkaMessage(JSON.parse(e.data));
+        }, false);
+    </script>
 
-    <div id="map-canvas"></div>
+    <div id="map-canvas" class="borders-style" style="position: absolute; top: 0; height: 49%; width: 64%; left: 35%;"></div>
 
-    <div id="sensors" style="height:100%; width:24%; position:absolute; left:0px">
-        <b>Sensor Data</b>
-        <div id="content" style="height:40%; width:100%; position:absolute; top:25px">
-            <svg id="svg" style ="width:100%; height: 100%"></svg>
-        </div>
-        <input id="sliderTime" type="range" min="0" max="100" step="1" value="100" style="position:absolute; bottom:55%; left:40%" onchange="timeSlide()" />
-
-        <div id="rampMeteringDiv" style="height:50%; width:100%; position:absolute; bottom:10px">
-            <svg id="rampMeteringSvg" style="width:100%; height: 100%"></svg>
+    <div id="top-left" draggable="true" class="borders-style" style="position: absolute; top: 0; height: 49%; width: 30%; left:1%">
+        <div id="divPlot" style="position: absolute; top: 0; height: 100%; width: 100%">
+            <div id="divPlotHead" class="heads-style" align="center" style="position: absolute; top: 0; height: 30px; width: 100%; background-color: steelblue;"></div>
+            <svg id="svgPlot" style="position: absolute; top: 30px; left: 2%; height: 90%; width: 95%"></svg>
         </div>
     </div>
 
-    <div id="drivers" style="height: 100%; width: 24%; position: absolute; right: 0px; text-align: right">
-        <b>Compliant Drivers</b>
-        <div id="driversGraph" style="height:40%; width:100%; position:absolute; top:25px">
-            <svg id="svg2" style="width: 100%; height: 100%;"></svg>
-            
+    <div id="bottom-left" draggable="true" class="borders-style" style="position: absolute; bottom: 0; height: 49%; width: 30%; left: 1%">
+        <div id="divRamp" style="position: absolute; top: 0; height: 100%; width: 100%">
+            <div id="divRampHead" class="heads-style" align="center" style="position: absolute; top: 0; height: 30px; width: 100%; background-color: #1c974c;"></div>
+            <svg id="svgRamp" style="position: absolute; top: 30px; left: 2%; height: 90%; width: 95%"></svg>
         </div>
-        <b style="position: absolute; bottom: 300px; right:1px">Video Feed</b>
-        <div id="video_feed" style="height: 35%; width: 100%; position: absolute; bottom: 60px"></div>
-        
- <!--      <button onclick="alert('asdasd')" style="height:40px; width:60px; position:absolute; bottom:10px; right:10px"> Next Frame </button> --> 
-        <input id="sliderFlow" type="range" min="0" max="1500" step="1" style="position:absolute; bottom:30px; right:60px" onchange="computeValues()" />
-        <input id="sliderDensity" type="range" min="1" max="40" step="1" style="position:absolute; bottom:10px; right:60px" onchange="computeValues()" />
-
-        <label id="labelFlow" style="position:absolute; bottom:30px; right:234px">Flow</label>
-        <label id="labelDensity" style="position:absolute; bottom:10px; right:220px">Density</label>
-        
-        <label id="valFlow" style="position:absolute; bottom:30px; right:10px"></label>
-        <label id="valDensity" style="position:absolute; bottom:10px; right:10px"></label>
-
     </div>
 
-    <div id="control" style="height:49%; width:25%; position:absolute; left:25%; bottom:0px">
-        <b>Control Panel</b>
-        <div id="controlInfo" style="height: 90%; width: 100%; position: absolute; top: 20px">
- <!--           <text style ="position:absolute; top:0px; left:30%">Current</text>
-            <text style="position:absolute; top:0px; right:25%">New</text>
-            <img src="img/speed_icon2.png" alt="speed" width="60" height="60" />
-            <label id="labelSpeedCurrent" style="position:absolute; left:30%; top:10px"></label>
-            <p></p>
-            <img src="img/road_icon.png" alt="speed" width="60" height="60" />
-            <p></p>
-            <img src="img/gp_sign.png" alt="speed" width="60" height="60" />    -->
+    <div id="bottom-mid-left" draggable="true" class="borders-style" style="position: absolute; bottom: 0; height: 49%; width: 30%; left: 35%">
+        <div id="divControl" style="position: absolute; top: 0; height: 100%; width: 100%">
+            <div id="divControlHead" class="heads-style" align="center" style="position: absolute; top: 0; height: 30px; width: 100%; background-color: #1c974c;"></div>
+<!--            <svg id="svgControl" style="position: absolute; top: 10%; left: 2%; height: 90%; width: 95%"></svg> -->
+            <div id="divControl2" style="position: absolute; top: 30px; left: 2%; height: 90%; width: 95%"></div>
         </div>
-    
     </div>
 
-    <div id="video" style="height: 49%; width: 25%; position: absolute; right: 25%; bottom: 0px; text-align:right">
-        <b>Suggested Actions</b>
-        <svg id="svgs" style="width: 90%; height: 100%;"></svg>
-
+    <div id="bottom-right" draggable="true" class="borders-style" style="position: absolute; bottom: 0; height: 49%; width: 30%; right: 1%">
+        <div id="divCam" style="position: absolute; top: 0; height: 100%; width: 100%">
+            <div id="divCamHead" class="heads-style" align="center" style="position: absolute; top: 0; height: 30px; width: 100%; background-color: #d95929; "></div>
+            <!--       <svg id="svgCam" style="position: absolute; top: 2%; left: 2%; height: 95%; width: 95%"></svg>  -->
+            <div id="divVideo" style="position: absolute; top: 30px; height: 92%; width: 100%; border-bottom-left-radius: 15px; border-bottom-right-radius: 15px"</div>
+        </div>
     </div>
+
 </body>
 </html>
