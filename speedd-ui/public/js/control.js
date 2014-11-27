@@ -177,7 +177,7 @@ function submitControl() // WORKS but does not update the control panel view imm
                     }
             }
             // send the message
-//            console.log(messageToSend);
+			socket.emit('speedd-out-events', JSON.stringify(messageToSend));
         }
         else if (changes==1 && lowerLimitChanged)
         {
@@ -190,7 +190,7 @@ function submitControl() // WORKS but does not update the control panel view imm
                     }
             }
             // send the message
-//            console.log(messageToSend);
+			socket.emit('speedd-out-events', JSON.stringify(messageToSend));
         }
         else if (changes == 1 && upperLimitChanged) {
             // format the message
@@ -202,7 +202,8 @@ function submitControl() // WORKS but does not update the control panel view imm
                     }
             }
             // send the message
-//            console.log(messageToSend);
+//            console.log(JSON.stringify(messageToSend));
+			socket.emit('speedd-out-events', JSON.stringify(messageToSend));
         }
     }
     else if (changes == 0 && isControllerSelected != 0)
