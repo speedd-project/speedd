@@ -1,7 +1,6 @@
 var sensorPos = [];
-var circleAlerts = [];
 
-﻿var imgControl =
+var imgControl =
 {
     url: 'img/control_icon2_small.png',
     // This marker is 15 pixels wide by 15 pixels tall.
@@ -20,6 +19,16 @@ var imgCamera =
     origin: new google.maps.Point(0,0),
     // The anchor for this image is the base of the flagpole at 8,8 (centre).
     anchor: new google.maps.Point(8, 8)
+};
+var imgRamp =
+{
+    url: 'img/traffic_light_icon.png',
+    // This marker is 15 pixels wide by 15 pixels tall.
+    size: new google.maps.Size(21, 21),
+    // The origin for this image is 0,0.
+    origin: new google.maps.Point(0, 0),
+    // The anchor for this image is the base of the flagpole at 8,8 (centre).
+    anchor: new google.maps.Point(11, 11)
 };
 
 var map, pano;
@@ -86,7 +95,10 @@ function initialize() {
 
 
     // panorama settings ------------> to be REPLACED by live camera feed
-    pano = new google.maps.StreetViewPanorama(document.getElementById("video_feed"),
+
+    var title = d3.select("#divCamHead").append("text").attr("id", "titleCam").text("Video Feed").style("font-weight", "bold").style("font-size", "20px").style("color", "black");
+
+    pano = new google.maps.StreetViewPanorama(document.getElementById("divVideo"),
     {
         disableDefaultUI: true,
     });
@@ -96,6 +108,7 @@ function initialize() {
 
     // add selection button to map ------------------- button doesnt stay on the map, it refreshes and gets on top of the img if div appended to #map-canvas
     // if appended to body, doesn't scale properly (overlapping)
+/*
     var divButton = d3.select("body").append("div")
                     .attr("id", "divMapButton")
                     .style("width", "50px")
@@ -119,7 +132,7 @@ function initialize() {
                     .on("mouseover", function () { imgButton.style("cursor", "pointer") })
                     .on("click", addAreaOfInterest)
                     .on("contextmenu", removeAreaOfInterest);
-
+*/
 
     //   map.controls[google.maps.ControlPosition.TOP_RIGHT].push(divButton);
     /////////////////////////////////////////////////////////////////////////////////
@@ -129,12 +142,11 @@ function initialize() {
     // adding markers and drawing graphs
     addMarkers();
 
-    // initialise graphs
-    draw();
-    drawDrivers();
-    drawRampMetering();
-    drawSuggestions();
-//    drawControl();
+    // initialise dashboard
+    // Timeout needed to load data before drawing
+    setTimeout(getRamps, 120);
+//    drawSuggestions();
+    drawControl();
 
     // set up event to update graphs on window resize
     d3.select(window).on('resize', updateGraphs);
@@ -148,6 +160,9 @@ function initialize() {
     /*    google.maps.event.addListener(map, 'idle', function () {
         scaleOverlay(); console.log(map.getZoom());
     })*/
+
+    // initialise window drag behaviour
+    initDrag();
 }
 google.maps.event.addDomListener(window, 'load', initialize);
 
@@ -161,19 +176,41 @@ function moveMapToLocation(lat,lng)
 }
 
 
-function drawCirclesAlert(lat,lng)
-{
-    // draw on map using gmaps api
+function drawCirclesAlert(lat,lng,name,certainty)
+{// draw on map using gmaps api
+    
+    // determine color of circle (from name) and fill opacity (from certainty)
+    var color;
+    var circleOpacity = 0;
+    var opacityScale = d3.scale.linear()
+               .domain([0, 1])
+               .range([0, 0.8]);
+
+
+    if (name == "Congestion") {
+        color = "red";
+    }
+    else if (name == "PredictedCongestion") {
+        color = "steelblue";
+    }
+    else {
+        color = "C4C4C4";
+    }
+    circleOpacity = (opacityScale(certainty)).toFixed(2);
+
+    // draw circle
     var circle = new google.maps.Circle({
         center: new google.maps.LatLng(lat, lng),
         radius: 200,
         strokeColor: "black",
         strokeOpacity: 0.8,
         strokeWeight: 1,
-        fillColor: "red",
-        fillOpacity: 0.45,
+        fillColor: color,//"red",
+        fillOpacity: circleOpacity,
         map: map
     });
+
+    return circle;
 }
 
 
@@ -241,6 +278,27 @@ function addOverlay()
 }
 
 
+
+function storeSensors()
+{
+    // parse sensor position data --- STORES all sensor locations 
+    d3.csv("data/sensorpos.csv", function (d) {
+
+        var sensor = { location: "", gps: { lat: 0, lng: 0 }, density: 0, vehicles: 0, lane: "", marker: 0 };
+
+        sensor.location = d.location;
+        sensor.gps.lat = d.lat;
+        sensor.gps.lng = d.lng;
+        sensor.lane = d.lane;
+
+
+        sensorPos.push(sensor);
+
+    }, function (error, rows) {
+        //        console.log(ramps);
+    });
+}
+///////////////////////////////////////////////// DEPRECATED
 // function using gmapsmarkers
 function addMarkers()   // creates markers on the map for cameras and controllable traffic signs
 {
@@ -262,18 +320,18 @@ function addMarkers()   // creates markers on the map for cameras and controllab
             currentGeneralPurpose: 'not set'
         });
         // add event to show control options at this location
-        google.maps.event.addListener(m, 'click', seeControl);
+//        google.maps.event.addListener(m, 'click', seeControl);
 	
 	
         // markers are saved into an array for ease of access
         markerControl.push(m);
     }, function (error, rows) {
-        console.log(rows);
+//        console.log(rows);
     });
 ///////////////////////
    
-   // parse sensor position data
-   d3.csv("data/sensorpos.csv", function (d) {
+    // parse sensor position data --- STORES all sensor locations 
+    d3.csv("data/sensorpos.csv", function (d) {
 
 	var sensor = { location: "", gps:{lat:0, lng:0}, density: 0, vehicles:0 , lane: "", marker:0};        
 
@@ -282,18 +340,25 @@ function addMarkers()   // creates markers on the map for cameras and controllab
 	sensor.gps.lng = d.lng;
 	sensor.lane = d.lane;
  
-/*	sensor.marker = new google.maps.Marker({
-            position: new google.maps.LatLng(d.lat, d.lng),
-            map: map,
-            visible: true,
-            icon: imgCamera,
-            title: 'Camera'
-        });	*/
+
+    // ADDS ramp metering icons
+	if (sensor.lane == "onramp" || sensor.lane == "offramp") {
+	    var m = new google.maps.Marker({
+	        position: new google.maps.LatLng(d.lat, d.lng),
+	        map: map,
+	        visible: true,
+	        icon: imgRamp,
+	        title: 'Ramp'
+	    });
+        // add event to see cam at that point
+//	    google.maps.event.addListener(m, 'click', seeCam);
+	    sensor.marker = m;
+	}
 	
 	sensorPos.push(sensor);
 
     }, function (error, rows) {
-        console.log(rows);
+//        console.log(ramps);
     });
 /////////////////
     // parse data containing lat,lng of traffic cams
@@ -315,7 +380,7 @@ function addMarkers()   // creates markers on the map for cameras and controllab
         // markers are saved into an array for ease of access
         markerCamera.push(m);
     }, function (error, rows) {
-        console.log(rows);
+//        console.log(rows);
     });
 }
 
@@ -323,116 +388,21 @@ function seeCam()   // function to view cam at the selected marker location
 {
     var pos = this.getPosition();
 
+    // maps API fails without this
+    pano = new google.maps.StreetViewPanorama(document.getElementById("divVideo"),
+    {
+        disableDefaultUI: true,
+    });
+
     pano.setPosition(pos);
     pano.setVisible(true);
-}
-
-function seeControl()
-{
-    drawControl();
-
-    d3.select("#currentSpeed").text(this.currentSpeed);
-//    d3.select("#currentLanes").text(this.currentLanes);
-    d3.select("#currentGeneralPurpose").text(this.currentGeneralPurpose);
-
-    d3.select("#controlId").text(this.controlId);
-
-    drawLanes(this.noLanes);
-
-}
-
-function submitControl() // WORKS but does not update the control panel view immediately
-{
-    var id = parseInt(d3.select("#controlId").text());
-
-    markerControl[id].currentSpeed = document.getElementById("newSpeed").value;
-//    markerControl[id].currentLanes = document.getElementById("newLanes").value;
-    markerControl[id].currentGeneralPurpose = document.getElementById("newGeneralPurpose").value;
-
-}
-
-function drawLanes(number)
-{
-    // removes previous svg
-    d3.select('#lanesSvg').remove();
-
-    // sets up the lines data array for drawing the lanes
-    var linesDataArray = [];
-    
-    for (var i = 0; i <= number; i++)
-    {
-        var linesDataFormat = { no : 0, type: 0};
-        
-        linesDataFormat.no = i;
-        
-        if (i == 0 || i == number)
-            linesDataFormat.type = 0;
-        else
-            linesDataFormat.type = 3;
-
-        linesDataArray.push(linesDataFormat);
-    }
-
-    // setting up the svg according to number of lanes
-    var lanesSvg = d3.select("#control1").append("svg").attr("id", "lanesSvg")
-        .attr("width", number*20)
-        .attr("height", 60)
-        .style("position", "absolute")
-        .style("top", "95px")
-        .style("right", function () { return (parseInt(d3.select("#controlInfo").style("width"))-60-number*20)/2});
-    // drawing up the lanes
-    lanesSvg.selectAll("line")
-        .data(linesDataArray)
-        .enter().append("line")
-            .attr("x1", function (d, i) { return d.no*20})
-            .attr("y1", 0)
-            .attr("x2", function (d, i) { return d.no*20})
-            .attr("y2", 60)
-            .style("stroke", "black")
-            .style("stroke-width", 2)
-            .style("stroke-dasharray", function (d, i) { return ('4,' + d.type ); });
-
-    // appends 1 extra rect outside svg because it uses linesDataArray as data --- make extra data structure for rect
-    lanesSvg.selectAll("rect")
-        .data(linesDataArray).enter()
-            .append("rect")
-            .attr("height", 30)
-            .attr("width", 15)
-            .attr("x", function (d) { return 2.5+d.no*20})
-            .attr("y", 15)
-            .style("fill", "green")
-            .on("mouseover", function () { d3.select(this).style("cursor", "pointer") })
-            //.on("mouseout", function (d) { d3.select(this).style("fill", "green"); })
-            .on("click", function () {
-                if (d3.select(this).style("fill") == "rgb(0, 128, 0)") // chack if color of the rect is green
-                    d3.select(this).style("fill", "red");
-                else
-                    d3.select(this).style("fill", "green");
-            });
-           
-
-    // appends 1 extra car image outside svg because it uses linesDataArray as data --- make extra data structure for image
-/*    lanesSvg.selectAll("image")
-        .data(linesDataArray).enter()
-            .append("image")
-            .attr("xlink:href", "img/2d_car_lightgrey.png")
-            .attr("width", 20)
-            .attr("height", 40)
-            .attr("x", function (d) { return d.no*20})
-            .attr("y", function (d) { return d.no * 4 + 5 }) // was static 15
-                .on("mouseover", function () { d3.select(this).style("cursor", "pointer") })
-                //.on("mouseout", function (d) { d3.select(this).style("fill", "green"); })
-                .on("click", function () {
-                    d3.select(this).remove();
-                });
-    
-*/            
 }
 
 
 
 function removeAreaOfInterest()
 {
+
     for (var i = 0; i < areasOfInterest.length; i++)
     {
         var area = areasOfInterest[i]
@@ -467,14 +437,20 @@ function addAreaOfInterest()
 
     area.setMap(map);
 
-    google.maps.event.addListener(area, 'dragend', showMarkersInArea);
+    google.maps.event.addListener(area, 'dragend', showBehaviourInArea);
 
     areasOfInterest.push(area);
 }
 
-function showMarkersInArea(event)
+function showBehaviourInArea(event)
 {
 
-    computeValues();
+//    computeValues();
 
+}
+function updateGraphs() {
+    redrawRampGraph();
+//    redrawDrivers();
+    redrawRampMetering();
+//    redrawSuggestions();
 }
