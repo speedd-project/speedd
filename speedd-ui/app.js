@@ -32,7 +32,7 @@ producer.on('ready', function () {
 ///
 
 var app = express();
-app.set('port', 3003);
+app.set('port', 3000);
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.json());
 
