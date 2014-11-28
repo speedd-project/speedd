@@ -85,28 +85,42 @@
             src="https://maps.googleapis.com/maps/api/js?key=AIzaSyA84Vw89JOaSp_SC7HflJeQ2D4a_uIGUnw&sensor=true">
     </script>
 
-    <script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
+    <script type="text/javascript" src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
     <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/mootools/1.2.4/mootools-yui-compressed.js"></script>
-    <script src="http://code.jquery.com/jquery-1.10.1.min.js"></script>
-    <script src="http://code.jquery.com/jquery-migrate-1.2.1.min.js"></script>
-    
+    <script type="text/javascript" src="http://code.jquery.com/jquery-1.10.1.min.js"></script>
+    <script type="text/javascript" src="http://code.jquery.com/jquery-migrate-1.2.1.min.js"></script>
+    <script type="text/javascript" src="https://cdn.socket.io/socket.io-1.2.1.js"></script>
 
-    <script src="js/gmaps_script.js"></script>
-    <script src="js/data.js"></script>
-    <script src="js/control.js"></script>
-    <script src="js/ramp_metering.js"></script>
-    <script src="js/kmessage.js"></script>
-    <script src="js/dash_behaviour.js"></script>
-    <script src="js/ramp_sensor_data.js"></script>
+
+    <script type="text/javascript" src="js/gmaps_script.js"></script>
+    <script type="text/javascript" src="js/data.js"></script>
+    <script type="text/javascript" src="js/control.js"></script>
+    <script type="text/javascript" src="js/ramp_metering.js"></script>
+    <script type="text/javascript" src="js/kmessage.js"></script>
+    <script type="text/javascript" src="js/dash_behaviour.js"></script>
+    <script type="text/javascript" src="js/ramp_sensor_data.js"></script>
 </head>
 
 <body bgcolor="#C4C4C4">
     <script type="text/javascript">
-        var source = new EventSource('/events');
+/*        var source = new EventSource('/events');
 
         source.addEventListener('message', function(e) {
             parseKafkaMessage(JSON.parse(e.data));
         }, false);
+     */   
+var socket = io.connect();
+socket.on('news', function (data) {
+    console.log(data);
+//    socket.emit('my other event', { my: 'data' });
+//    socket.emit('speedd-out-events', { my: 'data' });
+});
+socket.on("speedd-out-events", function(data){
+	parseKafkaMessage(JSON.parse(data));
+//	console.log(data);  
+});
+
+  
     </script>
 
     <div id="map-canvas" class="borders-style" style="position: absolute; top: 0; height: 49%; width: 64%; left: 35%;"></div>
