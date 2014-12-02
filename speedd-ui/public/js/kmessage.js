@@ -112,6 +112,13 @@ function updateRateFromMessage(m)
     
     // redraw Graphs
     redrawRampMetering();
+    redrawRampGraph();
+    // update header colors on rate change
+    var colorscale = d3.scale.linear()
+                .domain([0, 3])
+                .range(["yellow", "green"]);
+    d3.select("#divPlotHead").style("background-color", colorscale(dataRampMetering[posId.rampId].status));
+    d3.select("#divControlHead").style("background-color", colorscale(dataRampMetering[posId.rampId].status));
 
     return dataRampMetering[posId.rampId];
 

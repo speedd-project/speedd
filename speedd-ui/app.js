@@ -2,7 +2,6 @@ var express = require("express");
 var fs = require('fs');
 var http = require('http');
 var path = require('path');
-
 var kafka = require('kafka-node');
 
 /// setting up kafka consummer
@@ -16,22 +15,27 @@ var Consumer = kafka.Consumer,
 	// options
 	{fromOffset: false} // true = read messages from beginning
     );
+    
 
-consumer.on('error', function (err) {
-    console.log("Kafka Error: Consumer - " + err);
+//// Setting up Kafka Producer
+var Producer = kafka.Producer;
+var producer = new Producer(client);
+var payloads = [
+        { topic: 'speedd-out-events', messages: 'THIS IS THE NEW APP', partition: 0 }
+    ];
+producer.on('ready', function () {
+    producer.send(payloads, function (err, data) {
+        console.log(data);
+    });
 });
-consumer.on('message', function (message) {
-    console.log(message.value);
 
-});
 ///
-
-
 
 var app = express();
 app.set('port', 3000);
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.json());
+
 
 // Serve up our static resources
 app.get('/', function(req, res) {
@@ -41,26 +45,33 @@ app.get('/', function(req, res) {
 
 });
 
-app.get('/events', function(req, res) {
-  // let request last as long as possible
-  req.socket.setTimeout(Infinity);
- 
-  // When we receive a message from the kafka connection
-  consumer.on('message', function (message) {
-//    console.log(message.value);
-    res.write("data: " + message.value + '\n\n'); // Note the extra newline
-  });
-    
-  //send headers for event-stream connection
-  res.writeHead(200, {
-    'Content-Type': 'text/event-stream',
-    'Cache-Control': 'no-cache',
-    'Connection': 'keep-alive'
-  });
-  res.write('\n');
-
-});
-
-http.createServer(app).listen(app.get('port'), function(){
+var ser = http.createServer(app).listen(app.get('port'), function(){
   console.log('Express server listening on port ' + app.get('port'));
 });
+
+var io = require('socket.io')(ser);
+
+io.on('connection', function (socket) {
+	socket.emit('news', { hello: 'world' });
+	socket.on('my other event', function (data) {
+		console.log(data);
+	});
+ 
+	socket.on('speedd-out-events', function (data) {
+		console.log(data);
+		var toSend = [{ topic: 'speedd-out-events', messages: data, partition: 0 }];
+		producer.send(toSend, function (err, data) {
+			console.log(toSend);
+		});
+	});
+ 
+	consumer.on('error', function (err) {
+		console.log("Kafka Error: Consumer - " + err);
+	});
+	consumer.on('message', function (message) {
+		console.log(message.value);
+		socket.emit('speedd-out-events', message.value);
+	});
+});
+////
+
