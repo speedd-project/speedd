@@ -13,5 +13,7 @@ JAVA_CMD=$JAVA_HOME/bin/java
 
 CLASSPATH=$SPEEDD_RUNTIME_LIB/speedd-runtime-0.0.1-SNAPSHOT-jar-with-dependencies.jar:$KAFKA_HOME/libs/log4j-1.2.15.jar
 
-$JAVA_CMD -cp $CLASSPATH org.speedd.util.EventPlayer -c producer.properties -t speedd-in-events -p org.speedd.traffic.TrafficAggregatedReadingCsv2Event inputCNRS.csv
+IN_EVENT_FILE=CNRSIntegrationData.csv
+
+$JAVA_CMD -cp $CLASSPATH org.speedd.util.EventPlayer -c producer.properties -t speedd-in-events -p org.speedd.traffic.TrafficAggregatedReadingCsv2Event $IN_EVENT_FILE
 
