@@ -20,6 +20,14 @@
 			<id>repo1.maven.org</id>
 			<url>http://repo1.maven.org/maven2</url>
 		</repository>
+		<repository>
+			<id>speedd-mvn-repo</id>
+			<url>https://raw.github.com/speedd-project/speedd/mvn-repo/</url>
+			<snapshots>
+				<enabled>true</enabled>
+				<updatePolicy>always</updatePolicy>
+			</snapshots>
+		</repository>
 	</repositories>
 
 	<build>
