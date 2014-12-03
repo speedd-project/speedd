@@ -22,7 +22,7 @@
 		</repository>
 		<repository>
 			<id>speedd-mvn-repo</id>
-			<url>https://raw.github.com/speedd-project/speedd/mvn-repo/</url>
+			<url>https://raw.github.com/speedd-project/speedd/master/mvn-repo/</url>
 			<snapshots>
 				<enabled>true</enabled>
 				<updatePolicy>always</updatePolicy>
