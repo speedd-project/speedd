@@ -78,4 +78,40 @@ public class TrafficDMBoltTest {
 		assertEquals( 2.0, (Double)actionEvent.getAttributes().get("density"), 0.0);
 		assertEquals("UpdateMeteringRateAction", actionEvent.getEventName());
 	}
+	
+	@Test
+	public void testSetMeteringRateLimits() {
+		DMPlaceholderBolt dmBolt = new DMPlaceholderBolt();
+		
+		TestCollector collector = new TestCollector(null);
+		
+		dmBolt.prepare(null, null, collector);
+		
+		Map<String, Object> attrs = new HashMap<String, Object>();
+		attrs.put("location", "0024a4dc00003354");
+		attrs.put("lane", "fast");
+		attrs.put("density", 2.0);
+		
+		//TODO add more attributes
+		
+		Event event = SpeeddEventFactory.getInstance().createEvent("SetMeteringRateLimits", 0, attrs);
+		
+		Values values = new Values("1", event);
+		
+		dmBolt.execute(mockTuple(values));
+		
+		List<Object> outTuple = collector.tuple;
+
+		assertNotNull(outTuple);
+		
+		Event actionEvent = (Event)outTuple.get(1);
+		
+		Double meterRate = (Double)actionEvent.getAttributes().get("newMeteringRate");
+		
+		assertEquals(2, meterRate, 0);
+		assertEquals("0024a4dc00003354", actionEvent.getAttributes().get("location"));
+		assertEquals( 2.0, (Double)actionEvent.getAttributes().get("density"), 0.0);
+		assertEquals("UpdateMeteringRateAction", actionEvent.getEventName());
+	}
+
 }

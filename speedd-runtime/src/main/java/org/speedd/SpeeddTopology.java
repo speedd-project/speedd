@@ -22,6 +22,7 @@ import backtype.storm.StormSubmitter;
 import backtype.storm.generated.StormTopology;
 import backtype.storm.spout.Scheme;
 import backtype.storm.spout.SchemeAsMultiScheme;
+import backtype.storm.topology.IRichBolt;
 import backtype.storm.topology.TopologyBuilder;
 import backtype.storm.topology.base.BaseRichSpout;
 
@@ -35,6 +36,9 @@ public class SpeeddTopology {
 	public static final String TOPIC_IN_EVENTS = "speedd-in-events";
 	public static final String TOPIC_OUT_EVENTS = "speedd-out-events";
 	public static final String TOPIC_ACTIONS = "speedd-actions";
+	public static final String TOPIC_ADMIN = "speedd-admin";
+
+	public static final String ADMIN_COMMAND_READER = "admin-command-reader";
 
 	public static final String IN_EVENT_READER = "in-event-reader";
 
@@ -62,9 +66,10 @@ public class SpeeddTopology {
 		logger.info("EPN Path: " + configuration.epnPath);
 	}
 
-	private BaseRichSpout createInputEventReaderSpout(String schemeClassName) {
-		SpoutConfig kafkaConfig = new SpoutConfig(brokerHosts, TOPIC_IN_EVENTS,
-				"", IN_EVENT_READER);
+	private BaseRichSpout createKafkaReaderSpout(String schemeClassName,
+			String topic, String spoutId) {
+		SpoutConfig kafkaConfig = new SpoutConfig(brokerHosts, topic, "",
+				spoutId);
 		try {
 			Class<? extends Scheme> clazz = (Class<Scheme>) SpeeddTopology.class
 					.getClassLoader().loadClass(schemeClassName);
@@ -80,9 +85,12 @@ public class SpeeddTopology {
 	public StormTopology buildTopology() {
 		TopologyBuilder builder = new TopologyBuilder();
 
-		BaseRichSpout trafficReaderSpout;
+		BaseRichSpout trafficReaderSpout = createKafkaReaderSpout(
+				speeddConfig.inEventScheme, TOPIC_IN_EVENTS, IN_EVENT_READER);
 
-		trafficReaderSpout = createInputEventReaderSpout(speeddConfig.inEventScheme);
+		BaseRichSpout adminSpout = createKafkaReaderSpout(
+				AdminCommandScheme.class.getName(), TOPIC_ADMIN,
+				ADMIN_COMMAND_READER);
 
 		KafkaBolt<String, Event> eventWriterBolt = new KafkaBolt<String, Event>(
 				CONFIG_KEY_OUT_EVENTS_TOPIC);
@@ -98,14 +106,33 @@ public class SpeeddTopology {
 		builder.setBolt(OUT_EVENT_WRITER, eventWriterBolt).shuffleGrouping(
 				CEP_EVENT_CONSUMER);
 
+		builder.setSpout(ADMIN_COMMAND_READER, adminSpout)
+				.setMaxTaskParallelism(1);
+
+		IRichBolt dmBolt = createDecisionMakerBolt(speeddConfig.dmClass);
+		// @FIXME distribute output events according to the use-case specific
+		// grouping strategy
 		builder.setBolt(DECISION_MAKER, new DMPlaceholderBolt())
-				.shuffleGrouping(CEP_EVENT_CONSUMER);
+				.shuffleGrouping(CEP_EVENT_CONSUMER)
+				.allGrouping(ADMIN_COMMAND_READER);
 
 		builder.setBolt(DECISION_WRITER,
 				new KafkaBolt<String, Event>(CONFIG_KEY_ACTIONS_TOPIC))
 				.shuffleGrouping(DECISION_MAKER);
 
 		return builder.createTopology();
+	}
+
+	public IRichBolt createDecisionMakerBolt(String dmBoltClassName) {
+		try {
+			@SuppressWarnings("unchecked")
+			Class<? extends IRichBolt> clazz = (Class<IRichBolt>) SpeeddTopology.class
+					.getClassLoader().loadClass(dmBoltClassName);
+			return clazz.newInstance();
+		} catch (Exception e) {
+			throw new RuntimeException("Creating a decision maker bolt failed", e);
+		}
+
 	}
 
 	public static void main(String[] args) {
@@ -140,6 +167,9 @@ public class SpeeddTopology {
 		configuration.inEventScheme = (String) properties
 				.getProperty("speedd.inEventScheme");
 
+		configuration.dmClass = (String) properties
+				.getProperty("speedd.dmClass");
+		
 		SpeeddTopology speeddTopology = new SpeeddTopology(configuration);
 
 		Config conf = new Config();
@@ -157,10 +187,10 @@ public class SpeeddTopology {
 		conf.setMaxTaskParallelism(1);
 
 		StormTopology topology = speeddTopology.buildTopology();
-		
-		if(localMode){
+
+		if (localMode) {
 			runLocally(conf, topology);
-		} else{
+		} else {
 			runRemotely(conf, topology);
 		}
 	}

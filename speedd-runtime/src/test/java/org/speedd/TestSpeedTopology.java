@@ -213,6 +213,8 @@ public class TestSpeedTopology {
 				SpeeddTopology.TOPIC_IN_EVENTS, 1, 1, "");
 		CreateTopicCommand.createTopic(zkClient, SpeeddTopology.TOPIC_ACTIONS,
 				1, 1, "");
+		CreateTopicCommand.createTopic(zkClient, SpeeddTopology.TOPIC_ADMIN,
+				1, 1, "");
 
 		List<KafkaServer> servers = new ArrayList<KafkaServer>();
 		servers.add(kafkaServer);
@@ -554,6 +556,9 @@ public class TestSpeedTopology {
 
 		speeddConfiguration.inEventScheme = (String) properties
 				.getProperty("speedd.inEventScheme");
+		
+		speeddConfiguration.dmClass = (String) properties
+				.getProperty("speedd.dmClass");
 
 		SpeeddTopology speeddTopology = new SpeeddTopology(speeddConfiguration);
 

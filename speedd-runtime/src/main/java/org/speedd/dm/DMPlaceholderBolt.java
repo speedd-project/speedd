@@ -37,14 +37,7 @@ public class DMPlaceholderBolt extends BaseRichBolt {
 		this.collector = collector;
 	}
 
-	@Override
-	public void execute(Tuple input) {
-		logger.debug("Processing tuple " + input.toString());
-		
-		Event event = (Event)input.getValueByField("message");
-		
-		String eventName = event.getEventName();
-		
+	private void onTrafficEvent(Event event){
 		long timestamp = event.getTimestamp();
 		
 		String location = (String)event.getAttributes().get("location");
@@ -68,6 +61,36 @@ public class DMPlaceholderBolt extends BaseRichBolt {
 		
 		//FIXME use meaningful value for the 'key' field. It'll be used by kafka for partitioning
 		collector.emit(new Values("1", outEvent));
+	}
+	
+	private void onAdminCommand(Event command){
+		logger.info("Admin command: " + command.toString());
+	}
+	
+	private boolean isAdminCommand(Event event){
+		String eventName = event.getEventName();
+		
+		if(eventName.startsWith("setMeteringRateLimits")){
+			return true;
+		}
+		
+		return false;
+	}
+	
+	@Override
+	public void execute(Tuple input) {
+		logger.debug("Processing tuple " + input.toString());
+		
+		Event event = (Event)input.getValueByField("message");
+		
+		String eventName = event.getEventName();
+		
+		if(isAdminCommand(event)){
+			onAdminCommand(event);
+		}
+		else {
+			onTrafficEvent(event);
+		}
 	}
 
 	private double computeTheNewRate(Map<String, Object> attributes) {
