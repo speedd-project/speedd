@@ -9,6 +9,9 @@ import org.speedd.data.Event;
 import org.speedd.data.EventFactory;
 import org.speedd.data.impl.SpeeddEventFactory;
 
+import com.ibm.hrl.proton.metadata.event.EventHeader;
+import com.ibm.hrl.proton.routing.MetadataFacade;
+
 import backtype.storm.task.OutputCollector;
 import backtype.storm.task.TopologyContext;
 import backtype.storm.topology.OutputFieldsDeclarer;
@@ -34,14 +37,14 @@ public class ProtonOutputConsumerBolt extends BaseRichBolt implements org.speedd
 	public void execute(Tuple input) {
 		logger.debug("Processing tuple " + input.toString());
 		
-		String eventName = (String)input.getValueByField(FIELD_NAME);
+		String eventName = (String)input.getValueByField(EventHeader.NAME_ATTRIBUTE);
 
-		Map<String, Object> inAttrs = (Map<String, Object>)input.getValueByField(FIELD_ATTRIBUTES);
+		Map<String, Object> inAttrs = (Map<String, Object>)input.getValueByField(MetadataFacade.ATTRIBUTES_FIELD);
 		
 		long timestamp = 0;
 		
-		if(inAttrs.containsKey(FIELD_DETECTION_TIME)){
-			timestamp = (Long)inAttrs.get(FIELD_DETECTION_TIME);
+		if(inAttrs.containsKey(EventHeader.DETECTION_TIME_ATTRIBUTE)){
+			timestamp = (Long)inAttrs.get(EventHeader.DETECTION_TIME_ATTRIBUTE);
 		}
 		
 		Event outEvent = eventFactory.createEvent(eventName, timestamp, inAttrs);

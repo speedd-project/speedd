@@ -31,7 +31,7 @@ public class TrafficAggregatedReadingScheme implements Scheme, org.speedd.Fields
 
 	@Override
 	public Fields getOutputFields() {
-		return new Fields(FIELD_NAME, FIELD_TIMESTAMP, FIELD_ATTRIBUTES);
+		return new Fields(FIELD_PROTON_EVENT_NAME, FIELD_TIMESTAMP, FIELD_ATTRIBUTES);
 	}
 
 }
