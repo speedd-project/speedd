@@ -60,8 +60,8 @@ public class TimedEventFileReaderTest {
 			}
 		}
 
-		public boolean isPassed() {
-			return count.intValue() == 10;
+		public void verify() {
+			assertEquals(10, count.intValue());
 		}
 	}
 	
@@ -146,7 +146,7 @@ public class TimedEventFileReaderTest {
 
 		executor.shutdown();
 
-		assertTrue("Must pass", c.isPassed());
+		c.verify();
 
 		consumer.shutdown();
 		kafkaServer.shutdown();
