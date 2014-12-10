@@ -27,6 +27,9 @@ producer.on('ready', function () {
     producer.send(payloads, function (err, data) {
         console.log(data);
     });
+	producer.createTopics(['speedd-admin'], function (err, data) {
+		console.log(err);
+	});
 });
 
 ///
@@ -59,19 +62,19 @@ io.on('connection', function (socket) {
  
 	socket.on('speedd-out-events', function (data) {
 		console.log(data);
-		var toSend = [{ topic: 'speedd-out-events', messages: data, partition: 0 }];
+		var toSend = [{ topic: 'speedd-admin', messages: data, partition: 0 }];
 		producer.send(toSend, function (err, data) {
 			console.log(toSend);
 		});
 	});
- 
-	consumer.on('error', function (err) {
-		console.log("Kafka Error: Consumer - " + err);
-	});
-	consumer.on('message', function (message) {
-		console.log(message.value);
-		socket.emit('speedd-out-events', message.value);
-	});
+
 });
 ////
-
+ 
+consumer.on('error', function (err) {
+	console.log("Kafka Error: Consumer - " + err);
+});
+consumer.on('message', function (message) {
+	console.log(message.value);
+	io.emit('speedd-out-events', message.value);
+});
