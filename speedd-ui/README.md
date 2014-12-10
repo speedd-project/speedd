@@ -11,7 +11,7 @@
 
 1. In the terminal running the server press "Ctrl+C"
 
-To Run - not needed after immediate installation
+# To Run # - not needed after immediate installation
 
 1. cd to /home/$USER/speedd/speedd-ui/bin
 2. run: ./run.sh
