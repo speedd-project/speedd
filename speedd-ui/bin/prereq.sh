@@ -9,5 +9,5 @@ sudo apt-get install nodejs
 sudo apt-get install npm
 sudo npm install -g express
 sudo npm install -g kafka-node
-sudo npm install -g kafka
 sudo npm install -g socket.io
+sudo npm install
