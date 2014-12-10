@@ -23,6 +23,6 @@ After each 'git pull':
 
 1. cd to /home/$USER/speedd/speedd-ui
 2. run: sudo rm -rf node_modules
-3. run: npm installUI
+3. run: npm install
 
 then the ui can be started
