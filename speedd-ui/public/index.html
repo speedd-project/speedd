@@ -65,7 +65,7 @@
             box-sizing: border-box;
             -moz-box-sizing: border-box;
             -webkit-box-sizing: border-box;
-            border: 10px solid #a1a1a1;
+            border: 10px solid #797979; /*a1a1a1*/
             border-radius: 25px;
             float: left;
             text-align: center;
@@ -77,7 +77,21 @@
             cursor: move;
         }
         .borders-style.over {
-            border: 2px dashed #000;
+            border: 10px dashed #000;
+        }
+        .border-control-divs {
+            box-sizing: border-box;
+            -moz-box-sizing: border-box;
+            -webkit-box-sizing: border-box;
+            border-bottom: 2px solid #797979;
+        }
+        .markerlabel {
+            color: white;
+            background-color: black;
+            font-size: 13px;
+            text-align: center;
+            width: 15px;
+            white-space: nowrap;
         }
     </style>
 
@@ -90,25 +104,21 @@
     <script type="text/javascript" src="http://code.jquery.com/jquery-1.10.1.min.js"></script>
     <script type="text/javascript" src="http://code.jquery.com/jquery-migrate-1.2.1.min.js"></script>
     <script type="text/javascript" src="https://cdn.socket.io/socket.io-1.2.1.js"></script>
-
+	<script src="http://google-maps-utility-library-v3.googlecode.com/svn/tags/markerwithlabel/1.1.9/src/markerwithlabel.js" type="text/javascript"></script>   
 
     <script type="text/javascript" src="js/gmaps_script.js"></script>
     <script type="text/javascript" src="js/data.js"></script>
     <script type="text/javascript" src="js/control.js"></script>
     <script type="text/javascript" src="js/ramp_metering.js"></script>
     <script type="text/javascript" src="js/kmessage.js"></script>
-    <script type="text/javascript" src="js/dash_behaviour.js"></script>
     <script type="text/javascript" src="js/ramp_sensor_data.js"></script>
+    <script type="text/javascript" src="js/log.js"></script>
+	<!--    <script src="js/dash_behaviour.js"></script>    -->
 </head>
 
 <body bgcolor="#C4C4C4">
     <script type="text/javascript">
-/*        var source = new EventSource('/events');
-
-        source.addEventListener('message', function(e) {
-            parseKafkaMessage(JSON.parse(e.data));
-        }, false);
-     */   
+  
 var socket = io.connect();
 socket.on('news', function (data) {
     console.log(data);
@@ -125,21 +135,22 @@ socket.on("speedd-out-events", function(data){
 
     <div id="map-canvas" class="borders-style" style="position: absolute; top: 0; height: 49%; width: 64%; left: 35%;"></div>
 
-    <div id="top-left" draggable="true" class="borders-style" style="position: absolute; top: 0; height: 49%; width: 30%; left:1%">
+    <!--containters named by posision are meant to be draggable-->
+    <div id="top-left"  class="borders-style" style="position: absolute; top: 0; height: 49%; width: 30%; left:1%">
         <div id="divPlot" style="position: absolute; top: 0; height: 100%; width: 100%">
             <div id="divPlotHead" class="heads-style" align="center" style="position: absolute; top: 0; height: 30px; width: 100%; background-color: steelblue;"></div>
             <svg id="svgPlot" style="position: absolute; top: 30px; left: 2%; height: 90%; width: 95%"></svg>
         </div>
     </div>
 
-    <div id="bottom-left" draggable="true" class="borders-style" style="position: absolute; bottom: 0; height: 49%; width: 30%; left: 1%">
+    <div id="bottom-left"  class="borders-style" style="position: absolute; bottom: 0; height: 49%; width: 30%; left: 1%">
         <div id="divRamp" style="position: absolute; top: 0; height: 100%; width: 100%">
             <div id="divRampHead" class="heads-style" align="center" style="position: absolute; top: 0; height: 30px; width: 100%; background-color: #1c974c;"></div>
             <svg id="svgRamp" style="position: absolute; top: 30px; left: 2%; height: 90%; width: 95%"></svg>
         </div>
     </div>
 
-    <div id="bottom-mid-left" draggable="true" class="borders-style" style="position: absolute; bottom: 0; height: 49%; width: 30%; left: 35%">
+    <div id="bottom-mid-left"  class="borders-style" style="position: absolute; bottom: 0; height: 49%; width: 30%; left: 35%">
         <div id="divControl" style="position: absolute; top: 0; height: 100%; width: 100%">
             <div id="divControlHead" class="heads-style" align="center" style="position: absolute; top: 0; height: 30px; width: 100%; background-color: #1c974c;"></div>
 <!--            <svg id="svgControl" style="position: absolute; top: 10%; left: 2%; height: 90%; width: 95%"></svg> -->
@@ -147,12 +158,16 @@ socket.on("speedd-out-events", function(data){
         </div>
     </div>
 
-    <div id="bottom-right" draggable="true" class="borders-style" style="position: absolute; bottom: 0; height: 49%; width: 30%; right: 1%">
-        <div id="divCam" style="position: absolute; top: 0; height: 100%; width: 100%">
+    <div id="bottom-right"  class="borders-style" style="position: absolute; bottom: 0; height: 49%; width: 30%; right: 1%">
+<!--        <div id="divCam" style="position: absolute; top: 0; height: 100%; width: 100%">
             <div id="divCamHead" class="heads-style" align="center" style="position: absolute; top: 0; height: 30px; width: 100%; background-color: #d95929; "></div>
-            <!--       <svg id="svgCam" style="position: absolute; top: 2%; left: 2%; height: 95%; width: 95%"></svg>  -->
-            <div id="divVideo" style="position: absolute; top: 30px; height: 92%; width: 100%; border-bottom-left-radius: 15px; border-bottom-right-radius: 15px"</div>
+            <div id="divVideo" style="position: absolute; top: 30px; height: 95%; width: 100%; border-bottom-left-radius: 15px; border-bottom-right-radius: 15px"></div>
+        </div>-->
+        <div id="divLog" style="position: absolute; top: 0; height: 100%; width: 100%">
+            <div id="divLogHead" class="heads-style" align="center" style="position: absolute; top: 0; height: 30px; width: 100%; background-color: #d95929; "></div>
+            <div id="divLog2" style="position: absolute; top: 30px; height: 90%; width: 100%; border-bottom-left-radius: 15px; border-bottom-right-radius: 15px"></div>
         </div>
+
     </div>
 
 </body>

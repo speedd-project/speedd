@@ -94,8 +94,8 @@ function drawRampGraph(rampId) {
           .attr("cx", function (d, i) { return x(d); })
           .attr("cy", function (d, i) { return y(dataRampMetering[rampId].rateHistory[i]); })
           .attr("r", function (d, i) {
-              if (i < d.length - 10)
-                  return scaleCircles(2);
+              if (i < dataRampMetering[rampId].densityHistory.length - 10)
+                  return scaleCircles(0);
               else
               {
                   return scaleCircles(i % 10);
@@ -154,8 +154,8 @@ function redrawRampGraph()
              .attr("cx", function (d, i) { return x(d); })
           .attr("cy", function (d, i) { return y(dataRampMetering[rampId].rateHistory[i]); })
           .attr("r", function (d, i) {
-              if (i < d.length - 10)
-                  return scaleCircles(2);
+              if (i < dataRampMetering[rampId].densityHistory.length - 10)
+                  return scaleCircles(0);
               else
               {
                   return scaleCircles(i % 10);
@@ -168,8 +168,8 @@ function redrawRampGraph()
             .attr("cx", function (d, i) { return x(d); })
           .attr("cy", function (d, i) { return y(dataRampMetering[rampId].rateHistory[i]); })
           .attr("r", function (d, i) {
-              if (i < d.length - 10)
-                  return scaleCircles(2);
+              if (i < dataRampMetering[rampId].densityHistory.length - 10)
+                  return scaleCircles(0);
               else {
                   return scaleCircles(i % 10);
               }

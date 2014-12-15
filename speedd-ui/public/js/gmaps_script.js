@@ -42,6 +42,9 @@ var posControl = { lat: [], lng: [] };// = [[45.18047856164824, 5.71686012172699
 var posCamera = { lat: [], lng: [] };// = [[45.180467217899675, 5.7166777315139825], [45.180482342897264, 5.716275400161749], [45.18013446693625, 5.7038192214965875], [45.1586073987022, 5.702917999267584], [45.15945471751181, 5.696416324615484]];
 
 var areasOfInterest = [];
+var infowindow = new google.maps.InfoWindow({
+    content: '<div id="divVideo" style="width: 500px; height: 300px"></div>'
+});
 
 function initialize() {
     // Create an array of styles.
@@ -98,12 +101,7 @@ function initialize() {
 
     var title = d3.select("#divCamHead").append("text").attr("id", "titleCam").text("Video Feed").style("font-weight", "bold").style("font-size", "20px").style("color", "black");
 
-    pano = new google.maps.StreetViewPanorama(document.getElementById("divVideo"),
-    {
-        disableDefaultUI: true,
-    });
-    pano.setPosition(new google.maps.LatLng((Math.random() * (45.197223 - 45.160438) + 45.160438).toFixed(6), 5.7155425));
-    pano.setVisible(false);
+    
 
 
     // add selection button to map ------------------- button doesnt stay on the map, it refreshes and gets on top of the img if div appended to #map-canvas
@@ -144,10 +142,10 @@ function initialize() {
 
     // initialise dashboard
     // Timeout needed to load data before drawing
-    setTimeout(getRamps, 120);
+    setTimeout(getRamps, 200);
 //    drawSuggestions();
     drawControl();
-
+    drawLog();
     // set up event to update graphs on window resize
     d3.select(window).on('resize', updateGraphs);
 
@@ -162,7 +160,7 @@ function initialize() {
     })*/
 
     // initialise window drag behaviour
-    initDrag();
+    //    initDrag();
 }
 google.maps.event.addDomListener(window, 'load', initialize);
 
@@ -173,6 +171,7 @@ function moveMapToLocation(lat,lng)
 
     map.setCenter(location);
     map.setZoom(18);
+
 }
 
 
@@ -303,31 +302,31 @@ function storeSensors()
 function addMarkers()   // creates markers on the map for cameras and controllable traffic signs
 {
     // parse data containing lat,lng of controllable signs
-    d3.csv("data/controlpos.csv", function (d,i) {
-        posControl.lat.push(d.lat);
-        posControl.lng.push(d.lng);
-        var m = new google.maps.Marker({
-            position: new google.maps.LatLng(d.lat, d.lng),
-            map: map,
-            visible: true,
-            icon: imgControl,
-            title: 'Control',
-            // custom info
-            controlId: markerControl.length,
-            currentSpeed: '100',
-            closedLanes: [],
-            noLanes: i%4+1,
-            currentGeneralPurpose: 'not set'
-        });
-        // add event to show control options at this location
-//        google.maps.event.addListener(m, 'click', seeControl);
+//    d3.csv("data/controlpos.csv", function (d,i) {
+//        posControl.lat.push(d.lat);
+//        posControl.lng.push(d.lng);
+//        var m = new google.maps.Marker({
+//            position: new google.maps.LatLng(d.lat, d.lng),
+//            map: map,
+//            visible: true,
+//            icon: imgControl,
+//            title: 'Control',
+//            // custom info
+//            controlId: markerControl.length,
+//            currentSpeed: '100',
+//            closedLanes: [],
+//            noLanes: i%4+1,
+//            currentGeneralPurpose: 'not set'
+//        });
+//        // add event to show control options at this location
+////        google.maps.event.addListener(m, 'click', seeControl);
 	
 	
-        // markers are saved into an array for ease of access
-        markerControl.push(m);
-    }, function (error, rows) {
-//        console.log(rows);
-    });
+//        // markers are saved into an array for ease of access
+//        markerControl.push(m);
+//    }, function (error, rows) {
+////        console.log(rows);
+//    });
 ///////////////////////
    
     // parse sensor position data --- STORES all sensor locations 
@@ -342,7 +341,7 @@ function addMarkers()   // creates markers on the map for cameras and controllab
  
 
     // ADDS ramp metering icons
-	if (sensor.lane == "onramp" || sensor.lane == "offramp") {
+/*	if (sensor.lane == "onramp" || sensor.lane == "offramp") {
 	    var m = new google.maps.Marker({
 	        position: new google.maps.LatLng(d.lat, d.lng),
 	        map: map,
@@ -353,7 +352,7 @@ function addMarkers()   // creates markers on the map for cameras and controllab
         // add event to see cam at that point
 //	    google.maps.event.addListener(m, 'click', seeCam);
 	    sensor.marker = m;
-	}
+	}*/
 	
 	sensorPos.push(sensor);
 
@@ -361,41 +360,48 @@ function addMarkers()   // creates markers on the map for cameras and controllab
 //        console.log(ramps);
     });
 /////////////////
-    // parse data containing lat,lng of traffic cams
-    d3.csv("data/camerapos.csv", function (d) {
-        posCamera.lat.push(d.lat);
-        posCamera.lng.push(d.lng);
+//    // parse data containing lat,lng of traffic cams
+//    d3.csv("data/camerapos.csv", function (d) {
+//        posCamera.lat.push(d.lat);
+//        posCamera.lng.push(d.lng);
 
-        var m = new google.maps.Marker({
-            position: new google.maps.LatLng(d.lat, d.lng),
-            map: map,
-            visible: true,
-            icon: imgCamera,
-            title: 'Camera'
-        });
+//        var m = new google.maps.Marker({
+//            position: new google.maps.LatLng(d.lat, d.lng),
+//            map: map,
+//            visible: true,
+//            icon: imgCamera,
+//            title: 'Camera'
+//        });
 
-        // add event to show camera view at this location
-        google.maps.event.addListener(m, 'click', seeCam);
+//        // add event to show camera view at this location
+//        google.maps.event.addListener(m, 'click',seeCam);
 
-        // markers are saved into an array for ease of access
-        markerCamera.push(m);
-    }, function (error, rows) {
-//        console.log(rows);
-    });
+//        // markers are saved into an array for ease of access
+//        markerCamera.push(m);
+//    }, function (error, rows) {
+////        console.log(rows);
+//    });
 }
 
 function seeCam()   // function to view cam at the selected marker location
 {
-    var pos = this.getPosition();
+    infowindow.open(map, this);
 
-    // maps API fails without this
-    pano = new google.maps.StreetViewPanorama(document.getElementById("divVideo"),
-    {
-        disableDefaultUI: true,
-    });
+    var marker = this;
 
-    pano.setPosition(pos);
-    pano.setVisible(true);
+    setTimeout(function () {
+        var pos = marker.getPosition();
+
+        // maps API fails without this
+        pano = new google.maps.StreetViewPanorama(document.getElementById("divVideo"),
+        {
+            disableDefaultUI: true,
+        });
+
+        pano.setPosition(pos);
+        pano.setVisible(true);
+    }, 50);
+    
 }
 
 
@@ -452,5 +458,8 @@ function updateGraphs() {
     redrawRampGraph();
 //    redrawDrivers();
     redrawRampMetering();
+
+    // fixes challenge button to middle of the control window
+//    d3.select("#challengeButton").style("left", function () { return (parseInt(d3.select("#divControlStatus").style("width")) / 2 - 50) + "px" });// 30px
 //    redrawSuggestions();
 }

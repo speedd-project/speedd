@@ -1,34 +1,61 @@
 ﻿
-
 function drawControl() // draws default control panel
 {
-//    removeControl();
+    //    removeControl();
 
     var margin = { top: 20, right: 15, bottom: 60, left: 60 }
     , width = parseInt(d3.select('#divControl2').style('width')) - margin.left - margin.right
     , height = parseInt(d3.select('#divControl2').style('height')) - margin.top - margin.bottom;
 
-    var svgControl = d3.select("#svgControl");
     var divControl = d3.select("#divControl2");
 
+    var divControlStatus = divControl.append("div")
+        .attr("id", "divControlStatus")
+        .style("height", "35%")
+        .style("width", "100%")
+        .style("position", "absolute")
+        .style("top", "0px")
+//        .style("background-color", "steelblue")
+    .attr("class", "border-control-divs");
+
+
+    var divControlBounds = divControl.append("div")
+        .attr("id", "divControlBounds")
+        .style("height", "35%")
+        .style("width", "100%")
+        .style("position", "absolute")
+        .style("top", "35%")
+//        .style("background-color", "yellow")
+        .style("visibility", "hidden")
+    .attr("class", "border-control-divs");
+
+    var divControlExplain = divControl.append("div")
+        .attr("id", "divControlExplain")
+        .style("height", "30%")
+        .style("width", "100%")
+        .style("position", "absolute")
+        .style("top", "70%")
+//        .style("background-color", "green")
+        .style("visibility", "hidden")
+    .attr("class", "border-control-divs");
 
     var title = d3.select("#divControlHead").append("text").attr("id", "titleControl").text("Ramp Metering Control").style("font-weight", "bold").style("font-size", "20px").style("color", "black");
 
     // controller id display        
-    divControl.append("text").attr("id", "textRampId")
+    divControlStatus.append("text").attr("id", "textRampId")
         .text("Controller ID: ")
         .style("font-weight", "bold")
         .style("font-size", "18px")
         .style("position", "absolute")
-        .style("top", "20px")
+        .style("top", "5px")
         .style("left", "10px");
 
-    divControl.append("text").attr("id", "rampId")
+    divControlStatus.append("text").attr("id", "rampId")
         .text("No Controller Selected")
         .style("font-weight", "bold")
         .style("font-size", "18px")
         .style("position", "absolute")
-        .style("top", "20px")
+        .style("top", "5px")
         .style("right", "5%");
 
     // ramp max rate text
@@ -36,69 +63,112 @@ function drawControl() // draws default control panel
     // ramp min rate text
 
     // ramp rate control
-    divControl.append("text").attr("id", "textCurrentRampMaxRate")
-        .text("Current Maximum Rate")
+    divControlStatus.append("text").attr("id", "textCurrentRampMaxRate")
+        .text("Current Max Rate")
+        .style("font-size", "18px")
+        .style("position", "absolute")
+        .style("top", "30px")
+        .style("left", "30px");
+    divControlStatus.append("text").attr("id", "currentRampMaxRate")
+        .text("N/A")
+        .style("position", "absolute")
+        .style("top", "30px")
+        .style("right", "5%");
+
+    divControlStatus.append("text").attr("id", "textCurrentRampMinRate")
+        .text("Current Min Rate")
         .style("font-size", "18px")
         .style("position", "absolute")
         .style("top", "60px")
         .style("left", "30px");
-    divControl.append("text").attr("id", "currentRampMaxRate")
+    divControlStatus.append("text").attr("id", "currentRampMinRate")
         .text("N/A")
         .style("position", "absolute")
         .style("top", "60px")
         .style("right", "5%");
 
+// puts it in the centre{ return (parseInt(divControl.style("width"))/2-50)+"px"})// 30px
 
-    divControl.append("text").attr("id", "textNewRampMaxRate")
-        .text("New Maximum Rate")
-        .style("font-size", "18px")
-        .style("position", "absolute")
-        .style("top", "90px")
-        .style("left", "30px");
-    divControl.append("input").attr("id", "newRampMaxRate")
-        .attr("type", "number")
-        .style("width", "80px")
-        .style("position", "absolute")
-        .style("top", "90px")
-        .style("right", "5%");
-///////////////////////////////////////////////////////////////////////
-    divControl.append("text").attr("id", "textCurrentRampMinRate")
-        .text("Current Minimum Rate")
-        .style("font-size", "18px")
-        .style("position", "absolute")
-        .style("top", "150px")
-        .style("left", "30px");
-    divControl.append("text").attr("id", "currentRampMinRate")
-        .text("N/A")
-        .style("position", "absolute")
-        .style("top", "150px")
-        .style("right", "5%");
-
-    
-    divControl.append("text").attr("id", "textNewRampMinRate")
-        .text("New Minimum Rate")
-        .style("font-size", "18px")
-        .style("position", "absolute")
-        .style("top", "180px")
-        .style("left", "30px");
-    divControl.append("input").attr("id", "newRampMinRate")
-        .attr("type", "number")
-        .style("width", "80px")
-        .style("position", "absolute")
-        .style("top", "180px")
-        .style("right", "5%");
-/////////////////////////////////////////////////////////////////////////
-    // submit changes button
-    divControl.append("button").attr("id", "submitButton")
-        .text("Submit Changes")
-        .style("width", "130px")
+    ////////////////////////////////////////////////////////////////////
+    divControlStatus.append("button").attr("id", "challengeButton")
+        .text("Challenge")
+        .style("width", "100px")
         .style("height", "25px")
         .style("position", "absolute")
-        .style("bottom", "20px")
+        .style("bottom", "5px")
+        .style("left", "20%")
+            .on("click", function () { d3.select("#divControlBounds").style("visibility", "visible");})
+            .on("mouseover", function () { d3.select(this).style("cursor", "pointer"); });
+    // disables reset levels button
+//    document.getElementById("resetLevelsButton").disabled = true;
+
+    divControlStatus.append("button").attr("id", "explainButton")
+        .text("Explain")
+        .style("width", "100px")
+        .style("height", "25px")
+        .style("position", "absolute")
+        .style("bottom", "5px")
+        .style("right", "20%")
+            .on("click", function () { divControlExplain.style("visibility", "visible") })
+            .on("mouseover", function () { d3.select(this).style("cursor", "pointer"); });
+    // disables reset levels button
+//    document.getElementById("explainButton").disabled = true;
+
+    ////////////////////////////////////////////////////////////////////
+    divControlBounds.append("text").attr("id", "textNewRampMaxRate")
+        .text("New Max Rate")
+        .style("font-size", "18px")
+        .style("position", "absolute")
+        .style("top", "5px")
+        .style("left", "30px");
+    divControlBounds.append("input").attr("id", "newRampMaxRate")
+        .attr("type", "number")
+        .style("width", "80px")
+        .style("position", "absolute")
+        .style("top", "5px")
+        .style("right", "5%");    
+
+
+    divControlBounds.append("text").attr("id", "textNewRampMinRate")
+        .text("New Min Rate")
+        .style("font-size", "18px")
+        .style("position", "absolute")
+        .style("top", "30px")
+        .style("left", "30px");
+    divControlBounds.append("input").attr("id", "newRampMinRate")
+        .attr("type", "number")
+        .style("width", "80px")
+        .style("position", "absolute")
+        .style("top", "30px")
+        .style("right", "5%");
+
+    // submit changes button
+    divControlBounds.append("button").attr("id", "confirmButton")
+        .text("Confirm")
+        .style("width", "100px")
+        .style("height", "25px")
+        .style("position", "absolute")
+        .style("bottom", "5px")
         .style("right", "5%")
             .on("click", submitControl)
-            .on("mouseover", function () { d3.select(this).style("cursor", "pointer");});
-    
+            .on("mouseover", function () { d3.select(this).style("cursor", "pointer"); });
+    /////////////////////////////////////////////////////////////////////
+    divControlExplain.append("text").attr("id", "textNewRampMinRate")
+        .text("This is an explanation")
+        .style("font-size", "18px")
+        .style("position", "absolute")
+        .style("top", "5px")
+        .style("left", "30px");
+    // submit changes button
+    divControlExplain.append("button").attr("id", "acknowledgeButton")
+        .text("Acknowledge")
+        .style("width", "100px")
+        .style("height", "25px")
+        .style("position", "absolute")
+        .style("bottom", "5px")
+        .style("right", "5%")
+            .on("click", function () { divControlExplain.style("visibility", "hidden") })
+            .on("mouseover", function () { d3.select(this).style("cursor", "pointer"); });
 }
 
 function selectController(ramp)
@@ -108,7 +178,13 @@ function selectController(ramp)
     divControl.select("#rampId").text(ramp.id+ " (" + ramp.sensorId + ")" );
 
     divControl.select("#currentRampMaxRate").text(ramp.upperLimit);
-    divControl.select("#currentRampMinRate").text(ramp.lowerLimit);       
+    divControl.select("#currentRampMinRate").text(ramp.lowerLimit);
+
+    d3.select("#divControlExplain").style("visibility", "hidden");
+    d3.select("#divControlBounds").style("visibility", "hidden");
+
+//    document.getElementById("explainButton").disabled = true;
+//    document.getElementById("resetLevelsButton").disabled = true;
 }
 
 
