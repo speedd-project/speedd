@@ -1,7 +1,5 @@
 ﻿// status: 0 - off, 1 - low, 2 - mid, 3 - high
 
-//var drawing;
-
 var dataRampMetering = []; // ramp meters are saved here
 
 
@@ -22,22 +20,18 @@ function getRamps()
             ramp.sensorId = sensorPos[i].location;
 
             // adds markers
-            var m = new google.maps.Marker({
+            var m = new MarkerWithLabel({
                 position: new google.maps.LatLng(ramp.location.lat, ramp.location.lng),
                 map: map,
                 visible: true,
                 icon: imgRamp,
-                title: ramp.id.toString()
+                title: ramp.id.toString(),
+                labelAnchor: new google.maps.Point(3, -13),
+                labelContent: ramp.id.toString(),
+                labelClass: "markerlabel" // the CSS class for the label
             });
             // add event to see cam at that point
-//            google.maps.event.addListener(m, 'click', function () {
-//                moveMapToLocation(d.location.lat, d.location.lng);
-//                selectController(ramp.id);
-//                drawRampGraph(ramp.id);
-                // change head color of plot
-//                d3.select("#divPlotHead").style("background-color", colorscale(ramp.status));
-//                d3.select("#divControlHead").style("background-color", colorscale(ramp.status));
-//            });//seeCam);
+            google.maps.event.addListener(m, 'click', seeCam);
 
             ramp.marker = m;
 
@@ -47,12 +41,12 @@ function getRamps()
     }
 
 //    console.log(dataRampMetering);
-    setTimeout(drawRampMetering, 100);
+    setTimeout(drawRampMetering, 200);
 }
 
 function drawRampMetering()
 {
-/// doesn't work ------    getRamps();
+    /// doesn't work ------    getRamps();
 
     var margin = { top: 10, right: 10, bottom: 10, left: 10 }
   , width = parseInt(d3.select('#divRamp').style('width')) - margin.left - margin.right
@@ -63,10 +57,10 @@ function drawRampMetering()
                 .domain([0, 3])
                 .range(["yellow", "green"]);
 
-/*    var statusScale = d3.scale.linear()
-                .domain([1, 2, 3, 4])
-                .range(["o", "l", "m", "h"]);
-                */
+    /*    var statusScale = d3.scale.linear()
+                    .domain([1, 2, 3, 4])
+                    .range(["o", "l", "m", "h"]);
+                    */
     var container = d3.select("#divRamp");
 
     var svgRamp = container.select("#svgRamp")
@@ -90,13 +84,16 @@ function drawRampMetering()
                 .attr("height", 30)
                 .style("fill", function (d, i) { return colorscale(d.status); })
             /// EVENTS                                                                       
-            .on("click", function (d) {                              //   needs to be CHANGED
-                moveMapToLocation(d.location.lat, d.location.lng); /*drawControlRamp(d.id); */
+            .on("click", function (d) {                              
+                moveMapToLocation(d.location.lat, d.location.lng); 
                 selectController(d);
                 drawRampGraph(d.id);
                 // change head color of plot
                 d3.select("#divPlotHead").style("background-color", colorscale(d.status));
                 d3.select("#divControlHead").style("background-color", colorscale(d.status));
+                // puts border around square
+                redrawRampMetering(); //// NOT THE MOST EFFICIENT --- should change to the pilot version method (give rects ids)
+                d3.select(this).style("stroke-width", "2px").style("stroke", "black");
             })
             .on("mouseover", function (d) { d3.select(this).style("cursor", "pointer"); return d3.select(this).style("fill", "grey") })
             .on("mouseout", function (d) { return d3.select(this).style("fill", function (d, i) { return colorscale(d.status); }) });
@@ -110,7 +107,19 @@ function drawRampMetering()
                 .attr("x", function (d, i) { return (squareXDist + ((30 + squareXDist * 2) * (i % 5))) })
                 .attr("y", function (d, i) { return (squareYDist + ((30 + squareYDist * 2) * Math.floor(i / 5))) });
 
-//    var legendText = svgRamp.append("text").text("Legend").attr("x", 0).attr("y", 35);               
+    //    var legendText = svgRamp.append("text").text("Legend").attr("x", 0).attr("y", 35); 
+
+
+    ///// INIT TO RAMP 0
+//    moveMapToLocation(dataRampMetering[0].location.lat, dataRampMetering[0].location.lng);
+    selectController(dataRampMetering[0]);
+    drawRampGraph(dataRampMetering[0].id);
+    // change head color of plot
+    d3.select("#divPlotHead").style("background-color", colorscale(dataRampMetering[0].status));
+    d3.select("#divControlHead").style("background-color", colorscale(dataRampMetering[0].status));
+    // puts border around square
+//    redrawRampMetering(); //// NOT THE MOST EFFICIENT --- should change to the pilot version method (give rects ids)
+//    d3.select(this).style("stroke-width", "2px").style("stroke", "black");
 }
 
 
@@ -143,6 +152,8 @@ function redrawRampMetering()
         .attr("x", function (d, i) { return ( squareXDist + ((30 + squareXDist * 2)* (i%5))) })
         .attr("y", function (d, i) { return (squareYDist + ((30 + squareYDist * 2) * Math.floor(i / 5))) })
         .style("fill", function (d, i) { return colorscale(d.status); })
+        // removes square border
+        .style("stroke-width", "0px")
         .enter()
            .append("rect")
                .attr("x", function (d, i) { return (squareXDist + ((30 + squareXDist * 2) * (i % 5))) })
