@@ -1,0 +1,641 @@
+{
+  "epn": {
+    "events": [
+      {
+        "name": "Transaction",
+        "createdDate": "Tue Aug 05 2014",
+        "attributes": [
+          {
+            "name": "Certainty",
+            "type": "Double",
+            "defaultValue": "1",
+            "dimension": 0,
+            "description": "The certainty that this event happen (value between 0 to 1)"
+          },
+          {
+            "name": "OccurrenceTime",
+            "type": "Date",
+            "dimension": 0,
+            "description": "No value means it equals the event detection time, other option is to use one of the defined distribution functions with parameters"
+          },
+          {
+            "name": "ExpirationTime",
+            "type": "Date",
+            "dimension": 0,
+            "description": "Only till this time the cost and certainty parameters of the event are valid, and only till this time a proactive action is considered"
+          },
+          {
+            "name": "Cost",
+            "type": "Double",
+            "dimension": 0,
+            "description": "The cost of this event occurrence. Negative if this is an opportunity"
+          },
+          {
+            "name": "Duration",
+            "type": "Double",
+            "defaultValue": "0",
+            "dimension": 0,
+            "description": "Used in case the this event occur within an interval"
+          },
+          {
+            "name": "card_pan",
+            "type": "String",
+            "dimension": 0
+          },
+          {
+            "name": "terminal_id",
+            "type": "Double",
+            "dimension": 0
+          },
+          {
+            "name": "cvv_validation",
+            "type": "Integer",
+            "dimension": 0
+          },
+          {
+            "name": "amount_eur",
+            "type": "Double",
+            "dimension": 0
+          },
+          {
+            "name": "acquirer_country",
+            "type": "Integer",
+            "dimension": 0
+          },
+          {
+            "name": "is_cnp",
+            "type": "Integer",
+            "dimension": 0
+          }
+        ]
+      },
+      {
+        "name": "IncreasingAmounts",
+        "createdDate": "Tue Aug 05 2014",
+        "attributes": [
+          {
+            "name": "Certainty",
+            "type": "Double",
+            "defaultValue": "1",
+            "dimension": 0,
+            "description": "The certainty that this event happen (value between 0 to 1)"
+          },
+          {
+            "name": "OccurrenceTime",
+            "type": "Date",
+            "dimension": 0,
+            "description": "No value means it equals the event detection time, other option is to use one of the defined distribution functions with parameters"
+          },
+          {
+            "name": "ExpirationTime",
+            "type": "Date",
+            "dimension": 0,
+            "description": "Only till this time the cost and certainty parameters of the event are valid, and only till this time a proactive action is considered"
+          },
+          {
+            "name": "Cost",
+            "type": "Double",
+            "dimension": 0,
+            "description": "The cost of this event occurrence. Negative if this is an opportunity"
+          },
+          {
+            "name": "Duration",
+            "type": "Double",
+            "defaultValue": "0",
+            "dimension": 0,
+            "description": "Used in case the this event occur within an interval"
+          },
+          {
+            "name": "card_pan",
+            "type": "String",
+            "dimension": 0
+          },
+          {
+            "name": "terminal_id",
+            "type": "Double",
+            "dimension": 0
+          },
+          {
+            "name": "TrendCount",
+            "type": "Double",
+            "dimension": 0
+          }
+        ]
+      },
+      {
+        "name": "IncreasingAmountsCardIndication",
+        "createdDate": "Tue Aug 05 2014",
+        "attributes": [
+          {
+            "name": "Certainty",
+            "type": "Double",
+            "defaultValue": "1",
+            "dimension": 0,
+            "description": "The certainty that this event happen (value between 0 to 1)"
+          },
+          {
+            "name": "OccurrenceTime",
+            "type": "Date",
+            "dimension": 0,
+            "description": "No value means it equals the event detection time, other option is to use one of the defined distribution functions with parameters"
+          },
+          {
+            "name": "ExpirationTime",
+            "type": "Date",
+            "dimension": 0,
+            "description": "Only till this time the cost and certainty parameters of the event are valid, and only till this time a proactive action is considered"
+          },
+          {
+            "name": "Cost",
+            "type": "Double",
+            "dimension": 0,
+            "description": "The cost of this event occurrence. Negative if this is an opportunity"
+          },
+          {
+            "name": "Duration",
+            "type": "Double",
+            "defaultValue": "0",
+            "dimension": 0,
+            "description": "Used in case the this event occur within an interval"
+          },
+          {
+            "name": "card_pan",
+            "type": "String",
+            "dimension": 0
+          },
+          {
+            "name": "terminal_id",
+            "type": "Double",
+            "dimension": 0
+          },
+          {
+            "name": "TrendCount",
+            "type": "Double",
+            "dimension": 0
+          }
+        ]
+      },
+      {
+        "name": "FraudAtATM",
+        "createdDate": "Tue Aug 05 2014",
+        "attributes": [
+          {
+            "name": "Certainty",
+            "type": "Double",
+            "defaultValue": "1",
+            "dimension": 0,
+            "description": "The certainty that this event happen (value between 0 to 1)"
+          },
+          {
+            "name": "OccurrenceTime",
+            "type": "Date",
+            "dimension": 0,
+            "description": "No value means it equals the event detection time, other option is to use one of the defined distribution functions with parameters"
+          },
+          {
+            "name": "ExpirationTime",
+            "type": "Date",
+            "dimension": 0,
+            "description": "Only till this time the cost and certainty parameters of the event are valid, and only till this time a proactive action is considered"
+          },
+          {
+            "name": "Cost",
+            "type": "Double",
+            "dimension": 0,
+            "description": "The cost of this event occurrence. Negative if this is an opportunity"
+          },
+          {
+            "name": "Duration",
+            "type": "Double",
+            "defaultValue": "0",
+            "dimension": 0,
+            "description": "Used in case the this event occur within an interval"
+          },          
+          {
+            "name": "terminal_id",
+            "type": "Double",
+            "dimension": 0
+          }
+        ]
+      },
+      {
+        "name": "TransactionStats",
+        "createdDate": "Mon Dec 15 2014",
+        "attributes": [
+          {
+            "name": "Certainty",
+            "type": "Double",
+            "defaultValue": "1",
+            "dimension": 0,
+            "description": "The certainty that this event happen (value between 0 to 1)"
+          },
+          {
+            "name": "OccurrenceTime",
+            "type": "Date",
+            "dimension": 0,
+            "description": "No value means it equals the event detection time, other option is to use one of the defined distribution functions with parameters"
+          },
+          {
+            "name": "ExpirationTime",
+            "type": "Date",
+            "dimension": 0,
+            "description": "Only till this time the cost and certainty parameters of the event are valid, and only till this time a proactive action is considered"
+          },
+          {
+            "name": "Cost",
+            "type": "Double",
+            "dimension": 0,
+            "description": "The cost of this event occurrence. Negative if this is an opportunity"
+          },
+          {
+            "name": "Duration",
+            "type": "Double",
+            "defaultValue": "0",
+            "dimension": 0,
+            "description": "Used in case the this event occur within an interval"
+          },
+          {
+            "name": "country",
+            "type": "Integer",
+            "dimension": 0
+          },
+          {
+            "name": "average_transaction_amount_eur",
+            "type": "Double",
+            "dimension": 0
+          },
+          {
+            "name": "transaction_volume",
+            "type": "Double",
+            "dimension": 0
+          }
+        ]
+      }
+    ],
+    "epas": [
+     
+       {
+        "name": "IncreasingAmountsEPA",
+        "createdDate": "Tue Aug 05 2014",
+        "epaType": "Trend",
+        "context": "CompositeIncreasingAmounts",
+        "inputEvents": [
+          {
+            "name": "Transaction",
+            "expression": "Transaction.amount_eur",
+            "consumptionPolicy": "Reuse",
+            "instanceSelectionPolicy": "First"
+          }
+        ],
+        "computedVariables": [],
+        "evaluationPolicy": "Immediate",
+        "cardinalityPolicy": "Unrestricted",
+        "trendN": "2",
+        "trendRelation": "Increase",
+        "internalSegmentation": [],
+        "derivedEvents": [
+          {
+            "name": "IncreasingAmounts",
+            "reportParticipants": false,
+            "expressions": {
+              "Certainty": "Sigmoid(1,6,trend.count)",
+              "Duration": "0",
+              "card_pan": "context.CardNumberSegmentation",
+              "terminal_id": "context.ATMSegmentation",
+              "TrendCount": "trend.count"
+            }
+          }
+        ]
+      },
+      {
+        "name": "IncreasingAmountsCardIndicationEPA",
+        "createdDate": "Tue Aug 05 2014",
+        "epaType": "Trend",
+        "context": "CompositeIncreasingAmounts",
+        "inputEvents": [
+          {
+            "name": "Transaction",
+            "expression": "Transaction.amount_eur",
+            "consumptionPolicy": "Reuse",
+            "instanceSelectionPolicy": "First"
+          }
+        ],
+        "computedVariables": [],
+        "evaluationPolicy": "Deferred",
+        "cardinalityPolicy": "Unrestricted",
+        "trendN": "2",
+        "trendRelation": "Increase",
+        "internalSegmentation": [],
+        "derivedEvents": [
+          {
+            "name": "IncreasingAmountsCardIndication",
+            "reportParticipants": false,
+            "expressions": {              
+              "Duration": "0",
+              "Certainty": "Sigmoid(1,5,trend.count)",
+              "card_pan": "context.CardNumberSegmentation",
+              "terminal_id": "context.ATMSegmentation",
+              "TrendCount": "trend.count"
+            }
+          }
+        ]
+      },
+      {
+        "name": "FraudAtATMEPA",
+        "createdDate": "Tue Aug 05 2014",
+        "epaType": "Aggregate",
+        "context": "CompositeFraudAtATM",
+        "inputEvents": [
+          {
+            "name": "IncreasingAmountsCardIndication",                       
+            "consumptionPolicy": "Reuse",
+            "instanceSelectionPolicy": "First"
+          }
+        ],
+        "computedVariables": [
+          {
+            "name": "Count",
+            "aggregationType": "Count",
+            "IncreasingAmountsCardIndication": "1"
+          }
+        ],
+        "assertion": "(1.0-CDF(Count,2.0)) > 0.8",
+        "evaluationPolicy": "Immediate",
+        "cardinalityPolicy": "Unrestricted",
+        "internalSegmentation": [],
+        "derivedEvents": [
+          {
+            "name": "FraudAtATM",
+            "reportParticipants": false,
+            "expressions": {
+              "Certainty": "1.0 - CDF(Count,2.0)",
+              "Duration": "0",
+              "terminal_id": "context.ATMSegmentation"
+            }
+          }
+        ]
+      },
+      {
+        "name": "AggregateStatsEPA",
+        "createdDate": "Mon Dec 15 2014",
+        "epaType": "Aggregate",
+        "context": "CompositeCountry",
+        "inputEvents": [
+          {
+            "name": "Transaction",
+            "consumptionPolicy": "Consume",
+            "instanceSelectionPolicy": "First"
+          }
+        ],
+        "computedVariables": [
+          {
+            "name": "AverageAmountEur",
+            "aggregationType": "Average",
+            "Transaction": "Transaction.amount_eur"
+          },
+          {
+            "name": "Volume",
+            "aggregationType": "Sum",
+            "Transaction": "Transaction.amount_eur"
+          }
+        ],
+        "evaluationPolicy": "Deferred",
+        "cardinalityPolicy": "Single",
+        "internalSegmentation": [],
+        "derivedEvents": [
+          {
+            "name": "TransactionStats",
+            "reportParticipants": false,
+            "expressions": {
+              "Duration": "0",
+              "country": "context.CountrySegmentation",
+              "average_transaction_amount_eur": "AverageAmountEur",
+              "transaction_volume": "Volume"
+            }
+          }
+        ]
+      }
+      
+      
+    ],
+    "contexts": {
+      "temporal": [
+        {
+          "name": "TemporalInitiatedFirstTransaction",
+          "createdDate": "Mon Aug 18 2014",
+          "type": "TemporalInterval",
+          "atStartup": false,
+          "neverEnding": false,
+          "initiators": [
+            {
+              "initiatorType": "Event",
+              "initiatorPolicy": "Ignore",
+              "name": "Transaction"
+            }
+          ],
+          "terminators": [
+            {
+              "terminatorType": "RelativeTime",
+              "terminationType": "Terminate",
+              "relativeTime": "30000"
+            }
+          ]
+        },
+        {
+          "name": "TemporalInitiatedIncreasingAmountsFirst",
+          "createdDate": "Tue Aug 05 2014",
+          "type": "TemporalInterval",
+          "atStartup": false,
+          "neverEnding": false,
+          "initiators": [
+            {
+              "initiatorType": "Event",
+              "initiatorPolicy": "Ignore",
+              "name": "IncreasingAmountsCardIndication"
+            }
+          ],
+          "terminators": [
+            {
+              "terminatorType": "RelativeTime",
+              "terminationType": "Terminate",
+              "relativeTime": "30000"
+            }
+          ]
+        }
+      ],
+      "segmentation": [
+        {
+          "name": "CardNumberSegmentation",
+          "createdDate": "Tue Aug 05 2014",
+          "participantEvents": [
+            {
+              "name": "Transaction",
+              "expression": "Transaction.card_pan"
+            }
+          ]
+        },
+        {
+          "name": "ATMSegmentation",
+          "createdDate": "Tue Aug 05 2014",
+          "participantEvents": [
+            {
+              "name": "Transaction",
+              "expression": "Transaction.terminal_id"
+            },
+            {
+              "name": "IncreasingAmounts",
+              "expression": "IncreasingAmounts.terminal_id"
+            },
+            {
+              "name": "IncreasingAmountsCardIndication",
+              "expression": "IncreasingAmountsCardIndication.terminal_id"
+            }
+          ]
+        },        
+        {
+          "name": "CountrySegmentation",
+          "createdDate": "Mon Dec 15 2014",
+          "participantEvents": [
+            {
+              "name": "Transaction",
+              "expression": "Transaction.acquirer_country"
+            }
+          ]
+        }
+      ],
+      "composite": [
+        {
+          "name": "CompositeIncreasingAmounts",
+          "createdDate": "Wed Aug 06 2014",
+          "temporalContexts": [
+            {
+              "name": "TemporalInitiatedFirstTransaction"
+            }
+          ],
+          "segmentationContexts": [
+            {
+              "name": "CardNumberSegmentation"
+            },
+            {
+              "name": "ATMSegmentation"
+            }
+          ]
+        },
+        {
+          "name": "CompositeFraudAtATM",
+          "createdDate": "Wed Aug 06 2014",
+          "temporalContexts": [
+            {
+              "name": "TemporalInitiatedIncreasingAmountsFirst"
+            }
+          ],
+          "segmentationContexts": [           
+            {
+              "name": "ATMSegmentation"
+            }
+          ]
+        },        
+        {
+          "name": "CompositeCountry",
+          "createdDate": "Mon Dec 15 2014",
+          "temporalContexts": [
+            {
+              "name": "TemporalInitiatedFirstTransaction"
+            }
+          ],
+          "segmentationContexts": [
+            {
+              "name": "CountrySegmentation"
+            }
+          ]
+        }
+      ]
+    },
+    "consumers": [
+      {
+        "name": "ExampleConsumer",
+        "createdDate": "Wed Aug 06 2014",
+        "type": "File",
+        "properties": [
+          {
+            "name": "filename",
+            "value": "D:\\EP\\Projects\\EU\\SPEEDD\\usecases\\Feedzai\\exampleOutput.txt"
+          },
+          {
+            "name": "formatter",
+            "value": "tag"
+          },
+          {
+            "name": "delimiter",
+            "value": ";"
+          },
+          {
+            "name": "tagDataSeparator",
+            "value": "="
+          },
+          {
+            "name": "SendingDelay",
+            "value": "1000"
+          },
+          {
+            "name": "dateFormat",
+            "value": "dd/MM/yyyy-HH:mm:ss"
+          }
+        ],
+        "events": [
+          {
+            "name": "Transaction"
+          },          
+           {
+            "name": "IncreasingAmounts"
+          },
+           {
+            "name": "IncreasingAmountsCardIndication"
+          },
+           {
+            "name": "FraudAtATM"
+          }
+        ]
+      }
+    ],
+    "producers": [
+      {
+        "name": "ExampleProducer",
+        "createdDate": "Wed Aug 06 2014",
+        "type": "File",
+        "properties": [
+          {
+            "name": "filename",
+            "value": "D:\\EP\\Projects\\EU\\SPEEDD\\usecases\\Feedzai\\exampleInputUncertain.txt"
+          },
+          {
+            "name": "pollingInterval",
+            "value": "1000"
+          },
+          {
+            "name": "sendingDelay",
+            "value": "1000"
+          },
+          {
+            "name": "formatter",
+            "value": "tag"
+          },
+          {
+            "name": "delimiter",
+            "value": ";"
+          },
+          {
+            "name": "tagDataSeparator",
+            "value": "="
+          },
+          {
+            "name": "dateFormat",
+            "value": "dd/MM/yyyy-HH:mm:ss"
+          }
+        ],
+        "events": []
+      }
+    ],
+    "name": "FeedzaiFraud"
+  }
+}

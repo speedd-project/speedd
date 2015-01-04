@@ -50,7 +50,7 @@ public class TrafficDecisionMakerBolt extends BaseRichBolt {
 	
 	private OutputCollector collector;
 	private static final EventFactory eventFactory = SpeeddEventFactory.getInstance();
-	Logger logger = LoggerFactory.getLogger(DMPlaceholderBolt.class);
+	Logger logger = LoggerFactory.getLogger(TrafficDecisionMakerBolt.class);
 	
 	Map<String, onrampStruct> onrampData = new HashMap<String, onrampStruct>();
 
