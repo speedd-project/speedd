@@ -68,9 +68,7 @@ public class TrafficAggregatedReadingCsv2Event implements EventParser, Constants
 
 			long timestamp;
 
-			System.out.println("dateTimeStr=" + dateTimeStr);
 			timestamp = dateTimeFormat.parse(dateTimeStr).getTime();
-			System.out.println("timestamp=" + timestamp);
 
 			HashMap<String, Object> attrMap = new HashMap<String, Object>();
 			
