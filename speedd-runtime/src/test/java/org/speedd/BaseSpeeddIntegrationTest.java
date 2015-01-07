@@ -342,7 +342,7 @@ public abstract class BaseSpeeddIntegrationTest {
 	protected void startSpeeddTopology(String configPath, String name) {
 		Properties properties = new Properties();
 		try {
-			properties.load(TestCreditCardFraudManagement.class.getClassLoader()
+			properties.load(this.getClass().getClassLoader()
 					.getResourceAsStream(configPath));
 			logger.info("Properties loaded:" + properties.toString());
 		} catch (Exception e) {
@@ -436,7 +436,7 @@ public abstract class BaseSpeeddIntegrationTest {
 		}
 		
 		if(expectedActions != null){
-			verifyEvents(getOutEventConsumer(), getOutEventKafkaConfig(), expectedActions);
+			verifyEvents(getActionConsumer(), getActionKafkaConfig(), expectedActions);
 		}
 	}
 

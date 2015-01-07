@@ -9,7 +9,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.speedd.cep.ProtonOutputConsumerBolt;
 import org.speedd.data.Event;
-import org.speedd.dm.EchoBolt;
 
 import storm.kafka.BrokerHosts;
 import storm.kafka.KafkaSpout;
@@ -41,8 +40,6 @@ public class SpeeddTopology {
 	public static final String ADMIN_COMMAND_READER = "admin-command-reader";
 
 	public static final String IN_EVENT_READER = "in-event-reader";
-
-	private static final String EVENT_PROCESSOR = "event-processor";
 
 	private static final String OUT_EVENT_WRITER = "out-event-writer";
 
@@ -112,7 +109,7 @@ public class SpeeddTopology {
 		IRichBolt dmBolt = createDecisionMakerBolt(speeddConfig.dmClass);
 		// @FIXME distribute output events according to the use-case specific
 		// grouping strategy
-		builder.setBolt(DECISION_MAKER, new EchoBolt())
+		builder.setBolt(DECISION_MAKER, dmBolt)
 				.shuffleGrouping(CEP_EVENT_CONSUMER)
 				.allGrouping(ADMIN_COMMAND_READER);
 

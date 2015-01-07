@@ -13,6 +13,7 @@ import org.junit.Test;
 import org.speedd.data.Event;
 import org.speedd.data.impl.SpeeddEventFactory;
 
+import backtype.storm.event__init;
 import backtype.storm.task.IOutputCollector;
 import backtype.storm.task.OutputCollector;
 import backtype.storm.tuple.Tuple;
@@ -178,6 +179,7 @@ public class TestTrafficDecisionMakerBolt {
 
 	// function to verify actions
 	private void verifyAction(Event actionEvent, String expectedLocation, double expectedMeterRate) {
+		assertEquals("UpdateMeteringRateAction", actionEvent.getEventName());
 		// read attributes
 		Double meterRate = (Double)actionEvent.getAttributes().get("newMeteringRate");
 		String location = (String)actionEvent.getAttributes().get("location");

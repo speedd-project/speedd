@@ -59,11 +59,12 @@ public class TrafficDecisionMakerBolt extends BaseRichBolt {
 	public void prepare(Map stormConf, TopologyContext context,
 			OutputCollector collector) {
 		this.collector = collector;
+		logger.info("DMDMDMDM!!! Preparing decision maker bolt");
 	}
 
 	@Override
 	public void execute(Tuple input) {
-		logger.debug("Processing tuple " + input.toString());
+		logger.info("DMDMDMDM!!! Processing tuple " + input.toString());
 		Event event = (Event)input.getValueByField("message");
 		
 		// read event
@@ -131,8 +132,8 @@ public class TrafficDecisionMakerBolt extends BaseRichBolt {
 					outAttrs.put("density", density); // may serve as a justification for the decision
 					outAttrs.put("lane", "onramp"); // to distinguish from variable speed limits on the mainline?
 					
-					Event outEvent = eventFactory.createEvent("Action", timestamp, outAttrs);
-					logger.debug("Emitting out event: " + outEvent.getEventName());
+					Event outEvent = eventFactory.createEvent("UpdateMeteringRateAction", timestamp, outAttrs);
+					logger.info("Emitting out event: " + outEvent.getEventName());
 					
 					// Use sensor labels for partitioning by kafka
 					collector.emit(new Values(location, outEvent));
@@ -145,6 +146,7 @@ public class TrafficDecisionMakerBolt extends BaseRichBolt {
 		}
 		else
 		{
+			logger.warn("location is null for tuple " + input);
 			// Discard event and do nothing. Could throw an exception, report an error etc.
 		}
 				
