@@ -592,8 +592,11 @@
            {
             "name": "IncreasingAmountsCardIndication"
           },
-           {
+          {
             "name": "FraudAtATM"
+          },
+          {
+            "name": "TransactionStats"
           }
         ]
       }
