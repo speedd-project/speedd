@@ -1,0 +1,170 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title>Fraud UI</title>
+
+    <style type="text/css">
+        * 
+        {
+            box-sizing: border-box;
+            -moz-box-sizing: border-box;
+            -webkit-box-sizing: border-box;
+        }
+        [draggable] 
+        {
+            -moz-user-select: none;
+            -khtml-user-select: none;
+            -webkit-user-select: none;
+            user-select: none;
+            /* Required to make elements draggable in old WebKit */
+            -khtml-user-drag: element;
+            -webkit-user-drag: element;
+        }
+        html 
+        {
+            height: 100%;
+            width:100%;
+        }
+
+        body 
+        {
+            height: 100%;
+            width: 100%;
+            margin: 0;
+            padding: 0;
+        }
+        .top-bar-div {
+            border: 2px solid #a1a1a1;
+            border-radius: 0px;
+            float: left;
+            text-align: center;
+            position: absolute;
+            height: 80%;
+            width: 23%;
+            top: 10%;
+            align-content: center;
+            font-weight: bold;
+            font-family: Helvetica;
+        }
+        .headers {
+            height: 30px;
+            width: 100%;
+            position: absolute;
+            top: 0px;
+            right: 0px;
+            background-color: black;
+            border-bottom: 2px solid #a1a1a1;
+            border-radius: 0px;
+            text-align: center;
+            font-weight: bold;
+            font-size: 20px;
+            vertical-align: middle;
+            color: #C4C4C4;
+            font-family: Helvetica;
+        }
+        .containers {
+            height: calc(100% - 30px);
+            width: 100%;
+            position: absolute;
+            top: 30px;
+            left: 0px;
+            background-color: #C4C4C4;
+            font-family: Helvetica;
+        }
+        .node 
+        {
+            border: solid 1px white;
+            font: 10px sans-serif;
+            line-height: 12px;
+            overflow: hidden;
+            position: absolute;
+            text-indent: 2px;
+        }
+    </style>
+
+    <script src="libs/d3.min.js" charset="utf-8"></script>
+    <script src="libs/d3.js" charset="utf-8"></script>
+    <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/mootools/1.2.4/mootools-yui-compressed.js"></script>
+    <script src="http://code.jquery.com/jquery-1.10.1.min.js"></script>
+    <script src="http://code.jquery.com/jquery-migrate-1.2.1.min.js"></script>
+    <script type="text/javascript" src="https://cdn.socket.io/socket.io-1.2.1.js"></script>
+
+    <script type="text/javascript" src="js/treemap.js"></script>
+    <script type="text/javascript" src="js/log.js"></script>
+    <script type="text/javascript" src="js/analysts.js"></script>
+    <script type="text/javascript" src="js/transInv.js"></script>
+    <script type="text/javascript" src="js/selection.js"></script>
+    <script type="text/javascript" src="js/otherInfo.js"></script>
+    <script type="text/javascript" src="js/topBar.js"></script>
+    <script type="text/javascript" src="js/kmessage.js"></script>
+    <script type="text/javascript" src="data/treemapcountries.js"></script>
+</head>
+<body>
+    <script type="text/javascript">
+var socket = io.connect();
+socket.on('news', function (data) {
+    console.log(data);
+//    socket.emit('my other event', { my: 'data' });
+//    socket.emit('speedd-out-events', { my: 'data' });
+});
+socket.on("speedd-out-events", function(data){
+	parseKafkaMessage(JSON.parse(data));
+//	console.log(data);  
+});
+	
+        window.onload = initUI;
+
+        function initUI()
+        {
+            formatData();
+            drawLog();
+            drawAnalysts();
+            drawTransInv();
+            drawSelection();
+            drawOtherInfo();
+            drawTopBar();
+            drawTreeMap();
+        }
+    </script>
+
+
+
+    <div id="top-bar" style="height: 15%; width: 100%; position: absolute; top: 0px; background-color: #C4C4C4; border: 2px solid #a1a1a1;">
+        <div id="divTop1" class="top-bar-div" style="left: 1%; background-color: #159a75;"></div>
+        <div id="divTop2" class="top-bar-div" style="left: 26%; background-color: #d95929;"></div>
+        <div id="divTop3" class="top-bar-div" style="right: 26%; background-color: #5d5290;"></div>
+        <div id="divTop4" class="top-bar-div" style="right: 1%; background-color: #1f7aa3;"></div>
+    </div>
+    <div id="main-screen" style="height:85%; width:100%; position:absolute; bottom:0px; background-color: white;">
+        <div id="divMap" style="height: 66%; width: 75%; position: absolute; top: 0px; background-color: #C4C4C4; border: 2px solid #a1a1a1; border-radius: 0px;"></div>
+        
+        <div id="divAnalysts1" style="height: 36%; width: 25%; position: absolute; top: 0px; right:0px; background-color: #C4C4C4; border: 2px solid #a1a1a1; border-radius: 0px; ">
+            <div id="divAnalysts1Header" class="headers"></div>
+            <div id="divAnalysts1Container" class="containers"></div>
+        </div>
+        <div id="divAnalysts2" style="height: 30%; width: 25%; position: absolute; top: 36%; right:0px; background-color: #C4C4C4; border: 2px solid #a1a1a1; border-radius: 0px; ">
+<!--            <div id="divSelection2Header" class="headers"></div>    -->
+            <div id="divAnalysts2Container" class="containers" style="height:100%; top:0px"></div>
+        </div>
+        <div id="divTransInv" style="height: 34%; width: 25%; position: absolute; bottom:0px; right:0px; background-color: #C4C4C4; border: 2px solid #a1a1a1; border-radius: 0px;">
+            <div id="divTransInvHeader" class="headers"></div>
+            <div id="divTransInvContainer" class="containers" style="overflow-y:auto;"></div>
+        </div>
+
+        <div id="divSelection" style="height: 34%; width: 25%; position: absolute; bottom: 0px; left:0px; background-color: #C4C4C4; border: 2px solid #a1a1a1; border-radius: 0px;">
+            <div id="divSelectionHeader" class="headers"></div>
+            <div id="divSelectionContainer" class="containers" style="overflow-y: auto;"></div>
+        </div>
+        <div id="divOtherInfo" style="height: 34%; width: 25%; position: absolute; bottom: 0px; left:25%; background-color: #C4C4C4; border: 2px solid #a1a1a1; border-radius: 0px;">
+            <div id="divOtherInfoHeader" class="headers"></div>
+            <div id="divOtherInfoContainer" class="containers"></div>
+        </div>
+        <div id="divFlaggedTrans" style="height: 34%; width: 25%; position: absolute; bottom:0px; right:25%; background-color: #C4C4C4; border: 2px solid #a1a1a1; border-radius: 0px;">
+            <div id="divFlaggedTransHeader" class="headers"></div>
+            <div id="divFlaggedTransContainer" class="containers" style="overflow-y: auto;"></div>
+        </div>
+        
+    </div>   
+    
+</body>
+</html>
