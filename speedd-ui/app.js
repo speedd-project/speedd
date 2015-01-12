@@ -55,7 +55,7 @@ function setKafka(){
 	consumer = new Consumer(
 		client, 
 		// payloads
-			[//{ topic: 'speedd-out-events', partition: 0, offset: 0 },
+			[{ topic: 'speedd-actions', partition: 0, offset: 0 },
 			 { topic: 'speedd-out-events', partition: 0, offset: 0 }
 			 ],
 		// options
