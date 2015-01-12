@@ -45,6 +45,9 @@ var areasOfInterest = [];
 var infowindow = new google.maps.InfoWindow({
     content: '<div id="divVideo" style="width: 500px; height: 300px"></div>'
 });
+var infowindowCongestion = new google.maps.InfoWindow({
+    content: '<div id="divCongestion" style="width: 300px; height: 150px"></div>'
+});
 
 function initialize() {
     // Create an array of styles.
@@ -170,12 +173,12 @@ function moveMapToLocation(lat,lng)
     var location = new google.maps.LatLng(lat, lng);
 
     map.setCenter(location);
-    map.setZoom(18);
+    map.setZoom(15);
 
 }
 
 
-function drawCirclesAlert(lat,lng,name,certainty)
+function drawCirclesAlert(lat,lng,name,certainty,problem_id)
 {// draw on map using gmaps api
     
     // determine color of circle (from name) and fill opacity (from certainty)
@@ -187,7 +190,7 @@ function drawCirclesAlert(lat,lng,name,certainty)
 
 
     if (name == "Congestion") {
-        color = "red";
+        color = "orangered";
     }
     else if (name == "PredictedCongestion") {
         color = "steelblue";
@@ -201,17 +204,50 @@ function drawCirclesAlert(lat,lng,name,certainty)
     var circle = new google.maps.Circle({
         center: new google.maps.LatLng(lat, lng),
         radius: 200,
+		clickable: true,
         strokeColor: "black",
         strokeOpacity: 0.8,
         strokeWeight: 1,
         fillColor: color,//"red",
         fillOpacity: circleOpacity,
+		problemID: problem_id,
         map: map
     });
-
+	// add event to circle
+	google.maps.event.addListener(circle, 'click', displayCongestionInfo);
+	
     return circle;
 }
 
+function displayCongestionInfo()
+{
+//	infowindowCongestion.open(map, this.getCenter());
+
+    var circle = this;
+    setTimeout(function () {
+        var pos = circle.getCenter();
+
+		// sets position of infowindow at circle centre
+		infowindowCongestion.setPosition(pos);
+		infowindowCongestion.open(map);
+		
+		// modifies the infowindow content
+		for (var i = 0; i < activeMapCircles.length; i++)
+		{
+			if (activeMapCircles[i].problemID == circle.problemID)
+			{
+				d3.select("#divCongestion")
+					.append("p").text("problem name: "+activeMapCircles[i].name)
+					.append("p").text("timestamp: "+activeMapCircles[i].timestamp)
+					.append("p").text("certainty: "+activeMapCircles[i].certainty)
+					.append("p").text("problem id: "+activeMapCircles[i].problemID)
+					.append("p").text("av. density: "+activeMapCircles[i].density);
+			}
+		}
+		
+		
+    }, 50);
+}
 
 /// doesn't work properly
 function scaleOverlay()
@@ -391,7 +427,7 @@ function seeCam()   // function to view cam at the selected marker location
 
     setTimeout(function () {
         var pos = marker.getPosition();
-
+		
         // maps API fails without this
         pano = new google.maps.StreetViewPanorama(document.getElementById("divVideo"),
         {

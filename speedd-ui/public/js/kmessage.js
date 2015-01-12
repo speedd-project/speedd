@@ -3,9 +3,9 @@ var updateMeteringLog = [];
 var predictedCongestionLog = [];
 var activeMapCircles = [];
 
-var mesP = { "name": "PredictedCongestion", "timestamp": 12151, "attributes": { "location": "0024a4dc0000343b", "problem_id": 1, "Certainty": 0.2 } };
-var mesP2 = { "name": "PredictedCongestion", "timestamp": 12151, "attributes": { "location": "0024a4dc0000343b", "problem_id": 2, "Certainty": 0.8 } };
-var mesC = { "name": "Congestion", "timestamp": 12151, "attributes": { "location": "0024a4dc0000343b", "problem_id": 3, "Certainty": 0.5 } };
+var mesP = { "name": "PredictedCongestion", "timestamp": 12151, "attributes": { "location": "0024a4dc0000343b", "problem_id": 1, "Certainty": 0.2, "average_density": 1.777 } };
+var mesP2 = { "name": "PredictedCongestion", "timestamp": 12151, "attributes": { "location": "0024a4dc0000343b", "problem_id": 2, "Certainty": 0.8, "average_density": 1.777 } };
+var mesC = { "name": "Congestion", "timestamp": 12151, "attributes": { "location": "0024a4dc0000343b", "problem_id": 3, "Certainty": 1, "average_density": 1.777 } };
 var mesCC = { "name": "ClearCongestion", "timestamp": 12151, "attributes": { "location": "0024a4dc0000343b", "problem_id": 3, "Certainty": 0.2 } };
 
 var mesRate = { "name": "UpdateMeteringRateAction", "timestamp": 12151, "attributes": { "density": 15 ,"location": "0024a4dc0000343b", "newMeteringRate": 3, "controlType": "auto" } };
@@ -67,18 +67,21 @@ function sensorIdToLatLng(sensorID)
 function displayCongestion(m) 
 {
     var pos = sensorIdToLatLng(m.attributes.location);
-    var circle = drawCirclesAlert(pos.lat, pos.lng, m.name, m.attributes.Certainty);
+    var circle = drawCirclesAlert(pos.lat, pos.lng, m.name, m.attributes.Certainty,m.attributes.problem_id);
 
-    var problem = { name: 0, timestamp: 0, sensorID: 0, problemID: 0, certainty:0, mapCircle: 0 };
+    var problem = { name: 0, timestamp: 0, sensorID: 0, problemID: 0, certainty:0, density:0, mapCircle: 0 };
     problem.name = m.name;
     problem.timestamp = m.timestamp;
     problem.sensorID = m.attributes.location;
     problem.problemID = m.attributes.problem_id;
     problem.mapCircle = circle;
     problem.certainty = m.attributes.Certainty;
+	problem.density = m.attributes.average_density;
 
     // stores all detected and predicted congestions
     activeMapCircles.push(problem);
+	// moves map to location
+	moveMapToLocation(pos.lat,pos.lng);
 }
 
 
@@ -87,12 +90,17 @@ function clearCongestion(m)
 {
     var pos = sensorIdToLatLng(m.attributes.location);
     var problemID = m.attributes.problem_id;
+	
+	var circlesToDelete = [];
 
     for (var i = 0; i < activeMapCircles.length; i++)
     {
         if (activeMapCircles[i].problemID == problemID)
         {
+			// removes circle from map
             activeMapCircles[i].mapCircle.setMap(null);
+			// removes circle from active circles array
+			activeMapCircles.splice(i,1); // doesn't work if multiple circles have same problemID
         }
     }
 }
