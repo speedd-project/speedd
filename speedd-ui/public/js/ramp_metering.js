@@ -2,6 +2,51 @@
 
 var dataRampMetering = []; // ramp meters are saved here
 
+var rampRateStatus = {"min": 100, "max":101, "minThresh": 100, "maxThresh": 101};
+
+function checkRampStatus(currentRate)
+{
+	if(currentRate > rampRateStatus.max)
+		rampRateStatus.max = currentRate;
+	if(currentRate < rampRateStatus.min)
+		rampRateStatus.min = currentRate;
+		
+	rampRateStatus.minThresh = (rampRateStatus.max - rampRateStatus.min) * 0.2 + rampRateStatus.min;
+	rampRateStatus.maxThresh = (rampRateStatus.max - rampRateStatus.min) * 0.8 + rampRateStatus.min;
+	
+	console.log(rampRateStatus);
+}
+
+function colorBasedOnRate(rate)
+{
+	var color = "white";
+		
+	if(rate <= rampRateStatus.maxThresh && rate >= rampRateStatus.minThresh)
+	{
+		var colorscale = d3.scale.linear()
+                .domain([rampRateStatus.minThresh, rampRateStatus.maxThresh])
+                .range(["green", "yellow"]);
+		color = colorscale(rate);
+	}
+	else if (rate > rampRateStatus.maxThresh)
+	{
+		var colorscale = d3.scale.linear()
+                .domain([rampRateStatus.maxThresh, rampRateStatus.max])
+                .range(["yellow", "red"]);
+		color = colorscale(rate);
+	}
+	else if (rate < rampRateStatus.minThresh)
+	{
+		var colorscale = d3.scale.linear()
+                .domain([rampRateStatus.min, rampRateStatus.minThresh])
+                .range(["white", "green"]);
+		color = colorscale(rate);
+	}
+	else
+		color = "white"
+		
+	return color;
+}
 
 
 function getRamps()
@@ -82,21 +127,21 @@ function drawRampMetering()
                 .attr("y", function (d, i) { return ( squareYDist + ((30 + squareYDist * 2)* Math.floor(i/5))) })
                 .attr("width", 30)
                 .attr("height", 30)
-                .style("fill", function (d, i) { return colorscale(d.status); })
+                .style("fill", function (d, i) { return /*colorscale(d.status)*/colorBasedOnRate(d.status); })
             /// EVENTS                                                                       
             .on("click", function (d) {                              
                 moveMapToLocation(d.location.lat, d.location.lng); 
                 selectController(d);
                 drawRampGraph(d.id);
-                // change head color of plot
-                d3.select("#divPlotHead").style("background-color", colorscale(d.status));
-                d3.select("#divControlHead").style("background-color", colorscale(d.status));
+                // change head color of plot ----- to be changed
+                d3.select("#divPlotHead").style("background-color", /*colorscale(d.status)*/colorBasedOnRate(d.status));
+                d3.select("#divControlHead").style("background-color", /*colorscale(d.status)*/colorBasedOnRate(d.status));
                 // puts border around square
                 redrawRampMetering(); //// NOT THE MOST EFFICIENT --- should change to the pilot version method (give rects ids)
                 d3.select(this).style("stroke-width", "2px").style("stroke", "black");
             })
             .on("mouseover", function (d) { d3.select(this).style("cursor", "pointer"); return d3.select(this).style("fill", "grey") })
-            .on("mouseout", function (d) { return d3.select(this).style("fill", function (d, i) { return colorscale(d.status); }) });
+            .on("mouseout", function (d) { return d3.select(this).style("fill", function (d, i) { return /*colorscale(d.status)*/colorBasedOnRate(d.status); }) });
 
     // text on mouse hover
     drawing.append("title").text(function (d) { return d.status });//statusScale(d.status)});
@@ -115,8 +160,8 @@ function drawRampMetering()
     selectController(dataRampMetering[0]);
     drawRampGraph(dataRampMetering[0].id);
     // change head color of plot
-    d3.select("#divPlotHead").style("background-color", colorscale(dataRampMetering[0].status));
-    d3.select("#divControlHead").style("background-color", colorscale(dataRampMetering[0].status));
+    d3.select("#divPlotHead").style("background-color", colorBasedOnRate(dataRampMetering[0].status));
+    d3.select("#divControlHead").style("background-color", colorBasedOnRate(dataRampMetering[0].status));
     // puts border around square
 //    redrawRampMetering(); //// NOT THE MOST EFFICIENT --- should change to the pilot version method (give rects ids)
 //    d3.select(this).style("stroke-width", "2px").style("stroke", "black");
@@ -151,7 +196,7 @@ function redrawRampMetering()
     var drawing = g.selectAll("rect").data(dataRampMetering)
         .attr("x", function (d, i) { return ( squareXDist + ((30 + squareXDist * 2)* (i%5))) })
         .attr("y", function (d, i) { return (squareYDist + ((30 + squareYDist * 2) * Math.floor(i / 5))) })
-        .style("fill", function (d, i) { return colorscale(d.status); })
+        .style("fill", function (d, i) { return colorBasedOnRate(d.status); })
         // removes square border
         .style("stroke-width", "0px")
         .enter()
@@ -160,7 +205,7 @@ function redrawRampMetering()
                .attr("y", function (d, i) { return (squareYDist + ((30 + squareYDist * 2) * Math.floor(i / 5))) })
                .attr("width", 30)
                .attr("height", 30)
-               .style("fill", function (d, i) { return colorscale(d.status); });
+               .style("fill", function (d, i) { return colorBasedOnRate(d.status); });
 
 
     var labels = g.selectAll("text").data(dataRampMetering)

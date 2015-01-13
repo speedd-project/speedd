@@ -116,8 +116,8 @@ function updateRateFromMessage(m)
     dataRampMetering[posId.rampId].rateHistory.push(m.attributes.newMeteringRate);
     dataRampMetering[posId.rampId].controlTypeHistory.push(m.attributes.controlType);
 
-
-    
+	// check for min and max rates
+    checkRampStatus(m.attributes.newMeteringRate);
     // redraw Graphs
     redrawRampMetering();
     redrawRampGraph();
@@ -125,8 +125,8 @@ function updateRateFromMessage(m)
     var colorscale = d3.scale.linear()
                 .domain([0, 3])
                 .range(["yellow", "green"]);
-    d3.select("#divPlotHead").style("background-color", colorscale(dataRampMetering[posId.rampId].status));
-    d3.select("#divControlHead").style("background-color", colorscale(dataRampMetering[posId.rampId].status));
+//    d3.select("#divPlotHead").style("background-color", colorscale(dataRampMetering[posId.rampId].status));
+//    d3.select("#divControlHead").style("background-color", colorscale(dataRampMetering[posId.rampId].status));
 
     return dataRampMetering[posId.rampId];
 
