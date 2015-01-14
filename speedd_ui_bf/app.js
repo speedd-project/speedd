@@ -38,7 +38,7 @@ function setSocket(){
 		});
 		socket.on('speedd-out-events', function (data) {
 			console.log(data);
-			var toSend = [{ topic: 'speedd-admin', messages: data, partition: 0 }];
+			var toSend = [{ topic: 'speedd-fraud-admin', messages: data, partition: 0 }];
 			producer.send(toSend, function (err, data) {
 				console.log(toSend);
 			});
@@ -68,7 +68,7 @@ function setKafka(){
 	Producer = kafka.Producer;
 	producer = new Producer(client);
 	payloads = [
-			{ topic: 'speedd-out-events', messages: 'THIS IS THE NEW APP', partition: 0 }
+			{ topic: 'speedd-fraud-out-events', messages: 'THIS IS THE NEW APP', partition: 0 }
 		];
 	producer.on('ready', function () {
 		producer.send(payloads, function (err, data) {
