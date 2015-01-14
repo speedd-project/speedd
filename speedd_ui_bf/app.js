@@ -57,7 +57,7 @@ function setKafka(){
 		// payloads
 			[{ topic: 'speedd-fraud-actions', partition: 0, offset: 0 },
 			 { topic: 'speedd-fraud-out-events', partition: 0, offset: 0 },
-			 { topic: 'speedd-fraud-in-events', partition: 0, offset: 0 },
+			 { topic: 'speedd-fraud-in-events', partition: 0, offset: 0 }
 			 ],
 		// options
 		{fromOffset: true} // true = read messages from beginning
