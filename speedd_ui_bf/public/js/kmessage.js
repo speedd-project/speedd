@@ -111,7 +111,10 @@ function updateFlaggedTransactions(message) {
             // clear selection info
             d3.select("#textSelectionContainer").selectAll("p").remove();
             // print flagged transaction info
-            d3.select("#textSelectionContainer").append("p").text(message.name);
+            d3.select("#textSelectionContainer").append("p").text("Name: " + message.name);
+			d3.select("#textSelectionContainer").append("p").text("Terminal ID: " + message.attributes.terminal_id);
+			d3.select("#textSelectionContainer").append("p").text("Certainty: " + message.attributes.Certainty);
+			d3.select("#textSelectionContainer").append("p").text("Card Pan: " + message.attributes.card_pan);
 
 
             // make all text black

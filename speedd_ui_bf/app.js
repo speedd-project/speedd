@@ -55,8 +55,9 @@ function setKafka(){
 	consumer = new Consumer(
 		client, 
 		// payloads
-			[//{ topic: 'speedd-out-events', partition: 0, offset: 0 },
-			 { topic: 'speedd-out-events', partition: 0, offset: 0 }
+			[{ topic: 'speedd-fraud-actions', partition: 0, offset: 0 },
+			 { topic: 'speedd-fraud-out-events', partition: 0, offset: 0 },
+			 { topic: 'speedd-fraud-in-events', partition: 0, offset: 0 },
 			 ],
 		// options
 		{fromOffset: true} // true = read messages from beginning
@@ -73,7 +74,7 @@ function setKafka(){
 		producer.send(payloads, function (err, data) {
 			console.log(data);
 		});
-		producer.createTopics(['speedd-admin'], function (err, data) {
+		producer.createTopics(['speedd-fraud-admin'], function (err, data) {
 			console.log(err);
 		});
 	});
