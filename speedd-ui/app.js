@@ -38,7 +38,7 @@ function setSocket(){
 		});
 		socket.on('speedd-out-events', function (data) {
 			console.log(data);
-			var toSend = [{ topic: 'speedd-admin', messages: data, partition: 0 }];
+			var toSend = [{ topic: 'speedd-traffic-admin', messages: data, partition: 0 }];
 			producer.send(toSend, function (err, data) {
 				console.log(toSend);
 			});
