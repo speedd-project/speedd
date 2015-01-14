@@ -2,7 +2,7 @@
 
 var dataRampMetering = []; // ramp meters are saved here
 
-var rampRateStatus = {"min": 100, "max":101, "minThresh": 100, "maxThresh": 101};
+var rampRateStatus = {"min": 251.107660061, "max":252.040288193, "minThresh": 251.2, "maxThresh": 251.3};
 
 function checkRampStatus(currentRate)
 {
@@ -58,11 +58,12 @@ function getRamps()
     /// get ramp metering locations
     for (var i = 0; i < sensorPos.length; i++) {
         if (sensorPos[i].lane == "onramp" || sensorPos[i].lane == "offramp") {
-            var ramp = { id: 0, sensorId: 0, location: { lat: 0, lng: 0 }, status: randomInt(0, 3), lowerLimit: "Auto", upperLimit: "Auto", densityHistory: [0,1,15,4,3,9], rateHistory: [6,3,13,1,8,19], controlTypeHistory: ["auto","partial","auto","auto","full","partial"], marker:0};
+            var ramp = { id: 0, sensorId: 0, lane: 0, location: { lat: 0, lng: 0 }, status: 251.107660061, lowerLimit: "Auto", upperLimit: "Auto", densityHistory: [0.5,0.566,0.7952,0.8,0.9546,1], rateHistory: [251,251.0056,251.365548,251.65958,251.96525,252.1], controlTypeHistory: ["auto","partial","auto","auto","full","partial"], marker:0};
             ramp.id = dataRampMetering.length;
             ramp.location.lat = sensorPos[i].gps.lat;
             ramp.location.lng = sensorPos[i].gps.lng;
             ramp.sensorId = sensorPos[i].location;
+			ramp.lane = sensorPos[i].lane;
 
             // adds markers
             var m = new MarkerWithLabel({

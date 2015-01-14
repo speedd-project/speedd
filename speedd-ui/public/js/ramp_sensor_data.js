@@ -20,7 +20,7 @@ function drawRampGraph(rampId) {
           .domain([0, d3.max(dataRampMetering[rampId].densityHistory, function (d) { return d; })])
           .range([0, width]);
     var y = d3.scale.linear()
-          .domain([0, d3.max(dataRampMetering[rampId].rateHistory, function (d) { return d; })])
+          .domain([251, d3.max(dataRampMetering[rampId].rateHistory, function (d) { return d; })])
           .range([height, 0]);
 
     var scaleCircles = d3.scale.linear()
@@ -124,7 +124,7 @@ function redrawRampGraph()
           .domain([0, d3.max(dataRampMetering[rampId].densityHistory, function (d) { return d; })])
           .range([0, width]);
     var y = d3.scale.linear()
-          .domain([0, d3.max(dataRampMetering[rampId].rateHistory, function (d) { return d; })])
+          .domain([251, d3.max(dataRampMetering[rampId].rateHistory, function (d) { return d; })])
           .range([height, 0]);
 
     var scaleCircles = d3.scale.linear()
