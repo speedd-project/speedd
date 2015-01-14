@@ -104,7 +104,7 @@ function drawRampGraph(rampId) {
             // sets color according to control type
           .style("fill", function (d, i) {  return scaleColors(dataRampMetering[rampId].controlTypeHistory[i]) }); 
     // add text on mouseover
-    datapoints.append("title").text(function (d, i) { return i });
+    datapoints.append("title").text(function (d, i) { return "rate: "+dataRampMetering[rampId].rateHistory[i] + "\ndensity: " + d });
 
 }
 
