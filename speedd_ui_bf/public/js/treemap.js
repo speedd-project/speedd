@@ -7,7 +7,7 @@
     {
         countriesJson.children[i].transVolume = 1;//randomInt(5000,1000000);
         countriesJson.children[i].transAmount = 1;//randomInt(5, 1000);
-        countriesJson.children[i].flaggedTransactions = randomInt(10, 10000);
+        countriesJson.children[i].flaggedTransactions = randomInt(1, 20);
     }
 }
 
@@ -142,7 +142,7 @@ function updateTreemapData(data)
 //            countriesJson.children[i].transAmount = randomInt(5, 1000);            
 			countriesJson.children[i].transAmount = data.average_transaction_amount_eur;
 //			countriesJson.children[i].flaggedTransactions = randomInt(50, 10000);
-            countriesJson.children[i].flaggedTransactions += randomInt(50, 10000);
+//            countriesJson.children[i].flaggedTransactions += randomInt(50, 10000);
         }
     }
     redrawTreeMap();
