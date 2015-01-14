@@ -32,10 +32,12 @@ public class SpeeddTopology {
 
 	private SpeeddConfig speeddConfig;
 
-	public static final String TOPIC_IN_EVENTS = "speedd-in-events";
-	public static final String TOPIC_OUT_EVENTS = "speedd-out-events";
-	public static final String TOPIC_ACTIONS = "speedd-actions";
-	public static final String TOPIC_ADMIN = "speedd-admin";
+	public static final String CONFIG_KEY_IN_EVENTS_TOPIC = "topic.in.events";
+	public static final String CONFIG_KEY_ACTIONS_CONFIRMED_TOPIC = "topic.actions.confirmed";
+	public static final String CONFIG_KEY_ADMIN_TOPIC = "topic.admin";
+	public static final String CONFIG_KEY_OUT_EVENTS_TOPIC = "topic.out.events";
+	public static final String CONFIG_KEY_ACTIONS_TOPIC = "topic.actions";
+
 
 	public static final String ADMIN_COMMAND_READER = "admin-command-reader";
 
@@ -48,10 +50,6 @@ public class SpeeddTopology {
 	private static final String DECISION_MAKER = "dm";
 
 	private static final String DECISION_WRITER = "decision-writer";
-
-	public static final String CONFIG_KEY_OUT_EVENTS_TOPIC = "topic.out.events";
-
-	public static final String CONFIG_KEY_ACTIONS_TOPIC = "topic.actions";
 
 	private static Logger logger = LoggerFactory
 			.getLogger(SpeeddTopology.class);
@@ -83,10 +81,10 @@ public class SpeeddTopology {
 		TopologyBuilder builder = new TopologyBuilder();
 
 		BaseRichSpout trafficReaderSpout = createKafkaReaderSpout(
-				speeddConfig.inEventScheme, TOPIC_IN_EVENTS, IN_EVENT_READER);
+				speeddConfig.inEventScheme, speeddConfig.topicInEvents, IN_EVENT_READER);
 
 		BaseRichSpout adminSpout = createKafkaReaderSpout(
-				AdminCommandScheme.class.getName(), TOPIC_ADMIN,
+				AdminCommandScheme.class.getName(), speeddConfig.topicAdmin,
 				ADMIN_COMMAND_READER);
 
 		KafkaBolt<String, Event> eventWriterBolt = new KafkaBolt<String, Event>(
@@ -166,6 +164,12 @@ public class SpeeddTopology {
 
 		configuration.dmClass = (String) properties
 				.getProperty("speedd.dmClass");
+		
+		configuration.topicInEvents = (String) properties.getProperty(CONFIG_KEY_IN_EVENTS_TOPIC);
+		configuration.topicOutEvents = (String) properties.getProperty(CONFIG_KEY_OUT_EVENTS_TOPIC);
+		configuration.topicActions = (String) properties.getProperty(CONFIG_KEY_ACTIONS_TOPIC);
+		configuration.topicAdmin = (String) properties.getProperty(CONFIG_KEY_ADMIN_TOPIC);
+		configuration.topicActionsConfirmed = (String) properties.getProperty(CONFIG_KEY_ACTIONS_CONFIRMED_TOPIC);
 		
 		SpeeddTopology speeddTopology = new SpeeddTopology(configuration);
 

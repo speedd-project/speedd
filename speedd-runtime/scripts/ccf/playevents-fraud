@@ -5,5 +5,5 @@ CLASSPATH=$SPEEDD_RUNTIME_LIB/speedd-runtime-0.0.1-SNAPSHOT-jar-with-dependencie
 
 IN_EVENT_FILE=FeedzaiIntegrationData.csv
 
-$JAVA_CMD -cp $CLASSPATH org.speedd.util.EventPlayer -c ../producer.properties -t speedd-in-events -p org.speedd.fraud.FraudAggregatedReadingCsv2Event $IN_EVENT_FILE
+$JAVA_CMD -cp $CLASSPATH org.speedd.util.EventPlayer -c ../producer.properties -t speedd-fraud-in-events -p org.speedd.fraud.FraudAggregatedReadingCsv2Event $IN_EVENT_FILE
 

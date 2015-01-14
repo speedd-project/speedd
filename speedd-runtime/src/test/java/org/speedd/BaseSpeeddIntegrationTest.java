@@ -133,6 +133,8 @@ public abstract class BaseSpeeddIntegrationTest {
 			actionConsumer.close();
 	}
 
+	protected abstract String getTopicName(String topicKey);
+	
 	private void setupKafkaServer() throws Exception {
 		kafkaZookeeper = TestUtil.startEmbeddedZkServer(zookeeperPort);
 
@@ -157,19 +159,19 @@ public abstract class BaseSpeeddIntegrationTest {
 
 		// create topics
 		CreateTopicCommand.createTopic(zkClient,
-				SpeeddTopology.TOPIC_OUT_EVENTS, 1, 1, "");
+				getTopicName(SpeeddTopology.CONFIG_KEY_OUT_EVENTS_TOPIC), 1, 1, "");
 		CreateTopicCommand.createTopic(zkClient,
-				SpeeddTopology.TOPIC_IN_EVENTS, 1, 1, "");
-		CreateTopicCommand.createTopic(zkClient, SpeeddTopology.TOPIC_ACTIONS,
+				getTopicName(SpeeddTopology.CONFIG_KEY_IN_EVENTS_TOPIC), 1, 1, "");
+		CreateTopicCommand.createTopic(zkClient, getTopicName(SpeeddTopology.CONFIG_KEY_ACTIONS_TOPIC),
 				1, 1, "");
-		CreateTopicCommand.createTopic(zkClient, SpeeddTopology.TOPIC_ADMIN,
+		CreateTopicCommand.createTopic(zkClient, getTopicName(SpeeddTopology.CONFIG_KEY_ADMIN_TOPIC),
 				1, 1, "");
 
 		List<KafkaServer> servers = new ArrayList<KafkaServer>();
 		servers.add(kafkaServer);
 		TestUtils.waitUntilMetadataIsPropagated(
 				scala.collection.JavaConversions.asScalaBuffer(servers),
-				SpeeddTopology.TOPIC_ACTIONS, 0, 5000);
+				getTopicName(SpeeddTopology.CONFIG_KEY_ACTIONS_TOPIC), 0, 5000);
 
 		logger.info("Kafka server started and initialized");
 	}
@@ -203,7 +205,7 @@ public abstract class BaseSpeeddIntegrationTest {
 		BrokerHosts brokerHosts = new StaticHosts(globalPartitionInformation);
 
 		outEventsKafkaConfig = new KafkaConfig(brokerHosts,
-				SpeeddTopology.TOPIC_OUT_EVENTS);
+				getTopicName(SpeeddTopology.CONFIG_KEY_OUT_EVENTS_TOPIC));
 
 		outEventConsumer = new SimpleConsumer("localhost", brokerPort, 60000,
 				1024, "outEventConsumer");
@@ -214,7 +216,7 @@ public abstract class BaseSpeeddIntegrationTest {
 						outEventConsumer.clientId()));
 
 		actionsKafkaConfig = new KafkaConfig(brokerHosts,
-				SpeeddTopology.TOPIC_ACTIONS);
+				getTopicName(SpeeddTopology.CONFIG_KEY_ACTIONS_TOPIC));
 
 		actionConsumer = new SimpleConsumer("localhost", brokerPort, 60000,
 				1024, "actionConsumer");
@@ -377,6 +379,12 @@ public abstract class BaseSpeeddIntegrationTest {
 		
 		speeddConfiguration.dmClass = (String) properties
 				.getProperty("speedd.dmClass");
+		
+		speeddConfiguration.topicInEvents = getTopicName(SpeeddTopology.CONFIG_KEY_IN_EVENTS_TOPIC);
+		speeddConfiguration.topicOutEvents = getTopicName(SpeeddTopology.CONFIG_KEY_OUT_EVENTS_TOPIC);
+		speeddConfiguration.topicActions = getTopicName(SpeeddTopology.CONFIG_KEY_ACTIONS_TOPIC);
+		speeddConfiguration.topicActionsConfirmed = getTopicName(SpeeddTopology.CONFIG_KEY_ACTIONS_CONFIRMED_TOPIC);
+		speeddConfiguration.topicAdmin = getTopicName(SpeeddTopology.CONFIG_KEY_ADMIN_TOPIC);
 
 		SpeeddTopology speeddTopology = new SpeeddTopology(speeddConfiguration);
 
