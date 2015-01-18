@@ -45,8 +45,8 @@ Credit Card Fraud Detection
 ---------------------------
 1. cd ./ccf
 2. sudo ./start-speedd-runtime
-3. _TBD - start UI_
-3. start sending input events by running ./playevents-fraud
+3. Run the dashboard by starting ../../speedd\_ui\_bf/bin/run.sh
+4. start sending input events by running ./playevents-fraud
 
 Stopping SPEEDD prototype
 -------------------------
