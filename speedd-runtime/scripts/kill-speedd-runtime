@@ -3,4 +3,4 @@ STORM_HOME=/opt/apache-storm-0.9.2-incubating
 
 STORM_CMD=$STORM_HOME/bin/storm
 
-$STORM_CMD kill speedd-runtime
+$STORM_CMD kill speedd-runtime -w 0
