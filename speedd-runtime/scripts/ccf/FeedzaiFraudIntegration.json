@@ -67,6 +67,7 @@
             "type": "Integer",
             "dimension": 0
           }
+          
         ]
       },
       {
@@ -111,13 +112,23 @@
             "dimension": 0
           },
           {
-            "name": "terminal_id",
+            "name": "acquirer_country",
+            "type": "Integer",
+            "dimension": 0
+          },         
+          {
+            "name": "TrendCount",
             "type": "Double",
             "dimension": 0
           },
           {
-            "name": "TrendCount",
-            "type": "Double",
+            "name": "is_cnp",
+            "type": "Integer",
+            "dimension": 0
+          },
+          {
+            "name": "reason",
+            "type": "String",
             "dimension": 0
           }
         ]
@@ -169,8 +180,18 @@
             "dimension": 0
           },
           {
+            "name": "acquirer_country",
+            "type": "Integer",
+            "dimension": 0
+          },
+          {
             "name": "TrendCount",
             "type": "Double",
+            "dimension": 0
+          },
+           {
+            "name": "is_cnp",
+            "type": "Integer",
             "dimension": 0
           }
         ]
@@ -210,10 +231,25 @@
             "defaultValue": "0",
             "dimension": 0,
             "description": "Used in case the this event occur within an interval"
+          },
+          {
+            "name": "acquirer_country",
+            "type": "Integer",
+            "dimension": 0
           },          
           {
             "name": "terminal_id",
             "type": "Double",
+            "dimension": 0
+          },
+           {
+            "name": "is_cnp",
+            "type": "Integer",
+            "dimension": 0
+          },
+          {
+            "name": "reason",
+            "type": "String",
             "dimension": 0
           }
         ]
@@ -268,6 +304,11 @@
             "name": "transaction_volume",
             "type": "Double",
             "dimension": 0
+          },
+          {
+            "name": "transaction_count",
+            "type": "Double",
+            "dimension": 0
           }
         ]
       }
@@ -282,6 +323,7 @@
         "inputEvents": [
           {
             "name": "Transaction",
+            "filterExpression":"Transaction.is_cnp == 0",
             "expression": "Transaction.amount_eur",
             "consumptionPolicy": "Reuse",
             "instanceSelectionPolicy": "First"
@@ -300,9 +342,11 @@
             "expressions": {
               "Certainty": "Sigmoid(1,6,trend.count)",
               "Duration": "0",
-              "card_pan": "context.CardNumberSegmentation",
-              "terminal_id": "context.ATMSegmentation",
-              "TrendCount": "trend.count"
+              "card_pan": "context.CardNumberSegmentation",  
+              "acquirer_country": "context.CntrySegmentation",
+              "is_cnp": "0",            
+              "TrendCount": "trend.count",
+              "reason":"'Indication of fraud due to a trend of withdrawls with increasing amounts for the given credit card'"
             }
           }
         ]
@@ -311,10 +355,11 @@
         "name": "IncreasingAmountsCardIndicationEPA",
         "createdDate": "Tue Aug 05 2014",
         "epaType": "Trend",
-        "context": "CompositeIncreasingAmounts",
+        "context": "CompositeIncreasingAmountsATM",
         "inputEvents": [
           {
             "name": "Transaction",
+            "filterExpression":"Transaction.is_cnp == 0",
             "expression": "Transaction.amount_eur",
             "consumptionPolicy": "Reuse",
             "instanceSelectionPolicy": "First"
@@ -335,6 +380,8 @@
               "Certainty": "Sigmoid(1,5,trend.count)",
               "card_pan": "context.CardNumberSegmentation",
               "terminal_id": "context.ATMSegmentation",
+              "acquirer_country": "context.CntrySegmentation", 
+              "is_cnp": "0",    
               "TrendCount": "trend.count"
             }
           }
@@ -347,7 +394,8 @@
         "context": "CompositeFraudAtATM",
         "inputEvents": [
           {
-            "name": "IncreasingAmountsCardIndication",                       
+            "name": "IncreasingAmountsCardIndication", 
+            "filterExpression":"IncreasingAmountsCardIndication.is_cnp == 0",                      
             "consumptionPolicy": "Reuse",
             "instanceSelectionPolicy": "First"
           }
@@ -370,7 +418,10 @@
             "expressions": {
               "Certainty": "1.0 - CDF(Count,2.0)",
               "Duration": "0",
-              "terminal_id": "context.ATMSegmentation"
+              "terminal_id": "context.ATMSegmentation",
+               "is_cnp": "0",    
+              "acquirer_country": "context.CntrySegmentation",
+              "reason": "'Indication of fraud at ATM due to a multiple increasing amounts attacks with different cards for the given ATM'" 
             }
           }
         ]
@@ -397,6 +448,11 @@
             "name": "Volume",
             "aggregationType": "Sum",
             "Transaction": "Transaction.amount_eur"
+          },
+          {
+            "name": "Count",
+            "aggregationType": "Count",
+            "Transaction": "1"
           }
         ],
         "evaluationPolicy": "Deferred",
@@ -408,9 +464,10 @@
             "reportParticipants": false,
             "expressions": {
               "Duration": "0",
-              "country": "context.CountrySegmentation",
+              "country": "context.CntrySegmentation",
               "average_transaction_amount_eur": "AverageAmountEur",
-              "transaction_volume": "Volume"
+              "transaction_volume": "Volume",
+              "transaction_count": "Count"
             }
           }
         ]
@@ -481,11 +538,7 @@
             {
               "name": "Transaction",
               "expression": "Transaction.terminal_id"
-            },
-            {
-              "name": "IncreasingAmounts",
-              "expression": "IncreasingAmounts.terminal_id"
-            },
+            },           
             {
               "name": "IncreasingAmountsCardIndication",
               "expression": "IncreasingAmountsCardIndication.terminal_id"
@@ -493,13 +546,17 @@
           ]
         },        
         {
-          "name": "CountrySegmentation",
+          "name": "CntrySegmentation",
           "createdDate": "Mon Dec 15 2014",
           "participantEvents": [
             {
               "name": "Transaction",
               "expression": "Transaction.acquirer_country"
-            }
+            },
+            {
+              "name": "IncreasingAmountsCardIndication",
+              "expression": "IncreasingAmountsCardIndication.acquirer_country"
+            }            
           ]
         }
       ],
@@ -517,7 +574,27 @@
               "name": "CardNumberSegmentation"
             },
             {
+              "name": "CntrySegmentation"
+            }
+          ]
+        },
+         {
+          "name": "CompositeIncreasingAmountsATM",
+          "createdDate": "Wed Aug 06 2014",
+          "temporalContexts": [
+            {
+              "name": "TemporalInitiatedFirstTransaction"
+            }
+          ],
+          "segmentationContexts": [
+            {
+              "name": "CardNumberSegmentation"
+            },
+            {
               "name": "ATMSegmentation"
+            },            
+            {
+              "name": "CntrySegmentation"
             }
           ]
         },
@@ -532,6 +609,9 @@
           "segmentationContexts": [           
             {
               "name": "ATMSegmentation"
+            },            
+            {
+              "name": "CntrySegmentation"
             }
           ]
         },        
@@ -545,7 +625,7 @@
           ],
           "segmentationContexts": [
             {
-              "name": "CountrySegmentation"
+              "name": "CntrySegmentation"
             }
           ]
         }
