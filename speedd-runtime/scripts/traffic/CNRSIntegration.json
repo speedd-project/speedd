@@ -478,7 +478,7 @@
               "Duration": "0",
               "location": "context.SegmentationByLocation",
               "average_flow": "AverageFlow",
-              "average_density": "AverageFlow/(AverageSpeed*1000/3600)",
+              "average_density": "(AverageFlow*240)/AverageSpeed",
               "average_speed": "AverageSpeed"
               
             }
@@ -489,12 +489,12 @@
       {
         "name": "CongestionEPA",
         "createdDate": "Mon Nov 10 2014",
-        "epaType": "Basic",
+        "epaType": "All",
         "context": "CompositeMonitoringCongestion",
         "inputEvents": [
           {
             "name": "AverageDensityAndSpeedPerLocation",
-            "filterExpression": "AverageDensityAndSpeedPerLocation.average_density>0.95 and AverageDensityAndSpeedPerLocation.average_speed < 45",
+            "filterExpression": "AverageDensityAndSpeedPerLocation.average_density>=50 and AverageDensityAndSpeedPerLocation.average_speed < 45",
             "consumptionPolicy": "Consume",
             "instanceSelectionPolicy": "First"
           }
@@ -520,12 +520,12 @@
       {
         "name": "ClearCongestionEPA",
         "createdDate": "Mon Nov 10 2014",
-        "epaType": "Basic",
+        "epaType": "All",
         "context": "CompositeMonitoringClearCongestion",
         "inputEvents": [
           {
             "name": "AverageDensityAndSpeedPerLocation",
-            "filterExpression": "AverageDensityAndSpeedPerLocation.average_density<0.8 and AverageDensityAndSpeedPerLocation.average_speed>70",
+            "filterExpression": "AverageDensityAndSpeedPerLocation.average_density<50 and AverageDensityAndSpeedPerLocation.average_speed>70",
             "consumptionPolicy": "Consume",
             "instanceSelectionPolicy": "First"
           }
@@ -555,7 +555,7 @@
         "inputEvents": [
           {
             "name": "AverageDensityAndSpeedPerLocation",
-            "filterExpression": " (AverageDensityAndSpeedPerLocation.average_density >=0.8 AND AverageDensityAndSpeedPerLocation.average_density < 0.95) AND (AverageDensityAndSpeedPerLocation.average_speed < 51 AND AverageDensityAndSpeedPerLocation.average_speed >= 45)",
+            "filterExpression": " AverageDensityAndSpeedPerLocation.average_density >=35",
             "expression": "AverageDensityAndSpeedPerLocation.average_density",
             "consumptionPolicy": "Reuse",
             "instanceSelectionPolicy": "First"
@@ -564,7 +564,7 @@
         "computedVariables": [],
         "evaluationPolicy": "Immediate",
         "cardinalityPolicy": "Unrestricted",
-        "trendN": "5",
+        "trendN": "3",
         "trendRelation": "Increase",
         "internalSegmentation": [],
         "derivedEvents": [
@@ -653,7 +653,7 @@
               "Duration": "0",
               "location": "context.SegmentationByLocation",
               "average_flow": "AverageFlow",
-              "average_density": "AverageFlow/(AverageSpeed*1000/3600)",
+              "average_density": "(AverageFlow*240)/AverageSpeed",
               "average_speed": "AverageSpeed"
             }
           }
@@ -695,7 +695,7 @@
               "Duration": "0",
               "location": "context.SegmentationByLocation",
               "average_flow": "AverageFlow",
-              "average_density": "AverageFlow/(AverageSpeed*1000/3600)",
+              "average_density": "(AverageFlow*240)/AverageSpeed",
               "average_speed": "AverageSpeed"
             }
           }
@@ -800,6 +800,11 @@
               "terminatorPolicy": "Each",
               "terminationType": "Terminate",
               "name": "ClearCongestion"
+            },
+            {
+              "terminatorType": "RelativeTime",
+              "terminationType": "Terminate",              
+              "relativeTime": "120000"
             }
           ]
         },
@@ -812,7 +817,7 @@
           "initiators": [
             {
               "initiatorType": "Event",
-              "initiatorPolicy": "Add",
+              "initiatorPolicy": "Ignore",
               "name": "AggregatedSensorRead",
               "condition": "EqualsIgnoreCase(AggregatedSensorRead.lane,'onramp')"
             }
@@ -820,7 +825,7 @@
           "terminators": [
             {
               "terminatorType": "RelativeTime",
-              "terminationType": "Terminate",
+              "terminationType": "Terminate",              
               "relativeTime": "120000"
             }
           ]
@@ -834,14 +839,14 @@
           "initiators": [
             {
               "initiatorType": "Event",
-              "initiatorPolicy": "Add",
+              "initiatorPolicy": "Ignore",
               "name": "AverageDensityAndSpeedPerLocation"
             }
           ],
           "terminators": [
             {
               "terminatorType": "RelativeTime",
-              "terminationType": "Terminate",
+              "terminationType": "Terminate",            
               "relativeTime": "120000"
             }
           ]
@@ -1052,11 +1057,11 @@
     	      {
         "name": "TextProducer",
         "createdDate": "Sun Aug 31 2014",
-        "type": "File",
+        "type": "Timed",
         "properties": [
           {
             "name": "filename",
-            "value": "D:\\EP\\Projects\\EU\\SPEEDD\\usecases\\CNRS\\exampleInput.txt"
+            "value": "D:\\EP\\Projects\\EU\\SPEEDD\\usecases\\CNRS\\dataRushHourTruncated.txt"
           },
           {
             "name": "pollingInterval",
