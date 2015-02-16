@@ -346,7 +346,7 @@
               "acquirer_country": "context.CntrySegmentation",
               "is_cnp": "0",            
               "TrendCount": "trend.count",
-              "reason":"'Indication of fraud due to a trend of withdrawls with increasing amounts for the given credit card'"
+              "reason":"'Indication of fraud due to a trend of withdrawals with increasing amounts for the given credit card'"
             }
           }
         ]
