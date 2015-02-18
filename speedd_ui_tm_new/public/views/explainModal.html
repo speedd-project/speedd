@@ -1,0 +1,17 @@
+<div class="form-group" id="explainModal.html">
+	<div class="modal-header">
+        <h3 class="modal-title">
+			<span class="glyphicon glyphicon-list-alt"></span>
+			Explain Situation - Live Data
+		</h3>
+		
+    </div>	
+	<div class="modal-body">
+		<h4>Rate vs Density at Ramp {{rampSelected}}</h4>
+		<div live-graph chart-data="dataToPlot"></div>
+	</div>		
+	<div class="modal-footer">
+        <button class="btn btn-warning" ng-click="cancel()">Cancel</button>
+        <button class="btn btn-primary" ng-click="ok()">OK</button>
+    </div>
+</div>

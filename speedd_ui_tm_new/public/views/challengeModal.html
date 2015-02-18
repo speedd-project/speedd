@@ -1,0 +1,28 @@
+<div class="form-group" id="challengeModal.html">
+	<div class="modal-header">
+        <h3 class="modal-title">
+			<span class="glyphicon glyphicon-cog"></span>
+			Control Panel
+		</h3>
+		
+    </div>	
+	
+	<div class="modal-body">
+	<h4>Change threshold rates at Ramp {{rampSelected}}</h4>
+		<div class="input-group">
+			<span class="input-group-addon">Maximum Rate</span>
+			<input type="number" placeholder="Auto" class="form-control" ng-model="maxRate" required /><!-- min="0" max="100" --> 
+		</div>
+		<p></p>
+		<div class="input-group">
+			<span class="input-group-addon">Minimum Rate</span>
+			<input type="number" placeholder="Auto" class="form-control" ng-model="minRate" required /> <!-- min="0" max="100" --> 
+		</div>
+		<p></p>
+		<input type="text" placeholder="Comments" popover="add extra comments for the change"  popover-trigger="focus" class="form-control" ng-model="comments"/>
+	</div>		
+	<div class="modal-footer">
+            <button class="btn btn-warning" ng-click="cancel()">Cancel</button>
+            <button class="btn btn-primary" ng-click="ok()">Submit</button>
+    </div>
+</div>
