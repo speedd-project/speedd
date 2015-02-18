@@ -1028,9 +1028,6 @@
             "name": "PredictedCongestion"
           },
           {
-            "name": "AggregatedSensorRead"
-          },
-          {
             "name": "PredictedTrend"
           },
           {       
