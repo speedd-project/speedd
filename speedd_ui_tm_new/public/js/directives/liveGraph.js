@@ -55,6 +55,7 @@ app.directive('liveGraph', function($parse, $window){
 				var groups = new vis.DataSet();
 				
 				groups.add({
+					className: "rate",
 					id: 0,
 					content: "Rate",
 					options: {
@@ -68,6 +69,7 @@ app.directive('liveGraph', function($parse, $window){
 				});
 				
 				groups.add({
+					className: "density",
 					id: 1,
 					content: "Density",
 					options: {
@@ -77,20 +79,11 @@ app.directive('liveGraph', function($parse, $window){
 						shaded: {
 						  orientation: 'bottom' // top, bottom
 						}
-					}
+					},
+					
+//					style: "color: red;"//"color: #F68275"
 				});
 				
-				var options = {
-					defaultGroup: 'ungrouped',
-					legend: true,
-					graphHeight:500,
-					start: vis.moment().add(-30, 'seconds'), // changed so its faster
-					end: vis.moment(),
-//					start: '2015-02-10',
-//					end: '2015-02-20',
-					showMajorLabels:true,
-					showMinorLabels:true
-				};
 				/*
 				dataPoints = [{x: '2014-06-13', y: 60, group: 0},
 					{x: '2014-06-14', y: 40, group: 0},
@@ -118,6 +111,8 @@ app.directive('liveGraph', function($parse, $window){
 				];*/
 				
 				var dataPoints = [];
+				var maxTime=0, maxTimeIndex;
+				
 				for (var i=0;i<dataToPlot.density.length;i++)
 				{
 					var xAxis = vis.moment(new Date(dataToPlot.time[i]));
@@ -126,10 +121,29 @@ app.directive('liveGraph', function($parse, $window){
 					
 					dataPoints.push({x:xAxis , y: rate, group: 0});
 					dataPoints.push({x:xAxis , y: density, group: 1});
+					
+					if (maxTime<dataToPlot.time[i])
+					{
+						maxTime = dataToPlot.time[i];
+						maxTimeIndex = i;
+					}
 				}
 				console.log(dataPoints);
 				// dataset to plot
 				var dataset = new vis.DataSet(dataPoints);
+				
+				
+				var options = {
+					defaultGroup: 'ungrouped',
+					legend: true,
+					graphHeight:500,
+					start: dataPoints[0].x, // changed so its faster
+					end: dataPoints[maxTimeIndex].x,//.add(30, 'seconds'),
+//					start: '2015-02-10',
+//					end: '2015-02-20',
+					showMajorLabels:true,
+					showMinorLabels:true
+				};
 /*
 				var options = {
 					start: vis.moment().add(-30, 'seconds'), // changed so its faster

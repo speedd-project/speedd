@@ -46,7 +46,7 @@ app.directive('driverCompliance', function($parse, $window){
 					.attr('width', width + margin.right + margin.left)
 					.attr('height', height + margin.top + margin.bottom);
 				var svg = d3.select("#svg-drivers");	
-					svg.style("background-color","#eee");
+//					svg.style("background-color","#FF8673");
 /*			   
 				var y = d3.scale.linear()
 			  .domain([0, 350])
@@ -109,7 +109,7 @@ app.directive('driverCompliance', function($parse, $window){
 				// add distance indicators
 				var color = d3.scale.linear()
 					  .domain([11, 0])
-					  .range(['green', 'red'])
+					  .range(['#1C9CA7', '#FF6B6B'])
 
 				var dist = g.selectAll('rect').data(distanceDataToPlot)
 						.enter().append('rect')

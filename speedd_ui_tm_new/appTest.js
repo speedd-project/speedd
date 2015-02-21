@@ -35,9 +35,9 @@ var testMessages = [
 	{ "name": "PredictedCongestion", "timestamp": 12151, "attributes": { "location": "0024a4dc0000343b", "problem_id": 3, "Certainty": 0.2, "average_density": 1.777 } },
 	{ "name": "ClearCongestion", "timestamp": 12151, "attributes": { "location": "0024a4dc0000343b", "problem_id": 3, "Certainty": 0.2 } },
 	{ "name": "Congestion", "timestamp": 12151, "attributes": { "location": "0024a4dc0000343b", "problem_id": 3, "Certainty": 1, "average_density": 1.777 } },
-	{ "name": "UpdateMeteringRateAction", "timestamp": 12151, "attributes": { "density": 0.8 ,"location": "0024a4dc0000343b", "newMeteringRate": 251.5, "controlType": "auto", "lane": "offramp"} },
-	{ "name": "UpdateMeteringRateAction", "timestamp": 12151, "attributes": { "density": 0.9 ,"location": "0024a4dc0000343b", "newMeteringRate": 252.0, "controlType": "auto", "lane": "offramp"} },
-	{ "name": "UpdateMeteringRateAction", "timestamp": 12151, "attributes": { "density": 0.3 ,"location": "0024a4dc0000343b", "newMeteringRate": 251.675, "controlType": "auto", "lane": "onramp"} }
+	{ "name": "UpdateMeteringRateAction", "timestamp": 1424439193610, "attributes": { "density": 89 ,"location": "0024a4dc0000343b", "newMeteringRate": 50, "controlType": "auto", "lane": "offramp"} },
+	{ "name": "UpdateMeteringRateAction", "timestamp": 1424439205378, "attributes": { "density": 76 ,"location": "0024a4dc0000343b", "newMeteringRate": 12, "controlType": "auto", "lane": "offramp"} },
+	{ "name": "UpdateMeteringRateAction", "timestamp": 1424439214019, "attributes": { "density": 27 ,"location": "0024a4dc0000343b", "newMeteringRate": 39, "controlType": "auto", "lane": "onramp"} }
 ];
 
 var stdin = process.openStdin(); 

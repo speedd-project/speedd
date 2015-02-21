@@ -38,7 +38,7 @@ app.factory('dataService', function ($rootScope,socket) { // this service broadc
 		for (var i = 0; i< data.rampList.length; i++)
 		{
 			data.rampList[i].id = i;
-			data.rampList[i].rate = 0;
+			data.rampList[i].rate = 100;
 			data.rampList[i].density = 0;
 			data.rampList[i].limits = {};
 			data.rampList[i].limits = {lowerLimit: "Auto", upperLimit: "Auto"};

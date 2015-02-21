@@ -7,7 +7,7 @@ app.controller('EventListController', ['$scope','$interval','$window','dataServi
 	
 	$scope.eventList = [];
 	$scope.formattedEventList = [];
-	$scope.listSelection;
+	$scope.listSelection=[];
 	
 	$scope.$on("broadcastRawEventList", function(){
 		$scope.eventList = clone(dataService.rawEventList);
