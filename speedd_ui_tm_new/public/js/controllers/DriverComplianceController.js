@@ -8,7 +8,7 @@ app.controller('DriverComplianceController', ['$scope','$interval','$window', fu
 //	$scope.distance = [10,7,3,5]; // not used
 //	$scope.speed = 100;	// not used
 					// northbound             southbound
-	$scope.data = [{distance:10, speed:150},{distance:5, speed:75}];
+	$scope.data = [{distance:10, speed:150},{distance:2, speed:75}];
 
 	function randomInt(min, max) // function that generates a random int between min and max
 	{

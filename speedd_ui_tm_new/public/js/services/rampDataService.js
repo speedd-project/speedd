@@ -31,7 +31,7 @@ app.factory('rampDataService', function ($rootScope,socket) { // this service br
 		if(event.name=="UpdateMeteringRateAction")
 		{
 			getRampInfoFromEvent(event);
-			console.log(data.rampList);
+//			console.log(data.rampList);
 		}
 		
 	});

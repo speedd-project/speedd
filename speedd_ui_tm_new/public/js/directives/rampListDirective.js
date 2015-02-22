@@ -33,8 +33,8 @@ app.directive('rampList', function($parse, $window){
            });
 
 		var colorscale = d3.scale.linear()
-					.domain([0, 3])
-					.range(["yellow", "green"]);
+					.domain([0, 100])
+					.range(["#444C57", "#FFF7E8"]);
 					
 		   function drawRamps()
 		   { ////// d3 stuff
@@ -51,7 +51,7 @@ app.directive('rampList', function($parse, $window){
 				.attr('width', width + margin.right + margin.left)
 				.attr('height', height + margin.top + margin.bottom);
 			var svg = d3.select("#svg-ramp");	
-				svg.style("background-color","#eee");
+//				svg.style("background-color","#64DE89");
 				
 				var g = svg.append("g");                
 
