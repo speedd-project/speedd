@@ -1,0 +1,23 @@
+<div class="form-group" id="countryModal.html">
+	<div class="modal-header">
+        <h3 class="modal-title">
+			<span class="glyphicon glyphicon-list-alt"></span>
+			Country Statistics
+		</h3>
+		
+    </div>	
+	<div class="modal-body">
+		<h3>{{countryDetails.name.common}}</h3>
+		<br>
+		<h4>Total Flagged Transactions: {{countryDetails.financial.flagged[countryDetails.financial.flagged.length-1]}}</h4>
+		<h4>Average Transaction Amount: {{countryDetails.financial.amount[countryDetails.financial.amount.length-1]}}</h4>
+		<h4>Average Transaction Volume: {{countryDetails.financial.volume[countryDetails.financial.volume.length-1]}}</h4>
+		
+		<!--to be implemented-->
+<!--		<div histogram-directive chart-data="data"></div>	-->
+	</div>		
+	<div class="modal-footer">
+        <button class="btn btn-warning" ng-click="cancel()" style="background-color:#F1C40F; border-color:#F1C40F;">Cancel</button>
+        <button class="btn btn-primary" ng-click="ok()" style="background-color:#3598DB; border-color:#3598DB;" >OK</button>
+    </div>
+</div>
