@@ -22,7 +22,8 @@ app.factory('dataService', function ($rootScope,socket,$http) { // this service 
 			var event = JSON.parse(socketData);
 			data.rawEventList.push(event);
 			data.parseEvent(event);
-//			console.log(event);
+			console.log(event);
+			console.log(data.rawEventList);
 	});
 	
 	
@@ -57,9 +58,9 @@ app.factory('dataService', function ($rootScope,socket,$http) { // this service 
 			d.children.forEach(function (d) {
 				d.financial = {};
 				
-				d.financial.amount = [10,5,12];
-				d.flagged = [5,95,48];
-				d.volume = [102,1058,560];
+				d.financial.amount = [10,5,1];
+				d.financial.flagged = [5,95,1];
+				d.financial.volume = [102,1058,1];
 //					console.log(map_data.set(d.cca2, d))
 //					countryProperties[d.cca2] = d;
 			});

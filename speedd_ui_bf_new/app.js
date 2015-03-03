@@ -118,6 +118,6 @@ function setConsumerEvents(){
 	consumer.on('message', function (message) {
 		console.log(message.value);
 		io.emit('speedd-out-events', message.value);
-		eventList.push(JSON.parse(message.value));
+//		eventList.push(JSON.parse(message.value));
 	});
 }
