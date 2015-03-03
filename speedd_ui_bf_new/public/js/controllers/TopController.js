@@ -32,19 +32,23 @@ app.controller('TopController', ['$scope','$interval','$window','dataService','$
 	}
 	
 	$scope.$on("broadcastFraudAtATM", function(){
-//		$scope.transactions[] = (dataService.rawEventList[dataService.rawEventList.length-1].);
+//		$scope.transactions.push(dataService.rawEventList[dataService.rawEventList.length-1]);
+		$scope.transactions[$scope.transactions.length-1]++;
+		$scope.flagged[$scope.flagged.length-1]++;
 	});
 	
 	$scope.$on("broadcastIncreasingAmounts", function(){
-	
+		$scope.transactions[$scope.transactions.length-1]++;
+		$scope.flagged[$scope.flagged.length-1]++;
 	});
 	
 	$scope.$on("broadcastTransaction", function(){
-	
+		$scope.transactions[$scope.transactions.length-1]++;
 	});
 	
 	$scope.$on("broadcastTransactionStats", function(){
-	
+		$scope.amount[$scope.amount.length-1] = dataService.rawEventList[dataService.rawEventList.length-1].attributes.average_transaction_amount_eur;
+		$scope.volume[$scope.volume.length-1] = dataService.rawEventList[dataService.rawEventList.length-1].attributes.transaction_volume;
 	});
 	
 	$scope.open = function (size,template,controller) {

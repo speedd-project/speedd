@@ -4,6 +4,8 @@ app.controller('CartogramModalController', ['$scope','$interval','$window','data
 	$scope.countrySelection = dataService.countrySelection;
 	$scope.countryDetails = dataService.map_data.get(dataService.countrySelection);
 	
+//	console.log($scope.countryDetails.financial);
+	
 	$scope.$on("broadcastCountrySelectionChanged", function(){
 		$scope.countrySelection	= dataService.countrySelection;
 	})
