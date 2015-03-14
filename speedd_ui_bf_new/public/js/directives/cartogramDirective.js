@@ -137,19 +137,19 @@ app.directive('cartogramDirective', function ($parse) { // inspired from http://
 											break;
 											
 					case "flagged":			carto.value(function (d) {
-												return datax.get(d.id)? Math.random() * 100:1//datax.get(d.id).flagged:1;//Math.random() * 100:1;
+												return datax.get(d.id)? datax.get(d.id).financial.flagged[datax.get(d.id).financial.flagged.length-1]:1;//datax.get(d.id).flagged:1;//Math.random() * 100:1;
 											});
 											
 											break;
 											
 					case "amount":			carto.value(function (d) {
-												return datax.get(d.id)? Math.random() * 100:1//datax.get(d.id).amount:1;//Math.random() * 100:1;
+												return datax.get(d.id)? datax.get(d.id).financial.amount[datax.get(d.id).financial.amount.length-1]:1;//datax.get(d.id).amount:1;//Math.random() * 100:1;
 											});
 											
 											break;
 											
 					case "volume":			carto.value(function (d) {
-												return datax.get(d.id)? Math.random() * 100:1;//datax.get(d.id).volume:1;
+												return datax.get(d.id)? datax.get(d.id).financial.volume[datax.get(d.id).financial.volume.length-1]:1;//datax.get(d.id).volume:1;
 											});
 											
 											break;

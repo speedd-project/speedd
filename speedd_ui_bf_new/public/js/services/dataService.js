@@ -4,6 +4,7 @@ app.factory('dataService', function ($rootScope,socket,$http) { // this service 
 	data.selection;
 	data.rawEventList=[];
 	data.map_data;
+	data.map_data2;
 	data.countrySelection;
 	
 	data.userEvent;
@@ -22,18 +23,28 @@ app.factory('dataService', function ($rootScope,socket,$http) { // this service 
 			var event = JSON.parse(socketData);
 			data.rawEventList.push(event);
 			data.parseEvent(event);
-			console.log(event);
-			console.log(data.rawEventList);
+//			console.log(event);
+//			console.log(data.rawEventList);
 	});
 	
 	
 	data.parseEvent = function(event){
 		if (event.name == "FraudAtATM")
 		{
+			// decode country
+			var country = data.map_data.get(data.getCountryCode(event.attributes.acquirer_country));
+			// increment flagged
+			country.financial.flagged[country.financial.flagged.length-1]++;
+			// notify listeners of change
 			data.broadcastFraudAtATM();
 		}
 		else if (event.name == "IncreasingAmounts")
 		{
+			// decode country
+			var country = data.map_data.get(data.getCountryCode(event.attributes.acquirer_country));
+			// increment flagged
+			country.financial.flagged[country.financial.flagged.length-1]++;
+			// notify listeners of change
 			data.broadcastIncreasingAmounts();
 		}
 		else if (event.name == "Transaction")
@@ -42,9 +53,28 @@ app.factory('dataService', function ($rootScope,socket,$http) { // this service 
 		}
 		else if (event.name == "TransactionStats")
 		{
+			// decode country
+			var country = data.map_data.get(data.getCountryCode(event.attributes.country));
+			// store amount and volume
+			country.financial.amount.push(event.attributes.average_transaction_amount_eur);
+			country.financial.volume.push(event.attributes.transaction_volume);
+			// notify listeners of change
 			data.broadcastTransactionStats();
 		}
 	};
+	
+	
+	// function to convert country identifier from callingCode to cca2
+	data.getCountryCode = function (callingCode){
+		var cca;
+//		console.log(callingCode);
+		var c = data.map_data2.get(callingCode);
+		
+		cca = c.cca2;
+//		console.log(cca);
+		
+		return cca;
+	}
 	
 	data.broadcastAllEvents = function (eventList){
 		for (var i = 0; i < eventList.length ; i++)
@@ -66,7 +96,10 @@ app.factory('dataService', function ($rootScope,socket,$http) { // this service 
 			});
 		  
 		  data.map_data = d3.map(d.children, function(d){return d.cca2;});
+		  data.map_data2 = d3.map(d.children, function(d){return d.callingCode;});
+//		  console.log(data.map_data2.get(49).cca2);
 		  data.broadcastMapCountriesData();
+		  
 		})
 		.error(function(data, status, headers, config) {
 		  // log error
@@ -76,7 +109,7 @@ app.factory('dataService', function ($rootScope,socket,$http) { // this service 
   data.changeSelection = function(obj){	//changes ramp selected based on rampList click (RampListController)
 	data.selection = obj;
 	data.broadcastSelectionChanged();
-	console.log(obj);
+//	console.log(obj);
   };
   
   data.changeCountrySelection = function(obj){	//changes ramp selected based on rampList click (RampListController)

@@ -35,12 +35,12 @@ var rl = readline.createInterface({
 var testMessages = [
 	{ "name": "Transaction","timestamp": 1409901066030,"attributes": {"card_pan": "1234-1234","terminal_id": "123456578","cvv_validation": 10,"amount_eur": "120.5","acquirer_country": 972,"is_cnp": 1}},
 	{ "name": "Transaction","timestamp": 1409901066030,"attributes": {"card_pan": "1234-1234","terminal_id": "123456578","cvv_validation": 10,"amount_eur": "120.5","acquirer_country": 972,"is_cnp": 1}},
-	{"name": "IncreasingAmounts","timestamp": 1409901066030,"attributes": {"Certainty": "1","card_pan": "1235-1234","terminal_id": 12345567,"TrendCount": 1.2}},
-	{"name": "FraudAtATM","timestamp": 1409901066030,"attributes": {"Certainty": "0.8","terminal_id": 12345678}},
-	{"name": "TransactionStats","timestamp": 1409901066030,"attributes": {"country": 49,"average_transaction_amount_eur": "20","transaction_volume": 15616512}},
-	{"name": "TransactionStats","timestamp": 1409901066030,"attributes": {"country": 46,"average_transaction_amount_eur": "10","transaction_volume": 15616512}},
-	{"name": "TransactionStats","timestamp": 1409901066030,"attributes": {"country": 840,"average_transaction_amount_eur": "15","transaction_volume": 15616512}},
-	{"name": "TransactionStats","timestamp": 1409901066030,"attributes": {"country": 886,"average_transaction_amount_eur": "6","transaction_volume": 15616512}}
+	{"name": "IncreasingAmounts","timestamp": 1409901066030,"attributes": {"Certainty": "1","card_pan": "1235-1234","terminal_id": 12345567,"TrendCount": 1.2, "acquirer_country": 972}},
+	{"name": "FraudAtATM","timestamp": 1409901066030,"attributes": {"Certainty": "0.8","terminal_id": 12345678,"acquirer_country": 972}},
+	{"name": "TransactionStats","timestamp": 1409901066030,"attributes": {"country": 49,"average_transaction_amount_eur": "20","transaction_volume": 15}},
+	{"name": "TransactionStats","timestamp": 1409901066030,"attributes": {"country": 46,"average_transaction_amount_eur": "10","transaction_volume": 10}},
+	{"name": "TransactionStats","timestamp": 1409901066030,"attributes": {"country": 1,"average_transaction_amount_eur": "20","transaction_volume": 2}},
+	{"name": "TransactionStats","timestamp": 1409901066030,"attributes": {"country": 886,"average_transaction_amount_eur": "5","transaction_volume": 1}}
 ];
 
 var stdin = process.openStdin(); 
@@ -50,7 +50,8 @@ stdin.on('keypress', function (chunk, key) {
   process.stdout.write('Get Chunk: ' + chunk + '\n');
   console.log(JSON.stringify(testMessages[chunk]));
   io.emit('speedd-out-events', JSON.stringify(testMessages[chunk]));
-  eventList.push(testMessages[chunk]);
+  if (testMessages[chunk]!= undefined)
+	eventList.push(testMessages[chunk]);
   if (key && key.ctrl && key.name == 'c') process.exit();
 });
 /////
