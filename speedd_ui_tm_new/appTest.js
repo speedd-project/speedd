@@ -3,9 +3,7 @@ var fs = require('fs');
 var Converter=require("csvtojson").core.Converter;
 var http = require('http');
 var path = require('path');
-var kafka = require('kafka-node');
 var io;
-var Consumer, client, consumer, Producer, producer;
 var outputFile;
 
 var eventList=[];
@@ -47,7 +45,8 @@ stdin.on('keypress', function (chunk, key) {
   process.stdout.write('Get Chunk: ' + chunk + '\n');
   console.log(JSON.stringify(testMessages[chunk]));
   io.emit('speedd-out-events', JSON.stringify(testMessages[chunk]));
-  eventList.push(testMessages[chunk]);
+  if (testMessages[chunk]!= undefined)
+	eventList.push(testMessages[chunk]);
   if (key && key.ctrl && key.name == 'c') process.exit();
 });
 /////
@@ -67,10 +66,8 @@ app.get('/', function(req, res) {
 });
 var ser = http.createServer(app).listen(app.get('port'), function(){
   console.log('Express server listening on port ' + app.get('port'));
-  
-//  setKafka();
+
   setSocket();
-//  setConsumerEvents();
 
 });
 
@@ -100,58 +97,9 @@ function setSocket(){
 		socket.on('speedd-out-events', function (data) {
 			console.log(data);
 			// on data received from client upate eventList
+			eventList.push(JSON.parse(data));
 		});
 		
 	});
 	
-}
-
-function setKafka(){
-	/// setting up kafka consummer
-	console.log("Setting up Kafka clients");
-	
-	Consumer = kafka.Consumer;
-	client = new kafka.Client('localhost:2181/');
-	consumer = new Consumer(
-		client, 
-		// payloads
-			[//{ topic: 'speedd-out-events', partition: 0, offset: 0 },
-			 { topic: 'speedd-out-events', partition: 0, offset: 0 }
-			 ],
-		// options
-		{fromOffset: true} // true = read messages from beginning
-	);
-
-	//// Setting up Kafka Producer
-
-	Producer = kafka.Producer;
-	producer = new Producer(client);
-	payloads = [
-			{ topic: 'speedd-out-events', messages: 'THIS IS THE NEW APP', partition: 0 }
-		];
-	producer.on('ready', function () {
-		producer.send(payloads, function (err, data) {
-			console.log(data);
-		});
-		producer.createTopics(['speedd-admin'], function (err, data) {
-			console.log(err);
-		});
-	});
-}
-
-function setConsumerEvents(){
-
-	console.log("Setting up Consumer on-message event");
-	
-	consumer.on('ready', function () {
-		console.log("consumer listening");
-	});
-	consumer.on('error', function (err) {
-		console.log("Kafka Error: Consumer - " + err);
-	});
-	consumer.on('message', function (message) {
-		console.log(message.value);
-		io.emit('speedd-out-events', message.value);
-		eventList.push(JSON.parse(message.value));
-	});
 }

@@ -14,7 +14,31 @@ app.controller('GmapController', function($scope,$window, dataService) {
 	})
 	
 //	var d3 = $window.d3; // adds d3 library in the context of the directive
-
+	
+	// applies all changes to map based on previous events
+/*
+	$scope.$on("broadcastRawEventList", function(){
+		var eventList = dataService.rawEventList;
+		console.log(eventList);
+		setTimeout(function (){
+		for (var j = 0 ; j < 17 ; j++)
+		{
+			var currentRamp = j;
+			
+			for (var i = eventList.length-1; i>=0 ;i++){
+				
+				if (eventList[i]!=undefined){
+				var event = eventList[i];
+				
+				if((event.name == "Congestion" || event.name == "PredictedCongestion") && currentRamp == dataService.rampLocationToId(event.attributes.location))
+					displayCongestion(event);
+				else if(event.name == "ClearCongestion" && currentRamp == dataService.rampLocationToId(event.attributes.location))
+					break;		
+			}}
+		}
+		}, 200);
+	});
+*/	
 	$scope.$on('broadcastMapEvent', function(){
 		var event = dataService.currentMapEvent;
 		if (event.name == "Congestion" || event.name == "PredictedCongestion")
@@ -46,32 +70,61 @@ app.controller('GmapController', function($scope,$window, dataService) {
 	function initialize() {
 		// Create an array of styles.
 		var styles = [
-		  {
-			  stylers: [
-				{ hue: "#585858" },
-				{ saturation: -100 }
-			  ]
-		  }, {
-			  featureType: "poi",
-			  elementType: "all",
-			  stylers: [
-				{ visibility: "off" }
-			  ]
-		  }, {
-			  featureType: "road",
-			  elementType: "geometry",
-			  stylers: [
-				{ lightness: 100 },
-				{ visibility: "simplified" }
-			  ]
-		  }, {
-			  featureType: "road",
-			  elementType: "labels",
-			  stylers: [
-				{ visibility: "on" }
-			  ]
-		  }
-		];
+  {
+    "featureType": "road.highway",
+    "elementType": "geometry",
+    "stylers": [
+      { "saturation": -35 },
+      { "hue": "#00c3ff" }
+    ]
+  },{
+    "featureType": "administrative",
+    "stylers": [
+      { "visibility": "off" }
+    ]
+  },{
+    "featureType": "landscape",
+    "stylers": [
+      { "visibility": "off" }
+    ]
+  },{
+    "featureType": "poi",
+    "stylers": [
+      { "visibility": "off" }
+    ]
+  },{
+    "featureType": "transit",
+    "stylers": [
+      { "visibility": "simplified" },
+      { "hue": "#ff8000" }
+    ]
+  },{
+    "featureType": "water",
+    "stylers": [
+      { "hue": "#0091ff" },
+      { "saturation": -48 }
+    ]
+  },{
+    "featureType": "road.local",
+    "stylers": [
+      { "visibility": "off" }
+    ]
+  },{
+    "featureType": "road.highway",
+    "elementType": "labels",
+    "stylers": [
+      { "saturation": -100 },
+      { "visibility": "simplified" }
+    ]
+  },{
+    "featureType": "road.arterial",
+    "elementType": "labels",
+    "stylers": [
+      { "saturation": -100 },
+      { "visibility": "simplified" }
+    ]
+  }
+];
 
 		var styledMap = new google.maps.StyledMapType(styles,
 			{ name: "Road" });

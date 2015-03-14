@@ -45,7 +45,7 @@ app.controller('EventListController', ['$scope','$interval','$window','dataServi
 		// converts ms to date and time
 		event.time = (dataToFormat.timestamp != undefined)? new Date(dataToFormat.timestamp).toString() : -1;
 		event.name = (dataToFormat.name != undefined)? dataToFormat.name : -1;
-		event.country = (dataToFormat.attributes.acquirer_country != undefined)? dataToFormat.attributes.acquirer_country : -1;
+		event.country = (dataToFormat.attributes.acquirer_country != undefined)? dataService.map_data2.get(dataToFormat.attributes.acquirer_country).name.common : -1;
 		event.certainty = (dataToFormat.attributes.Certainty != undefined)? dataToFormat.attributes.Certainty : -1;
 		event.reason = (dataToFormat.attributes.reason != undefined)? dataToFormat.attributes.reason : "";
 		event.confirmed = "false"

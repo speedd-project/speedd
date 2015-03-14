@@ -67,6 +67,9 @@ function setSocket(){
 			var toSend = [{ topic: 'speedd-traffic-admin', messages: data, partition: 0 }];
 			producer.send(toSend, function (err, data) {
 				console.log(toSend);
+				
+				// saves the admin ramp rate setting in event list
+				eventList.push(JSON.parse(toSend.messages));
 			});
 		});
 	});
@@ -118,6 +121,10 @@ function setConsumerEvents(){
 	consumer.on('message', function (message) {
 		console.log(message.value);
 		io.emit('speedd-out-events', message.value);
-		eventList.push(JSON.parse(message.value));
+		
+		// checks if event is one that should be displayed in the ui
+		var ev = JSON.parse(message.value);
+		if (ev.name == "PredictedCongestion" || ev.name == "ClearCongestion" || ev.name == "Congestion" || ev.name == "UpdateMeteringRateAction")
+			eventList.push(JSON.parse(message.value));
 	});
 }
