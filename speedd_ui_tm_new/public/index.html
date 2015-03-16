@@ -49,6 +49,7 @@
 	<script src="js/controllers/DriverComplianceController.js"></script>
 	<script src="js/controllers/ModalPopController.js"></script>
 	<script src="js/controllers/EventListController.js"></script>		
+	<script src="js/controllers/ListModalController.js"></script>
 	<script src="js/controllers/LiveGraphController.js"></script>		
 	<script src="js/controllers/ChallengeModalController.js"></script>			
 
@@ -133,6 +134,7 @@
 		.panel{
 			border-radius: 0px;
 <!--			border-width: 5px;	-->
+			margin: 100px 50px;
 			
 		}
 		.panel-heading{
@@ -155,9 +157,8 @@
 		}
 		
 		.gridStyle {
-			border: 1px solid rgb(212,212,212);
 			width: 100%; 
-			height: 450px;
+			height: 415px;
 		}
 		
 		.ngGrid {
@@ -189,9 +190,9 @@
 			cursor: move;
 			list-style-type: none; width: 100%;
 		}
-		#draggablePanelList li {margin-bottom:25px; float: left; height: 535px; font-size: 4em; text-align: center; list-style-type: none;}
+		#draggablePanelList li { margin-bottom:25px; float: left; height: 535px; font-size: 4em; text-align: center; list-style-type: none;}
 		#draggablePanelList li-map {margin-bottom:25px; float: left; height: 520px; font-size: 4em; text-align: center; list-style-type: none;}
-		.ui-state-highlight { height: 1.5em; line-height: 1.2em; }
+		.ui-state-highlight {width: 33%; height: 1.5em; line-height: 1.2em; }
 		
 		
 		#widget { list-style-type: none; margin: 0; padding: 0; width: 100%; }
@@ -222,6 +223,10 @@
 
 	@panel-primary-border : #d9534f;
 	
+	.ngRow .selected{ 
+		background-color:#4FC1E9!important;
+	}
+	
 	</style>
 	
 	<script>////this sorts out dragging for every DOMelement with id "widget"
@@ -251,7 +256,7 @@
     };
     $('.grid-stack').gridstack(options);
 });
-	/*		
+/*			
 		$(function() {
 			$( "#widget" ).sortable({
 				placeholder: "ui-state-highlight"
@@ -419,7 +424,7 @@
 					</div>
 				</div>
 			</li>
--->			
+-->		
 			<li class="col-lg-6 col-md-6 col-xs-12">			
 				<div class="panel panel-default" ng-controller="EventListController" style="border-color:#4FC1E9;background-color:#4FC1E9">
 					<div class="panel-heading" style="border-color:#4FC1E9;background-color:#4FC1E9">
@@ -434,6 +439,9 @@
 					<div collapse="isCollapsed">
 					  <div class="panel-body" >
 							<div class="gridStyle" style="font-size:15px" ng-grid="gridOptions"></div>
+							<div>
+								<button popover="inspect details" popover-trigger="mouseenter" class="btn btn-warning col-xs-4 col-xs-4 col-xs-offset-8" ng-click="onInspect()" style="background-color:#F1C40F; border-color:#F1C40F;">Explain</button>
+							</div>
 					  </div>
 					</div>
 				</div>
