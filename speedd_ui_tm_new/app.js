@@ -95,13 +95,8 @@ function setKafka(){
 
 	Producer = kafka.Producer;
 	producer = new Producer(client);
-	payloads = [
-			{ topic: 'speedd-out-events', messages: 'THIS IS THE NEW APP', partition: 0 }
-		];
+	
 	producer.on('ready', function () {
-		producer.send(payloads, function (err, data) {
-			console.log(data);
-		});
 		producer.createTopics(['speedd-traffic-admin'], function (err, data) {
 			console.log(err);
 		});

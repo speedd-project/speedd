@@ -4,6 +4,7 @@ app.factory('dataService', function ($rootScope,socket) { // this service broadc
   data.rampList;
   data.rampSelected;
   data.rawEventList=[];
+  data.eventSelection;;
   
   data.mapEventList=[];
   data.currentMapEvent;
@@ -93,6 +94,11 @@ app.factory('dataService', function ($rootScope,socket) { // this service broadc
 	data.rampSelected = rampId;
   };
   
+  data.changeSelection = function(obj){	//changes ramp selected based on rampList click (RampListController)
+	data.eventSelection = obj;
+	data.broadcastSelectionChanged();
+  };
+  
   data.changeThresholdsRampSelected = function(lower,upper){	// changes rate thresholds of selected ramp ---- function called by "ChallengeModalController"
 	data.rampList[data.rampSelected].limits.lowerLimit = (lower != undefined)? lower:"Auto";
 	data.rampList[data.rampSelected].limits.upperLimit = (upper != undefined)? upper:"Auto";
@@ -123,6 +129,10 @@ app.factory('dataService', function ($rootScope,socket) { // this service broadc
 	$rootScope.$broadcast('broadcastRampSelectedChanged');
   };
  */ 
+   data.broadcastSelectionChanged = function(){
+	$rootScope.$broadcast('broadcastSelectionChanged');
+  };
+  
   data.broadcastItem = function(){
 	$rootScope.$broadcast('broadcastRamps');
   };

@@ -81,8 +81,7 @@ function setKafka(){
 		client, 
 		// payloads
 			[{ topic: 'speedd-fraud-actions', partition: 0, offset: 0 },
-			 { topic: 'speedd-fraud-out-events', partition: 0, offset: 0 },
-			 { topic: 'speedd-fraud-in-events', partition: 0, offset: 0 }
+			 { topic: 'speedd-fraud-out-events', partition: 0, offset: 0 }
 			 ],
 		// options
 		{fromOffset: true} // true = read messages from beginning
@@ -92,13 +91,8 @@ function setKafka(){
 
 	Producer = kafka.Producer;
 	producer = new Producer(client);
-	payloads = [
-			{ topic: 'speedd-fraud-out-events', messages: 'THIS IS THE NEW APP', partition: 0 }
-		];
+
 	producer.on('ready', function () {
-		producer.send(payloads, function (err, data) {
-			console.log(data);
-		});
 		producer.createTopics(['speedd-fraud-admin'], function (err, data) {
 			console.log(err);
 		});

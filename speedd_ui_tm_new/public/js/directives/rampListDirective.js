@@ -69,7 +69,7 @@ app.directive('rampList', function($parse, $window){
 							.style("fill", function (d, i) { return colorscale(d.rate); })
 				/// NEWWW -- gives rect an ID to be able to select and modify    
 				.attr("id", function (d, i) { return "rectRamp" + i })
-				.on("mouseover", function (d) { d3.select(this).style("cursor", "pointer"); return d3.select(this).style("fill-opacity", "0.1") })
+				.on("mouseover", function (d) { d3.select(this).style("cursor", "pointer"); return d3.select(this).style("fill-opacity", "0.7").style("fill", "white") })
 				.on("mouseout", function (d) { return d3.select(this).style("fill-opacity", "1").style("fill", function (d, i) { return colorscale(d.rate)/*colorBasedOnRate(d.status);*/ }) })
 				.on("click",function (d) { return scope.onClick({item: d});}); // forwards event to the controller -- sends the actual data point
 		
