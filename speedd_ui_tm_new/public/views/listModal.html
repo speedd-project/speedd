@@ -1,0 +1,24 @@
+<div class="form-group" id="listModal.html">
+	<div class="modal-header">
+        <h3 class="modal-title">
+			<span class="glyphicon glyphicon-list-alt"></span>
+			Event Details
+		</h3>
+		
+    </div>	
+	<div class="modal-body">
+		<h3>{{selection.name}}</h3>
+		<br>
+		<h4>Ramp ID: {{selection.ramp_id}}</h4>
+		<h4>Occurrence Time: {{selection.time}}</h4>
+		<h4>Certainty: {{selection.certainty}}</h4>
+		<h4>Density: {{selection.density}}</h4>
+		<h4>Problem ID: {{selection.problem_id}}</h4>
+
+		<!--to be implemented-->
+<!--		<div histogram-directive chart-data="data"></div>	-->
+	</div>		
+	<div class="modal-footer">
+        <button class="btn btn-warning" ng-click="close()" style="background-color:#F1C40F; border-color:#F1C40F;">Close</button>
+    </div>
+</div>

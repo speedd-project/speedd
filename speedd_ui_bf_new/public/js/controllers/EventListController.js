@@ -73,6 +73,7 @@ app.controller('EventListController', ['$scope','$interval','$window','dataServi
 		enablePinning: true, // pin columns
 		selectedItems: $scope.listSelection, // enables selection of row
 		multiSelect: false,
+		enableColumnResize: true,
 		// adds ng-click event ng-click="onClickRow(row)"
 		rowTemplate: '<div ng-click="onClickRow(row)" style="height: 100%" ng-class="{ selected: row.selected, green: row.getProperty(\'confirmed\') == 0}"><div ng-style="{ \'cursor\': row.cursor }" ng-repeat="col in renderedColumns" ng-class="col.colIndex()" class="ngCell {{col.cellClass}}"><div class="ngVerticalBar" ng-style="{height: rowHeight}" ng-class="{ ngVerticalBarVisible: !$last }">&nbsp;</div><div ng-cell></div></div></div>'
 		/*
