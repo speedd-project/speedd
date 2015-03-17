@@ -33,7 +33,7 @@ class onrampStruct {
 		this.flowTimestamp = -1;
 		this.density = Double.NaN;
 		this.actionTimestamp = -1;
-		this.maxFlow = Double.POSITIVE_INFINITY;
+		this.maxFlow = 100.0;
 		this.minFlow = .0;
 	}
 }
@@ -59,12 +59,10 @@ public class TrafficDecisionMakerBolt extends BaseRichBolt {
 	public void prepare(Map stormConf, TopologyContext context,
 			OutputCollector collector) {
 		this.collector = collector;
-		logger.info("DMDMDMDM!!! Preparing decision maker bolt");
 	}
 
 	@Override
 	public void execute(Tuple input) {
-		logger.info("DMDMDMDM!!! Processing tuple " + input.toString());
 		Event event = (Event)input.getValueByField("message");
 		
 		// read event
@@ -133,7 +131,6 @@ public class TrafficDecisionMakerBolt extends BaseRichBolt {
 					outAttrs.put("lane", "onramp"); // to distinguish from variable speed limits on the mainline?
 					
 					Event outEvent = eventFactory.createEvent("UpdateMeteringRateAction", timestamp, outAttrs);
-					logger.info("Emitting out event: " + outEvent.getEventName());
 					
 					// Use sensor labels for partitioning by kafka
 					collector.emit(new Values(location, outEvent));
