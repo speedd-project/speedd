@@ -46,13 +46,13 @@ app.directive('rampList2Directive', function ($parse) {
 						.transition().ease("elastic")
 						.style("width", function(d) { return barscale(d.density) + "%"; })
 //						.style("opacity",function(d) { return opacityscale(d.density);})
-						.text(function(d) { return d.density + "%"; })
+						.text(function(d) { return d.density.toFixed(0) + "%"; })
 						.style("background-color", "#F68275");//function(d) { return colorscale(d.density); });
 				divs.append("div")//.attr("class", "chart2")
 						.transition().ease("elastic")
 						.style("width", function(d) { return barscale(d.rate) + "%"; })
 //						.style("opacity",function(d) { return opacityscale(d.rate);})
-						.text(function(d) { return d.rate + "%"; })
+						.text(function(d) { return d.rate.toFixed(0) + "%"; })
 						.style("background-color", "#1C9CA7");//function(d) { return colorscale(d.rate); });
 			}
 			
@@ -66,12 +66,12 @@ app.directive('rampList2Directive', function ($parse) {
 				divs.append("div")//.attr("class", "chart2")
 						.style("width", function(d) { return barscale(d.density) + "%"; })
 //						.style("opacity",function(d) { return opacityscale(d.density);})
-						.text(function(d) { return d.density + "%"; })
+						.text(function(d) { return d.density.toFixed(0) + "%"; })
 						.style("background-color", "#F68275")//function(d) { return colorscale(d.density); });
 				divs.append("div")//.attr("class", "chart2")
 						.style("width", function(d) { return barscale(d.rate) + "%"; })
 //						.style("opacity",function(d) { return opacityscale(d.rate);})
-						.text(function(d) { return d.rate + "%"; })
+						.text(function(d) { return d.rate.toFixed(0) + "%"; })
 						.style("background-color", "#1C9CA7");//function(d) { return colorscale(d.rate); });
 				
 				var legend = container.append("div").attr("class", "chart2 col-xs-4 col-md-4 col-sm-4")
