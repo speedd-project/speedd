@@ -48,6 +48,8 @@ app.controller('EventListController', ['$scope','$interval','$window','dataServi
 		event.country = (dataToFormat.attributes.acquirer_country != undefined)? dataService.map_data2.get(dataToFormat.attributes.acquirer_country).name.common : -1;
 		event.certainty = (dataToFormat.attributes.Certainty != undefined)? dataToFormat.attributes.Certainty : -1;
 		event.reason = (dataToFormat.attributes.reason != undefined)? dataToFormat.attributes.reason : "";
+		event.terminal_id = (dataToFormat.attributes.terminal_id != undefined)? dataToFormat.attributes.terminal_id : "";
+		event.card_pan = (dataToFormat.attributes.card_pan != undefined)? dataToFormat.attributes.card_pan : "";
 		event.confirmed = "false"
 		
 		$scope.formattedEventList.push(event);
