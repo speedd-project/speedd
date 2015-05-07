@@ -4,9 +4,7 @@ import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
 import java.util.List;
 
-import org.speedd.ParsingError;
 import org.speedd.data.Event;
-import org.speedd.data.impl.SpeeddEventFactory;
 import org.speedd.kafka.JsonEventDecoder;
 
 import backtype.storm.spout.Scheme;

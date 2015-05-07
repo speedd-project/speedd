@@ -19,6 +19,8 @@ import java.util.Map.Entry;
 import java.util.Properties;
 
 import kafka.admin.CreateTopicCommand;
+import kafka.admin.TopicCommand;
+import kafka.admin.TopicCommand.TopicCommandOptions;
 import kafka.api.OffsetRequest;
 import kafka.javaapi.consumer.SimpleConsumer;
 import kafka.javaapi.message.ByteBufferMessageSet;
@@ -135,6 +137,17 @@ public abstract class BaseSpeeddIntegrationTest {
 
 	protected abstract String getTopicName(String topicKey);
 	
+	private void createTopic(ZkClient zkClient, String topic){
+		TopicCommandOptions createTopicCommandOptions = new TopicCommandOptions(new String[]{
+				"--partitions", "1",
+				"--replication-factor", "1",
+				"--config", "cleanup.policy=compact",
+				"--topic", topic
+		});
+		
+		TopicCommand.createTopic(zkClient, createTopicCommandOptions);
+	}
+	
 	private void setupKafkaServer() throws Exception {
 		kafkaZookeeper = TestUtil.startEmbeddedZkServer(zookeeperPort);
 
@@ -147,7 +160,7 @@ public abstract class BaseSpeeddIntegrationTest {
 		zkClient = new ZkClient("localhost:" + zookeeperPort, 30000,
 				30000, ZKStringSerializer$.MODULE$);
 
-		Properties props = TestUtils.createBrokerConfig(brokerId, brokerPort);
+		Properties props = TestUtils.createBrokerConfig(brokerId, brokerPort, true);
 
 		props.setProperty("zookeeper.connect", "localhost:" + zookeeperPort);
 
@@ -158,14 +171,10 @@ public abstract class BaseSpeeddIntegrationTest {
 		kafkaServer = TestUtils.createServer(config, mock);
 
 		// create topics
-		CreateTopicCommand.createTopic(zkClient,
-				getTopicName(SpeeddTopology.CONFIG_KEY_OUT_EVENTS_TOPIC), 1, 1, "");
-		CreateTopicCommand.createTopic(zkClient,
-				getTopicName(SpeeddTopology.CONFIG_KEY_IN_EVENTS_TOPIC), 1, 1, "");
-		CreateTopicCommand.createTopic(zkClient, getTopicName(SpeeddTopology.CONFIG_KEY_ACTIONS_TOPIC),
-				1, 1, "");
-		CreateTopicCommand.createTopic(zkClient, getTopicName(SpeeddTopology.CONFIG_KEY_ADMIN_TOPIC),
-				1, 1, "");
+		createTopic(zkClient, getTopicName(SpeeddTopology.CONFIG_KEY_OUT_EVENTS_TOPIC));
+		createTopic(zkClient, getTopicName(SpeeddTopology.CONFIG_KEY_IN_EVENTS_TOPIC));
+		createTopic(zkClient, getTopicName(SpeeddTopology.CONFIG_KEY_ACTIONS_TOPIC));
+		createTopic(zkClient, getTopicName(SpeeddTopology.CONFIG_KEY_ADMIN_TOPIC));
 
 		List<KafkaServer> servers = new ArrayList<KafkaServer>();
 		servers.add(kafkaServer);
@@ -412,12 +421,19 @@ public abstract class BaseSpeeddIntegrationTest {
 		streamEventsAndVerifyResults(configPath, topologyName, eventReader, expectedEvents, null);
 	}
 
-	protected ProducerConfig createProducerConfig(){
-		// setup producer
-		Properties producerProperties = TestUtils.getProducerConfig(
-				"localhost:" + getBrokerPort(), "kafka.producer.DefaultPartitioner");
+	protected Properties createProducerConfig(){
+		int kafkaBrokerPort = getBrokerPort();
+		
+		Properties producerConfig = TestUtils.getProducerConfig("localhost:" + kafkaBrokerPort);
+		
+		producerConfig.put("bootstrap.servers", "localhost:"
+				+ kafkaBrokerPort);
+		producerConfig.put("key.serializer",
+				"org.apache.kafka.common.serialization.StringSerializer");
+		producerConfig.put("value.serializer",
+				"org.apache.kafka.common.serialization.StringSerializer");
 
-		return new ProducerConfig(producerProperties);
+		return producerConfig;
 	}
 	
 	public void streamEventsAndVerifyResults(String configPath, String topologyName, EventFileReader eventReader, String[] expectedEvents, String[] expectedActions) throws Exception {

@@ -8,7 +8,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
-import kafka.admin.CreateTopicCommand;
+import kafka.admin.TopicCommand;
+import kafka.admin.TopicCommand.TopicCommandOptions;
 import kafka.api.PartitionOffsetRequestInfo;
 import kafka.common.TopicAndPartition;
 import kafka.javaapi.OffsetResponse;
@@ -146,7 +147,7 @@ public class TestUtil {
 		ZkClient zkClient = new ZkClient(zkConnect, 30000,
 				30000, ZKStringSerializer$.MODULE$);
 
-		Properties props = TestUtils.createBrokerConfig(brokerId, brokerPort);
+		Properties props = TestUtils.createBrokerConfig(brokerId, brokerPort, true);
 
 		props.setProperty("zookeeper.connect", zkConnect);
 
@@ -157,10 +158,14 @@ public class TestUtil {
 
 		log.info("Creating topics");
 		String lastTopicCreated = null;
+		
 		for (String topic : topicsToCreate) {
 			log.info("Create topic: " + topic);
-			CreateTopicCommand.createTopic(zkClient,
-					topic, 1, 1, "");
+			TopicCommand.createTopic(zkClient,
+					new TopicCommandOptions(new String[]{"--partitions", "1",
+						      "--replication-factor", "1",
+						      "--config", "cleanup.policy=compact",
+						      "--topic", topic}));
 			lastTopicCreated = topic;
 		}
 

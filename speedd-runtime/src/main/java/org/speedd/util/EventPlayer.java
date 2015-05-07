@@ -25,7 +25,7 @@ public class EventPlayer {
 
 	public static final String DEFAULT_CONFIG_PATH = "producer.properties";
 
-	private ProducerConfig kafkaProducerConfig;
+	private Properties kafkaProducerProperties;
 
 	private String topic;
 
@@ -33,7 +33,7 @@ public class EventPlayer {
 
 	public void playEventsFromFile(String path) throws Exception {
 		TimedEventFileReader eventFileReader = new TimedEventFileReader(path,
-				topic, kafkaProducerConfig, eventParser);
+				topic, kafkaProducerProperties, eventParser);
 
 		eventFileReader.streamEvents();
 
@@ -42,13 +42,9 @@ public class EventPlayer {
 
 	public EventPlayer(String configPath, String topic, EventParser eventParser)
 			throws IOException {
-		Properties properties = new Properties();
+		kafkaProducerProperties.load(new FileReader(configPath));
 
-		properties.load(new FileReader(configPath));
-
-		System.out.println("Properties loaded:" + properties.toString());
-
-		kafkaProducerConfig = new ProducerConfig(properties);
+		System.out.println("Properties loaded:" + kafkaProducerProperties.toString());
 
 		this.topic = topic;
 

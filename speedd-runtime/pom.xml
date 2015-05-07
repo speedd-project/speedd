@@ -52,10 +52,10 @@
 					</execution>
 				</executions>
 				<configuration>
-					<source>1.6</source>
-					<target>1.6</target>
-					<testSource>1.6</testSource>
-					<testTarget>1.6</testTarget>
+					<source>1.7</source>
+					<target>1.7</target>
+					<testSource>1.7</testSource>
+					<testTarget>1.7</testTarget>
 					<encoding>UTF-8</encoding>
 				</configuration>
 			</plugin>
@@ -185,7 +185,7 @@
 		<dependency>
 			<groupId>org.apache.storm</groupId>
 			<artifactId>storm-core</artifactId>
-			<version>0.9.2-incubating</version>
+			<version>0.9.4</version>
 			<!-- keep storm out of the jar-with-dependencies -->
 			<scope>provided</scope>
 			<exclusions>
@@ -197,8 +197,8 @@
 		</dependency>
 		<dependency>
 			<groupId>org.apache.kafka</groupId>
-			<artifactId>kafka_2.9.2</artifactId>
-			<version>0.8.0</version>
+			<artifactId>kafka_2.10</artifactId>
+			<version>0.8.2.1</version>
 			<classifier>test</classifier>
 			<exclusions>
 				<exclusion>
@@ -210,7 +210,21 @@
 					<artifactId>log4j</artifactId>
 				</exclusion>
 			</exclusions>
-
+		</dependency>
+		<dependency>
+			<groupId>org.apache.kafka</groupId>
+			<artifactId>kafka_2.10</artifactId>
+			<version>0.8.2.1</version>
+			<exclusions>
+				<exclusion>
+					<groupId>org.apache.zookeeper</groupId>
+					<artifactId>zookeeper</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>log4j</groupId>
+					<artifactId>log4j</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>net.wurstmeister.storm</groupId>

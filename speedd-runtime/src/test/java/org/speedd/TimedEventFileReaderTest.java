@@ -1,7 +1,6 @@
 package org.speedd;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -11,6 +10,7 @@ import java.util.Properties;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import kafka.consumer.Consumer;
 import kafka.consumer.ConsumerConfig;
@@ -28,8 +28,6 @@ import org.speedd.EventFileReader.EventMessageRecord;
 import org.speedd.data.impl.SpeeddEventFactory;
 import org.speedd.test.TestUtil;
 import org.speedd.traffic.TrafficAggregatedReadingCsv2Event;
-
-import scala.actors.threadpool.AtomicInteger;
 
 import com.netflix.curator.test.TestingServer;
 
@@ -106,12 +104,15 @@ public class TimedEventFileReaderTest {
 		KafkaServer kafkaServer = TestUtil.setupKafkaServer(brokerId, kafkaBrokerPort, zkServer, new String[]{"test"});
 
 		// setup producer
-		Properties producerProperties = TestUtils.getProducerConfig(
-				"localhost:" + kafkaBrokerPort, "kafka.producer.DefaultPartitioner");
+		Properties producerProperties = TestUtils.getProducerConfig("localhost:" + kafkaBrokerPort);
+		producerProperties.put("bootstrap.servers", "localhost:"
+				+ kafkaBrokerPort);
+		producerProperties.put("key.serializer",
+				"org.apache.kafka.common.serialization.StringSerializer");
+		producerProperties.put("value.serializer",
+				"org.apache.kafka.common.serialization.StringSerializer");
 
-		ProducerConfig pConfig = new ProducerConfig(producerProperties);
-
-		TimedEventFileReader eventFileReader = new TimedEventFileReader(this.getClass().getClassLoader().getResource("test-events.csv").getPath(), topic, pConfig, new TrafficAggregatedReadingCsv2Event(SpeeddEventFactory.getInstance()));
+		TimedEventFileReader eventFileReader = new TimedEventFileReader(this.getClass().getClassLoader().getResource("test-events.csv").getPath(), topic, producerProperties, new TrafficAggregatedReadingCsv2Event(SpeeddEventFactory.getInstance()));
 		
 		TimedEventListener eventListener = new TimedEventListener();
 		

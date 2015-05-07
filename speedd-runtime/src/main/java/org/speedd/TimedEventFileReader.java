@@ -2,8 +2,7 @@ package org.speedd;
 
 import java.io.IOException;
 import java.nio.charset.Charset;
-
-import kafka.producer.ProducerConfig;
+import java.util.Properties;
 
 import org.speedd.data.Event;
 
@@ -13,8 +12,8 @@ public class TimedEventFileReader extends EventFileReader {
 	private long prevTimestamp;
 
 	public TimedEventFileReader(String filePath, String topic,
-			ProducerConfig kafkaProducerConfig, EventParser eventParser) {
-		super(filePath, topic, kafkaProducerConfig);
+			Properties kafkaProducerProperties, EventParser eventParser) {
+		super(filePath, topic, kafkaProducerProperties);
 		this.eventParser = eventParser;
 	}
 
