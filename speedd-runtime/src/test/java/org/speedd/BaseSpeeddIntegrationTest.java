@@ -18,7 +18,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
 
-import kafka.admin.CreateTopicCommand;
 import kafka.admin.TopicCommand;
 import kafka.admin.TopicCommand.TopicCommandOptions;
 import kafka.api.OffsetRequest;
@@ -26,7 +25,6 @@ import kafka.javaapi.consumer.SimpleConsumer;
 import kafka.javaapi.message.ByteBufferMessageSet;
 import kafka.message.Message;
 import kafka.message.MessageAndOffset;
-import kafka.producer.ProducerConfig;
 import kafka.server.KafkaServer;
 import kafka.utils.MockTime;
 import kafka.utils.TestUtils;

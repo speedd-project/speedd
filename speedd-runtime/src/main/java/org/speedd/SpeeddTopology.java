@@ -15,6 +15,8 @@ import storm.kafka.KafkaSpout;
 import storm.kafka.SpoutConfig;
 import storm.kafka.ZkHosts;
 import storm.kafka.bolt.KafkaBolt;
+import storm.kafka.bolt.mapper.FieldNameBasedTupleToKafkaMapper;
+import storm.kafka.bolt.selector.DefaultTopicSelector;
 import backtype.storm.Config;
 import backtype.storm.LocalCluster;
 import backtype.storm.StormSubmitter;
@@ -87,8 +89,10 @@ public class SpeeddTopology {
 				AdminCommandScheme.class.getName(), speeddConfig.topicAdmin,
 				ADMIN_COMMAND_READER);
 
-		KafkaBolt<String, Event> eventWriterBolt = new KafkaBolt<String, Event>(
-				CONFIG_KEY_OUT_EVENTS_TOPIC);
+		KafkaBolt<String, Event> eventWriterBolt = new KafkaBolt<String, Event>().withTopicSelector(
+				new DefaultTopicSelector(speeddConfig.topicOutEvents))
+				.withTupleToKafkaMapper(
+						new FieldNameBasedTupleToKafkaMapper());
 
 		ProtonOutputConsumerBolt protonOutputConsumerBolt = new ProtonOutputConsumerBolt();
 
@@ -112,7 +116,10 @@ public class SpeeddTopology {
 				.allGrouping(ADMIN_COMMAND_READER);
 
 		builder.setBolt(DECISION_WRITER,
-				new KafkaBolt<String, Event>(CONFIG_KEY_ACTIONS_TOPIC))
+				new KafkaBolt<String, Event>().withTopicSelector(
+						new DefaultTopicSelector(speeddConfig.topicActions))
+						.withTupleToKafkaMapper(
+								new FieldNameBasedTupleToKafkaMapper()))
 				.shuffleGrouping(DECISION_MAKER);
 
 		return builder.createTopology();
