@@ -1,7 +1,7 @@
 #!/bin/bash
 source ../setup-env
 
-CLASSPATH=$SPEEDD_RUNTIME_LIB/speedd-runtime-0.0.1-SNAPSHOT-jar-with-dependencies.jar:$KAFKA_HOME/libs/log4j-1.2.15.jar
+CLASSPATH=$SPEEDD_RUNTIME_LIB/speedd-runtime-0.0.1-SNAPSHOT-jar-with-dependencies.jar:$KAFKA_HOME/libs/log4j-1.2.16.jar
 
 IN_EVENT_FILE=FeedzaiIntegrationData.csv
 

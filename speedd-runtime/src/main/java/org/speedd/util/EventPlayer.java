@@ -42,6 +42,7 @@ public class EventPlayer {
 
 	public EventPlayer(String configPath, String topic, EventParser eventParser)
 			throws IOException {
+		kafkaProducerProperties = new Properties();
 		kafkaProducerProperties.load(new FileReader(configPath));
 
 		System.out.println("Properties loaded:" + kafkaProducerProperties.toString());
