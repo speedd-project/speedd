@@ -1,5 +1,5 @@
 #!/bin/bash
-source ../setup-env
+source ./setup-env
 
 service storm-supervisor stop
 service storm-nimbus stop

@@ -1,5 +1,5 @@
 #!/bin/bash
-STORM_HOME=/opt/apache-storm-0.9.4
+source ./setup-env
 
 STORM_CMD=$STORM_HOME/bin/storm
 

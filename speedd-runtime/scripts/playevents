@@ -1,7 +1,5 @@
 #!/bin/bash
-STORM_HOME=/opt/apache-storm-0.9.4
-
-KAFKA_HOME=/opt/kafka_2.10-0.8.22.1
+source ./setup-env
 
 SPEEDD_HOME=~/speedd
 

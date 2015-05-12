@@ -1,4 +1,4 @@
 #!/bin/bash
-KAFKA_HOME=/opt/kafka_2.10-0.8.2.1
+source ../setup-env
 
 $KAFKA_HOME/bin/kafka-console-consumer.sh --zookeeper localhost:2181 --topic speedd-fraud-out-events --from-beginning
