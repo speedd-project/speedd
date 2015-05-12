@@ -9,26 +9,18 @@ Before the first use you should build the modules as described below.
 Building SPEEDD runtime
 -----------------------
 Project speedd-runtime contains the code for the runtime platform for SPEEDD.
-The speedd-runtime module depends on a bunch of other projects (e.g. storm, kafka, etc.). Most of the dependencies are available on the internet and will be resolved by maven. There is one projects that is special - it requires your explicit action - as follows:
+The speedd-runtime module depends on a bunch of other projects (e.g. storm, kafka, etc.). The dependencies are available on the internet and will be resolved by maven.
 
-* storm-kafka-0.8-plus - clone this repository: [https://github.com/kofman-alex/storm-kafka-0.8-plus.git](https://github.com/kofman-alex/storm-kafka-0.8-plus.git).
-
-After cloning, build the storm-kafka-plus by running 'mvn clean install' command from the storm-kafka-plus directory.
-
-Then build the speedd-runtime module by performing the following:
+Build the speedd-runtime module by performing the following:
 
 1. cd speedd-runtime
 2. mvn clean install assembly:assembly
 
-Installing the Dashboard module
--------------------------------
-For install perform the following steps:
-1. open terminal
-2. run: chmod +x installUI.sh
-3. run: ./installUI.sh
-4. Follow instructions in the terminal
-
-**Note**: after pulling changes for UI modules have to be updated - see details in [dashboard's README](https://github.com/speedd-project/speedd/tree/master/speedd-ui).
+Installing and running dashboard app
+------------------------------------
+Follow instructions for respective use cases:
+- [Traffic Management](https://github.com/speedd-project/speedd/tree/master/speedd_ui_tm_new)
+- [Credit Card Fraud Management](https://github.com/speedd-project/speedd/tree/master/speedd_ui_bf_new)
 
 Running demo scenarios
 ======================
@@ -36,16 +28,16 @@ In the following sections we assume that your current working directory is 'spee
 
 Traffic Management
 ------------------
-1. cd ./traffic
+1. cd scripts/traffic
 2. sudo ./start-speedd-runtime
-3. Run the dashboard by starting ../../speedd-ui/bin/run.sh
+3. Open a new terminal and start the dashboard app following the [instructions](https://github.com/speedd-project/speedd/tree/master/speedd_ui_tm_new)
 4. start sending input events by running ./playevents-traffic  
 
 Credit Card Fraud Detection
 ---------------------------
-1. cd ./ccf
+1. cd scripts/ccf
 2. sudo ./start-speedd-runtime
-3. Run the dashboard by starting ../../speedd\_ui\_bf/bin/run.sh
+3. Open a new terminal and start the dashboard app following the [instructions](https://github.com/speedd-project/speedd/tree/master/speedd_ui_bf_new)
 4. start sending input events by running ./playevents-fraud
 
 Stopping SPEEDD prototype
@@ -57,6 +49,7 @@ _**Note: It is important to stop the prototype running current demo scenario bef
 
 Seeing events and actions emitted by SPEEDD
 -------------------------------------------
-- **For input events**: run 'scripts/show-in-events'
-- **For output events**: run 'scripts/show-out-events'
-- **For actions**: run 'scripts/show-actions'
+For example, for traffic management:
+- **For input events**: run 'scripts/traffic/show-in-events'
+- **For output events**: run 'scripts/traffic/show-out-events'
+- **For actions**: run 'scripts/traffic/show-actions'
