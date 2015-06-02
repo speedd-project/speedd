@@ -1,4 +1,4 @@
-#date,      time,     location,         lane,   occupancy,  vehicles, speed,  median_velocity	
+date,      time,     location,         lane,   occupancy,  vehicles, speed,  median_velocity	
 2014-04-07, 03:00:00,	0024a4dc00003356,	slow,   2.32,         1,      94.0,		
 2014-04-07,	03:00:00,	0024a4dc00003356,	fast,   1.59,         1,      76.0,		
 2014-04-07,	03:00:00,	0024a4dc00003356,	onramp, 0.00,         0,      -1.0,		
