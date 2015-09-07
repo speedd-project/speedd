@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<metadata>
+  <groupId>uncertainty.com.ibm.hrl.proton</groupId>
+  <artifactId>ProtonJ2SE</artifactId>
+  <versioning>
+    <release>0.0.1</release>
+    <versions>
+      <version>0.0.1</version>
+    </versions>
+    <lastUpdated>20150903104151</lastUpdated>
+  </versioning>
+</metadata>
