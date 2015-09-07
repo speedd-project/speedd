@@ -233,9 +233,9 @@
 		</dependency>
 
 		<dependency>
-			<groupId>com.ibm.hrl.proton</groupId>
+			<groupId>uncertainty.com.ibm.hrl.proton</groupId>
 			<artifactId>ProtonOnStorm</artifactId>
-			<version>1.0-SNAPSHOT</version>
+			<version>0.0.1</version>
 			<exclusions>
 				<exclusion>
 					<groupId>org.apache.storm</groupId>

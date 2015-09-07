@@ -10,7 +10,9 @@ import org.speedd.data.EventFactory;
 import org.speedd.data.impl.SpeeddEventFactory;
 
 import com.ibm.hrl.proton.metadata.event.EventHeader;
-import com.ibm.hrl.proton.routing.MetadataFacade;
+
+
+import com.ibm.hrl.proton.routing.STORMMetadataFacade;
 
 import backtype.storm.task.OutputCollector;
 import backtype.storm.task.TopologyContext;
@@ -39,7 +41,7 @@ public class ProtonOutputConsumerBolt extends BaseRichBolt implements org.speedd
 		
 		String eventName = (String)input.getValueByField(EventHeader.NAME_ATTRIBUTE);
 
-		Map<String, Object> inAttrs = (Map<String, Object>)input.getValueByField(MetadataFacade.ATTRIBUTES_FIELD);
+		Map<String, Object> inAttrs = (Map<String, Object>)input.getValueByField(STORMMetadataFacade.ATTRIBUTES_FIELD);
 		
 		long timestamp = 0;
 		
