@@ -33,7 +33,7 @@ import java.io.File
 import auxlib.log.Logging
 import org.apache.spark.SparkContext
 import org.apache.spark.sql.{Row, SQLContext}
-import org.speedd.ml.loaders.FileLoader
+import org.speedd.ml.loaders.DataLoader
 import org.speedd.ml.model.CNRS
 import org.speedd.ml.model.CNRS.Location
 import org.speedd.ml.util.csv._
@@ -44,7 +44,7 @@ import com.datastax.spark.connector._
  * Loads location data from CSV files. The data is collected and provided by CNRS.
  *
  */
-object LocationDataLoader extends FileLoader with Logging {
+object LocationDataLoader extends DataLoader with Logging {
 
   override def loadAll(inputFiles: Seq[File])(implicit sc: SparkContext, sqlContext: SQLContext): Unit = {
     import sqlContext.implicits._

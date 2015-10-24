@@ -31,6 +31,7 @@ package org.speedd.ml
 import java.io.File
 import java.nio.file.{AccessDeniedException, NoSuchFileException, NotDirectoryException, Path}
 import java.security.InvalidParameterException
+import lomrf.logic.AtomSignature
 import org.apache.spark.sql.Column
 import org.apache.spark.sql.types._
 
@@ -41,8 +42,22 @@ import scala.util.{Success, Failure, Try}
 
 package object util {
 
+  /**
+   * Implicitly convert the specified filepath as a string into the corresponding instance of file
+   *
+   * @param str the input filepath as a string
+   *
+   * @return the corresponding instance of file
+   */
   implicit def strToFile(str: String): File = new File(str)
 
+  /**
+   * Implicitly convert a Path instance into the corresponding File instance
+   *
+   * @param path the input Path instance
+   *
+   * @return the corresponding instance of file
+   */
   implicit def pathToFile(path: Path): File = path.toFile
 
   /**
@@ -139,10 +154,10 @@ package object util {
     val CSV_FORMAT = "com.databricks.spark.csv"
 
     val CSV_OPTIONS = Map(
-      "delimiter" -> ",",
-      "header" -> "false",
-      "parserLib" -> "UNIVOCITY",
-      "mode" -> "DROPMALFORMED"
+      "delimiter" -> ",", // use standard column delimiter
+      "header" -> "false", // don't expect that the input file will have a header information
+      "parserLib" -> "UNIVOCITY", // use UNIVOCITY CSV parser back-end for memory and CPU efficiency
+      "mode" -> "DROPMALFORMED" // ignore lines with errors
     )
 
 
@@ -243,8 +258,33 @@ package object util {
 
   }
 
-
-
-
+  /**
+   * Parses the given string, which is expected to contain atomic signatures that are separated by commas. For example,
+   * consider the following string:
+   *
+   * {{{
+   *   parseSignatures(src = "HoldsAt/2,InitiatedAt/2, TerminatedAt/2")
+   * }}}
+   *
+   * For the above string this function will produce the following successful result:
+   *
+   * {{{
+   *   Success( Set( AtomSignature("HoldsAt", 2), AtomSignature("InitiatedAt", 2), AtomSignature("TerminatedAt", 2) ) )
+   * }}}
+   *
+   * In situations where the given string is not following the expected format, this function will give a Failure with
+   * the caused exception.
+   *
+   * @param src source string composed of comma separated atomic signatures
+   *
+   * @return a Success try containing a collection of AtomSignatures from the specified source string, otherwise a
+   *         Failure containing the caused exception.
+   */
+  def parseSignatures(src: String): Try[Set[AtomSignature]] = Try {
+    src.split(",").map{ entry =>
+      val (symbol, arity) = entry.span(_ == '/')
+      AtomSignature(symbol.trim, arity.trim.toInt)
+    }(scala.collection.breakOut)
+  }
 
 }

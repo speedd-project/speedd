@@ -33,7 +33,7 @@ import java.io.File
 import auxlib.log.Logging
 import org.apache.spark.SparkContext
 import org.apache.spark.sql.{Row, SQLContext}
-import org.speedd.ml.loaders.FileLoader
+import org.speedd.ml.loaders.DataLoader
 import org.speedd.ml.model.CNRS
 import org.speedd.ml.model.CNRS.Annotation
 import org.speedd.ml.util.csv._
@@ -59,7 +59,7 @@ import java.text.SimpleDateFormat
  * </p>
  *
  */
-object AnnotationDataLoader extends FileLoader with Logging {
+object AnnotationDataLoader extends DataLoader with Logging {
 
   private val DATE_TIME_FORMAT = "dd/MM/yyyy HH:mm:ss"
   private val DATE_TIME_FORMAT_SHORT = "dd/MM/yy HH:mm"

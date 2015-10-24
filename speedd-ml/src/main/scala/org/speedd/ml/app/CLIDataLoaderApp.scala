@@ -48,7 +48,6 @@ trait CLIDataLoaderApp extends App with CommonOptions with Logging {
   protected var filesFunc: (File, Boolean) => Try[Seq[File]] = (d: File, x: Boolean) => Success(Seq[File]())
   protected var rootDir = Paths.get(".")
   protected var recursion = false
-  //protected var forceLoad = false
 
   // -------------------------------------------------------------------------------------------------------------------
   // --- Command line interface options
@@ -99,7 +98,5 @@ trait CLIDataLoaderApp extends App with CommonOptions with Logging {
   })
 
   flagOpt("r", "recursive", "Enable recursion, in order to search in sub-directories.", { recursion = true } )
-
-  //flagOpt("f", "force", "Force data loading (Overwrite entries in DB)", { forceLoad = true } )
 
 }

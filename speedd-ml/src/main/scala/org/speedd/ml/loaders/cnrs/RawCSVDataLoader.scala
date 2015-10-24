@@ -33,7 +33,7 @@ import java.io.File
 import auxlib.log.Logging
 import org.apache.spark.SparkContext
 import org.apache.spark.sql.{Row, SQLContext}
-import org.speedd.ml.loaders.FileLoader
+import org.speedd.ml.loaders.DataLoader
 import org.speedd.ml.model.CNRS
 import org.speedd.ml.model.CNRS.RawInput
 import org.speedd.ml.util.csv._
@@ -83,7 +83,7 @@ import scala.collection.breakOut
  *  </ul>
  * </p>
  */
-object RawCSVDataLoader extends FileLoader with Logging {
+object RawCSVDataLoader extends DataLoader with Logging {
 
   // Schema definition for the speed histogram columns in the input CSV files
   private val hs = (0 to 200 by 10)

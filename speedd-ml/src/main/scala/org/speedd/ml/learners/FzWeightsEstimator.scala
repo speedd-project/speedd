@@ -26,14 +26,24 @@
  * along with program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.speedd.ml.loaders
+package org.speedd.ml.learners
 
 import java.io.File
 
+import auxlib.log.Logging
+import lomrf.logic.AtomSignature
 import org.apache.spark.SparkContext
 import org.apache.spark.sql.SQLContext
 
-trait FileLoader{
+object FzWeightsEstimator extends WeightEstimator with Logging {
 
-  def loadAll(inputFiles: Seq[File])(implicit sc: SparkContext, sqlContext: SQLContext): Unit
+  override def learn(startTime: Long,
+                     endTime: Long,
+                     inputKB: File,
+                     outputKB: File,
+                     inputSignatures: Set[AtomSignature],
+                     targetSignatures: Set[AtomSignature])
+                    (implicit sc: SparkContext, sqlContext: SQLContext): Unit = {
+    ???
+  }
 }

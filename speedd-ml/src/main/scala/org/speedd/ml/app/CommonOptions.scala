@@ -33,7 +33,7 @@ import auxlib.opt.OptionParser
 trait CommonOptions extends OptionParser {
 
   protected var master = s"local[${Runtime.getRuntime.availableProcessors()}]"
-  protected var appName = "SPEEDD-ML_DATA"
+  protected var appName = "SPEEDD-ML"
   protected var cassandraConnectionHost = "127.0.0.1"
   protected var cassandraConnectionPort = "9042"
 
@@ -44,15 +44,15 @@ trait CommonOptions extends OptionParser {
     v: String => master = v.trim
   })
 
-  opt("N", "Name", "Spark application name (default is 'SPEEDD-ML_DATA').", {
+  opt("N", "Name", s"Spark application name (default is '$appName').", {
     v: String => appName = v.trim
   })
 
-  opt("C", "Cassandra-host", "Specify the IP connection to Cassandra DB (default is '127.0.0.1').", {
+  opt("C", "Cassandra-host", s"Specify the IP connection to Cassandra DB (default is '$cassandraConnectionHost}').", {
     v: String => cassandraConnectionHost = v
   })
 
-  opt("P", "Cassandra-port", "Specify the port connection to Cassandra DB (default is '9042').", {
+  opt("P", "Cassandra-port", s"Specify the port connection to Cassandra DB (default is '$cassandraConnectionPort}').", {
     v: String => cassandraConnectionPort = v
   })
 

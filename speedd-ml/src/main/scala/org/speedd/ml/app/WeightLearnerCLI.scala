@@ -34,8 +34,10 @@ import org.apache.spark.{SparkContext, SparkConf}
 import org.speedd.ml.ModuleVersion
 import java.io.File
 import auxlib.log.Logging
-import com.datastax.spark.connector._
-import org.speedd.ml.learners.CNRSWeightsEstimator
+import org.speedd.ml.learners.{WeightEstimator, FzWeightsEstimator, CNRSWeightsEstimator}
+import org.speedd.ml.util.parseSignatures
+
+import scala.util.{Success, Try}
 
 
 object WeightLearnerCLI extends App with CommonOptions with Logging {
@@ -45,11 +47,15 @@ object WeightLearnerCLI extends App with CommonOptions with Logging {
   // -------------------------------------------------------------------------------------------------------------------
   // --- Variables accessible from command-line
   // -------------------------------------------------------------------------------------------------------------------
-
   private var inputKBOpt: Option[File] = None
   private var outputKBOpt: Option[File] = None
   private var intervalOpt: Option[(Long, Long)] = None
+  private var batchSizeOpt: Option[Long] = None
   private var taskOpt: Option[String] = None
+
+  private var targetPredicates = Set(AtomSignature("InitiatedAt", 2), AtomSignature("TerminatedAt", 2))
+  private var evidencePredicates = Set(AtomSignature("HappensAt", 2))
+  private var nonEvidencePredicates = Set(AtomSignature("HoldsAt", 2))
 
   // -------------------------------------------------------------------------------------------------------------------
   // --- Command-line options
@@ -58,16 +64,15 @@ object WeightLearnerCLI extends App with CommonOptions with Logging {
     v: String =>
       val file = new File(v)
 
-      inputKBOpt =
-        if(!file.isFile) fatal("The specified input knowledge base file does not exist.")
-        else if(!file.canRead) fatal("Cannot read the specified input knowledge base file, please check the file permissions.")
+      inputKBOpt = {
+        if (!file.isFile) fatal("The specified input knowledge base file does not exist.")
+        else if (!file.canRead) fatal("Cannot read the specified input knowledge base file, please check the file permissions.")
         else Some(file)
+      }
   })
 
-  opt("out", "output-kb", "<file>",
-  "Specify the output knowledge file. " +
-    "By default is the base name of the input KB file appended with '.out.mln', " +
-    "for example, if the input file is 'foo.mln' the default output will be foo.out.mln " +
+  opt("out", "output-kb", "<file>", "Specify the output knowledge file. By default is the base name of the input KB file " +
+    "appended with '.out.mln', for example, if the input file is 'foo.mln' the default output will be foo.out.mln " +
     "and will be located in the same directory.", {
     v: String => outputKBOpt = Some(new File(v))
   })
@@ -75,34 +80,56 @@ object WeightLearnerCLI extends App with CommonOptions with Logging {
   opt("i", "interval", "<start time-point>,<end time-point>", "Specify the temporal interval for training, e.g. 10,100 ", {
     v: String =>
       val t = v.split(",")
-      if(t.length != 2) {
-        fatal("Please specify a valid temporal interval, e.g. 10,100")
-      } else try{
-        intervalOpt = Some((t(0).toLong, t(1).toLong))
-      } catch {
-        case e: Exception =>
-          fatal("Please specify a valid temporal interval, e.g. 10,100")
+      if(t.length != 2) fatal("Please specify a valid temporal interval, e.g. 10,100")
+      else intervalOpt = Option {
+        Try((t(0).toLong, t(1).toLong)) getOrElse fatal("Please specify a valid temporal interval. For example: 10,100")
       }
   })
 
   opt("bs", "batch-size", "<integer>", "Specify the batch size for learning, must be less or equal to the given " +
     "interval (see -i parameter)", {
-    v: String => try {
-      v.toLong
-    } catch {
-      case e: Exception =>
-        fatal("Please specify a valid batch size, e.g. 10")
-    }
+    v: String =>
+      batchSizeOpt = Try(v.toLong) match {
+        case Success(bs) if bs > 0 => Some(bs)
+        case _ => fatal("Please specify a positive integer number for batch size, e.g., 10")
+      }
+
   })
 
   opt("t", "task", "<string>", "The name of the task to call (CNRS or Feedzai).", {
     v: String => taskOpt = Some(v.trim.toUpperCase)
   })
 
-  /*opt("ne", "non-evidence", "<string>", "Comma separated non-evidence atoms. Each atom must be defined using its " +
-    "identity (i.e. Name/arity). For example the identity of predicate HoldsAt(fluent, time) is HoldsAt/2", {
+  opt("target", "target-predicates", "<string>", "Comma separated target atoms. Target atoms are atoms that apear in the" +
+    "head of event definition rules. These rule will be parsed and simplified before weight learning. Each atom must be " +
+    "defined using its identity (i.e., Name/arity). For example the identity of predicate InitiatedAt(fluent, time) " +
+    "is 'InitiatedAt/2'. 'InitiatedAt/2' and 'TerminatedAt/2' are the default target atoms.", {
+      v: String =>
+        targetPredicates = parseSignatures(v) getOrElse {
+          fatal(s"Failed to parse the atomic signatures of the specified target predicates '$v'. " +
+            s"Please make sure that you gave the correct format.")
+        }
+    })
+
+  opt("ne", "non-evidence-predicates", "<string>", "Comma separated non-evidence atoms. Each atom must be defined using its " +
+    "identity (i.e., Name/arity). For example the identity of predicate HoldsAt(fluent, time) is 'HoldsAt/2'. " +
+    "'HoldsAtAt/2' is the default non-evidence atom.", {
     v: String =>
-  })*/
+      nonEvidencePredicates = parseSignatures(v) getOrElse {
+        fatal(s"Failed to parse the atomic signatures of the specified non-evidence predicates '$v'. " +
+          s"Please make sure that you gave the correct format.")
+      }
+  })
+
+  opt("e", "evidence-predicates", "<string>", "Comma separated evidence atoms. Each atom must be defined using its "+
+      "identity (i.e., Name/arity). For example the identity of predicate HappensAt(event, time) is 'HappensAt/2'. " +
+      "'HappensAt/2' is the default evidence atom.", {
+      v: String =>
+        evidencePredicates = parseSignatures(v) getOrElse {
+          fatal(s"Failed to parse the atomic signatures of the specified evidence predicates '$v'. " +
+            s"Please make sure that you gave the correct format.")
+        }
+  })
 
   flagOpt("v", "version", "Print version and exit.", sys.exit(0))
 
@@ -110,8 +137,6 @@ object WeightLearnerCLI extends App with CommonOptions with Logging {
     println(usage)
     sys.exit(0)
   })
-
-
 
 
   // -------------------------------------------------------------------------------------------------------------------
@@ -125,33 +150,45 @@ object WeightLearnerCLI extends App with CommonOptions with Logging {
 
   if(!parse(args)) fatal("Failed to parse the given arguments.")
 
+  // File indicating the input MLN knowledge file
+  val kbFile = inputKBOpt getOrElse fatal("Please specify an initial KB file")
 
-  val kbFile = inputKBOpt.getOrElse(fatal("Please specify an initial KB file"))
+  // File indicating the output MLN knowledge file
   val outputFile = outputKBOpt getOrElse {
     val name = kbFile.getName
     new File(kbFile.getPath + name.substring(0, name.lastIndexOf('.')) + "_trained.mln")
   }
 
-  /*val (startTime, endTime) = intervalOpt.getOrElse(fatal("Please specify an interval"))
+  // The temporal interval by which we will take the evidence that annotation data
+  val (startTime, endTime) = intervalOpt getOrElse fatal("Please specify an interval")
+  val intervalLength = endTime - startTime
 
-  taskOpt.getOrElse(fatal("Please specify a translator name")) match {
-    case "CNRS" => learnCNRS()
+  // The batch size of the data that will given each time to the online learner
+  val batchSize = batchSizeOpt match {
+    case Some(bs) if bs <= intervalLength => bs // batch size must be bs <= intervalLength
+    case Some(bs) =>
+      fatal(
+        s"Please specify a batch size that is less or equal to the length ($intervalLength) of the specified " +
+        s"interval [$startTime, $endTime]")
 
-    case "FEEDZAI" => //todo
+    case _ => fatal("Please specify a batch size")
+  }
 
+  val weightEstimator: WeightEstimator = taskOpt.getOrElse(fatal("Please specify a translator name")) match {
+    case "CNRS" => CNRSWeightsEstimator
+    case "FEEDZAI" => FzWeightsEstimator
     case _ => fatal("Please specify a valid translator name")
-  }*/
-
+  }
 
   // --- 2. Prepare Spark context
-
   val conf = new SparkConf()
     .setAppName(appName)
     .setMaster(master)
     .set("spark.cassandra.connection.host", cassandraConnectionHost)
-    .set("spark.cassandra.input.split.size_in_mb", "67108864")
+    .set("spark.cassandra.connection.port", cassandraConnectionPort)
+    /*.set("spark.cassandra.input.split.size_in_mb", "67108864")
     .set("spark.executor.memory", "1g")
-    .set("spark.driver.memory", "2g")
+    .set("spark.driver.memory", "2g")*/
 
 
   info(s"Spark configuration:\n${conf.toDebugString}")
@@ -162,21 +199,19 @@ object WeightLearnerCLI extends App with CommonOptions with Logging {
   implicit val sqlContext = new SQLContext(sc)
   info(s"SparkSQL context initialised")
 
-  /*val cc = new CassandraSQLContext(sc)
-  cc.setKeyspace("cnrs")*/
-
+  weightEstimator.learn(startTime, endTime, kbFile, outputFile, evidencePredicates, targetPredicates)
 
   // -------------------------------------------------------------------------------------------------------------------
   // --- demo
   // -------------------------------------------------------------------------------------------------------------------
-  val (startTime, endTime) = (1397041487, 1397043127)
+  /*val (startTime, endTime) = (1397041487, 1397043127)
   val inputPredicates = Set(AtomSignature("HappensAt", 2))
   val targetPredicates = Set(AtomSignature("InitiatedAt", 2), AtomSignature("TerminatedAt", 2))
 
-  CNRSWeightsEstimator.learn(startTime, endTime, kbFile, outputFile, inputPredicates, targetPredicates)
+  CNRSWeightsEstimator.learn(startTime, endTime, kbFile, outputFile, inputPredicates, targetPredicates)*/
   // -------------------------------------------------------------------------------------------------------------------
 
-  sys.addShutdownHook{
+  sys.addShutdownHook {
     info("Shutting down Spark Context")
     sc.stop()
   }

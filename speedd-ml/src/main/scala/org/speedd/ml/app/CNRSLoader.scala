@@ -34,7 +34,7 @@ import org.apache.spark.{SparkConf, SparkContext}
 import org.speedd.ml.model.CNRS
 import scala.language.implicitConversions
 import scala.util.Success
-import org.speedd.ml.loaders.{FileLoader, cnrs}
+import org.speedd.ml.loaders.{DataLoader, cnrs}
 
 object CNRSLoader extends CLIDataLoaderApp {
 
@@ -80,8 +80,6 @@ object CNRSLoader extends CLIDataLoaderApp {
     .setMaster(master)
     .set("spark.cassandra.connection.host", cassandraConnectionHost)
     .set("spark.cassandra.connection.port", cassandraConnectionPort)
-    //.set("spark.cassandra.input.split.size_in_mb", "16")
-    //.set("spark.cassandra.input.split.size_in_mb", "67108864")
 
   info(s"Spark configuration:\n${conf.toDebugString}")
 
@@ -95,17 +93,19 @@ object CNRSLoader extends CLIDataLoaderApp {
   info("Initializing schema (if not exist)")
   CNRS.initialize()
 
-  // --- 4. Execute data loading task
-  val loader: FileLoader = taskOpt.getOrElse(fatal("Please specify a task")) match {
+  // Create the appropriate instance of data loader
+  val loader: DataLoader = taskOpt.getOrElse(fatal("Please specify a task")) match {
     case "input" => cnrs.RawCSVDataLoader
     case "annotation" => cnrs.AnnotationDataLoader
     case "location" => cnrs.LocationDataLoader
-    case v =>
-      fatal(s"Unknown task name '$v', please set one of the following tasks: (1) input, (2) annotation or (3) location.")
+    case name =>
+      fatal(s"Unknown task name '$name', please set one of the following tasks: (1) input, (2) annotation or (3) location.")
   }
 
+  // --- 4. Execute data loading task
   loader.loadAll(inputFiles)
 
+  // In the end of the program, make sure that the Spark Context is being properly shut down.
   sys.addShutdownHook{
     info("Shutting down Spark Context")
     sc.stop()
