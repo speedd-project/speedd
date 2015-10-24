@@ -34,7 +34,7 @@ import java.util.regex.Pattern
 
 import auxlib.log.Logging
 import org.speedd.ml.ModuleVersion
-import org.speedd.ml.util._
+import org.speedd.ml.util.IO._
 
 import scala.util.{Success, Try}
 

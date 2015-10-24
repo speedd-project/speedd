@@ -31,7 +31,6 @@ package org.speedd.ml.app
 
 import org.apache.spark.sql._
 import org.apache.spark.{SparkConf, SparkContext}
-import org.speedd.ml.model.CNRS
 import scala.language.implicitConversions
 import scala.util.Success
 import org.speedd.ml.loaders.{DataLoader, cnrs}
@@ -89,11 +88,11 @@ object CNRSLoader extends CLIDataLoaderApp {
   implicit val sqlContext = new SQLContext(sc)
   info(s"SparkSQL context initialised")
 
-  // --- 3. Check/prepare database schema
+  /*// --- 3. Check/prepare database schema
   info("Initializing schema (if not exist)")
-  CNRS.initialize()
+  CNRS.initialize()*/
 
-  // Create the appropriate instance of data loader
+  // --- 3. Create the appropriate instance of data loader
   val loader: DataLoader = taskOpt.getOrElse(fatal("Please specify a task")) match {
     case "input" => cnrs.RawCSVDataLoader
     case "annotation" => cnrs.AnnotationDataLoader

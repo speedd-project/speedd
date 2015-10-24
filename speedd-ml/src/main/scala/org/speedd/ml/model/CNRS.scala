@@ -30,13 +30,16 @@ package org.speedd.ml.model
 
 import com.datastax.spark.connector.SomeColumns
 import com.datastax.spark.connector.cql.CassandraConnector
+import com.datastax.spark.connector.rdd.reader.RowReaderFactory
 import org.apache.spark.SparkContext
-import org.apache.spark.sql.ColumnName
+import org.apache.spark.sql.{DataFrame, SQLContext, ColumnName}
+import org.speedd.ml.util.data._
 import language.implicitConversions
+import scala.reflect.ClassTag
 
 /**
- * This object contains databases entities (a corresponding case class for each table) and a schema initialization
- * function.
+ * This object contains databases entities (a corresponding case class for each table), as well as some use case
+ * specific constants (e.g., user defined thresholds of average speed levels).
  */
 object CNRS {
 
@@ -51,68 +54,26 @@ object CNRS {
   val prDistances = Array(0, 962, 1996, 2971, 3961, 4961, 5948, 6960, 7971, 8961, 9966, 11035)
 
   /**
-   * Initializes the database schema (DDL).
-   *
-   * @param sc  implicit instance of the spark context
+   * User defined occupancy levels
    */
-  def initialize()(implicit sc: SparkContext): Unit ={
-    val connection = CassandraConnector(sc.getConf)
+  val occLevels = Array(0.0, 25.0, 50.0, 75.0)
 
-    // DDL operations
-    connection.withSessionDo { s =>
-      s.execute("CREATE KEYSPACE IF NOT EXISTS cnrs WITH REPLICATION = {'class': 'SimpleStrategy', 'replication_factor': 1 }")
-      s.execute(
-        s"""
-          |CREATE TABLE IF NOT EXISTS ${RawInput.fullName} (
-          |loc_id bigint,
-          |lane varchar,
-          |timestamp int,
-          |occupancy decimal,
-          |vehicles decimal,
-          |avg_speed decimal,
-          |hs map<int,decimal>,
-          |hl map<int,decimal>,
-          |PRIMARY KEY ((loc_id, lane), timestamp)
-          |)
-          |WITH compression = { 'sstable_compression' : 'SnappyCompressor' };
-          | """.stripMargin)
+  /**
+   * User defined average speed levels
+   */
+  val speedLevels = Array(0.0, 50.0, 90.0, 100.0, 130.0)
+
+  /**
+   * User defined vehicle numbers
+   */
+  val vehicleLevels = Array(0.0, 4.0, 8.0, 16.0, 32.0)
 
 
-      s.execute(s"CREATE INDEX IF NOT EXISTS ON ${RawInput.fullName} (timestamp);")
-
-      s.execute(
-        s"""
-          |CREATE TABLE IF NOT EXISTS ${Location.fullName} (
-          |loc_id bigint,
-          |lane varchar,
-          |prev_lane varchar,
-          |coord_x decimal,
-          |coord_y decimal,
-          |dist int,
-          |num int,
-          |PRIMARY KEY (loc_id, lane)
-          |)
-          |WITH compression = { 'sstable_compression' : 'SnappyCompressor' };
-        """.stripMargin)
-
-      s.execute(
-        s"""
-          |CREATE TABLE IF NOT EXISTS ${Annotation.fullName} (
-          |start_ts int,
-          |end_ts int,
-          |event_num int,
-          |description varchar,
-          |end_loc int,
-          |sens int,
-          |start_loc int,
-          |PRIMARY KEY ((start_ts), end_ts, event_num)
-          |)
-          |WITH compression = { 'sstable_compression' : 'SnappyCompressor' };
-        """.stripMargin)
-
-      s.execute(s"CREATE INDEX IF NOT EXISTS ON ${Annotation.fullName} (description);")
-    }
-  }
+  val domain2udf = Map(
+    "occupancy" -> mkSymbolicDiscretizerUDF(CNRS.occLevels, "O"),
+    "avg_speed" -> mkSymbolicDiscretizerUDF(CNRS.speedLevels, "S"),
+    "vehicles" -> mkSymbolicDiscretizerUDF(CNRS.vehicleLevels, "V")
+  )
 
   /**
    * Entity `Annotation`
@@ -140,11 +101,19 @@ object CNRS {
 
     val tableName = "annotation"
 
-    val fullName = KEYSPACE+"."+tableName
+    val fullName = KEYSPACE + "." + tableName
 
     val columnNames = Seq("start_ts", "end_ts", "event_num", "description", "sens", "start_loc", "end_loc")
 
     val columns = SomeColumns("start_ts", "end_ts", "event_num", "description", "sens", "start_loc", "end_loc")
+
+
+    def loadDF(implicit sqlContext: SQLContext): DataFrame = {
+      sqlContext.read
+        .format("org.apache.spark.sql.cassandra")
+        .options(Map("table" -> Annotation.tableName, "keyspace" -> CNRS.KEYSPACE))
+        .load()
+    }
   }
 
   /**
@@ -174,11 +143,18 @@ object CNRS {
 
     val tableName = "location"
 
-    val fullName = KEYSPACE+"."+tableName
+    val fullName = KEYSPACE + "." + tableName
 
     val columnNames = Seq("loc_id", "lane", "coord_x", "coord_y", "num", "prev_lane", "dist")
 
-    val columns = SomeColumns("loc_id", "lane", "coord_x", "coord_y",  "num", "prev_lane", "dist")
+    val columns = SomeColumns("loc_id", "lane", "coord_x", "coord_y", "num", "prev_lane", "dist")
+
+    def loadDF(implicit sqlContext: SQLContext): DataFrame = {
+      sqlContext.read
+        .format("org.apache.spark.sql.cassandra")
+        .options(Map("table" -> Location.tableName, "keyspace" -> CNRS.KEYSPACE))
+        .load()
+    }
   }
 
   /**
@@ -207,15 +183,34 @@ object CNRS {
    */
   object RawInput {
 
+    import com.datastax.spark.connector._
+
     type SCHEMA = (Long, String, Int, Option[Double], Option[Double], Option[Double], Map[Int, Double], Map[Int, Double])
 
     val tableName = "raw_input"
 
-    val fullName = KEYSPACE+"."+tableName
+    val fullName = KEYSPACE + "." + tableName
 
-    val columnNames = Seq("loc_id", "lane", "timestamp", "avg_speed",  "occupancy", "vehicles", "hl", "hs")
+    val columnNames = Seq("loc_id", "lane", "timestamp", "avg_speed", "occupancy", "vehicles", "hl", "hs")
 
-    val columns = SomeColumns("loc_id", "lane", "timestamp", "avg_speed",  "occupancy", "vehicles", "hl", "hs")
+    val columns = SomeColumns("loc_id", "lane", "timestamp", "avg_speed", "occupancy", "vehicles", "hl", "hs")
+
+    def loadDF(implicit sqlContext: SQLContext): DataFrame = {
+      import sqlContext.implicits._
+
+      // discretize numeric values such as `occupancy`,`avg_speed`, etc.
+      val mappedInputColumns = columnNames.map(colName => domain2udf.get(colName) match {
+        case Some(f) => f($"$colName") as colName
+        case None => $"$colName"
+      })
+
+      sqlContext.read
+        .format("org.apache.spark.sql.cassandra")
+        .options(Map("table" -> RawInput.tableName, "keyspace" -> CNRS.KEYSPACE))
+        .load()
+        .select(mappedInputColumns: _*)
+    }
+
   }
 
 }

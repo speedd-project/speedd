@@ -36,7 +36,7 @@ import org.apache.spark.sql.{Row, SQLContext}
 import org.speedd.ml.loaders.DataLoader
 import org.speedd.ml.model.CNRS
 import org.speedd.ml.model.CNRS.RawInput
-import org.speedd.ml.util.csv._
+import org.speedd.ml.util.data.CSV._
 import java.sql.Timestamp
 import scala.language.implicitConversions
 import com.datastax.spark.connector._

@@ -35,7 +35,7 @@ import org.speedd.ml.ModuleVersion
 import java.io.File
 import auxlib.log.Logging
 import org.speedd.ml.learners.{WeightEstimator, FzWeightsEstimator, CNRSWeightsEstimator}
-import org.speedd.ml.util.parseSignatures
+import org.speedd.ml.util.logic.parseSignatures
 
 import scala.util.{Success, Try}
 
@@ -100,7 +100,7 @@ object WeightLearnerCLI extends App with CommonOptions with Logging {
     v: String => taskOpt = Some(v.trim.toUpperCase)
   })
 
-  opt("target", "target-predicates", "<string>", "Comma separated target atoms. Target atoms are atoms that apear in the" +
+  opt("target", "target-predicates", "<string>", "Comma separated target atoms. Target atoms are atoms that appear in the" +
     "head of event definition rules. These rule will be parsed and simplified before weight learning. Each atom must be " +
     "defined using its identity (i.e., Name/arity). For example the identity of predicate InitiatedAt(fluent, time) " +
     "is 'InitiatedAt/2'. 'InitiatedAt/2' and 'TerminatedAt/2' are the default target atoms.", {
@@ -174,10 +174,10 @@ object WeightLearnerCLI extends App with CommonOptions with Logging {
     case _ => fatal("Please specify a batch size")
   }
 
-  val weightEstimator: WeightEstimator = taskOpt.getOrElse(fatal("Please specify a translator name")) match {
+  val weightEstimator: WeightEstimator = taskOpt.getOrElse(fatal("Please specify a task name")) match {
     case "CNRS" => CNRSWeightsEstimator
     case "FEEDZAI" => FzWeightsEstimator
-    case _ => fatal("Please specify a valid translator name")
+    case _ => fatal("Please specify a task name")
   }
 
   // --- 2. Prepare Spark context
@@ -200,16 +200,6 @@ object WeightLearnerCLI extends App with CommonOptions with Logging {
   info(s"SparkSQL context initialised")
 
   weightEstimator.learn(startTime, endTime, kbFile, outputFile, evidencePredicates, targetPredicates)
-
-  // -------------------------------------------------------------------------------------------------------------------
-  // --- demo
-  // -------------------------------------------------------------------------------------------------------------------
-  /*val (startTime, endTime) = (1397041487, 1397043127)
-  val inputPredicates = Set(AtomSignature("HappensAt", 2))
-  val targetPredicates = Set(AtomSignature("InitiatedAt", 2), AtomSignature("TerminatedAt", 2))
-
-  CNRSWeightsEstimator.learn(startTime, endTime, kbFile, outputFile, inputPredicates, targetPredicates)*/
-  // -------------------------------------------------------------------------------------------------------------------
 
   sys.addShutdownHook {
     info("Shutting down Spark Context")

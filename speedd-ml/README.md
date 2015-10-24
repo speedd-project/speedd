@@ -53,3 +53,12 @@ $ cd path/to/speedd-ml
 $ sbt assembly
 ```
 
+### Initialize database schema
+
+In the `schema` directory there are CQL files that define the schema for each use case. 
+For example, to initialize the schema in Cassandra DB for Traffic Management use case 
+write the following command:
+
+```bash
+$ cqlsh -f schema/cnrs.cql
+```

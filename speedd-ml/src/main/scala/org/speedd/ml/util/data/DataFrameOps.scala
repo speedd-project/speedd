@@ -26,13 +26,18 @@
  * along with program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.speedd.ml.util
+package org.speedd.ml.util.data
 
 import org.apache.spark.rdd.RDD
-import org.apache.spark.sql.types.{StructType, LongType, StructField}
-import org.apache.spark.sql.{Row, DataFrame}
+import org.apache.spark.sql.types.{LongType, StructField, StructType}
+import org.apache.spark.sql.{DataFrame, Row}
+import scala.language.implicitConversions
 
+/**
+ * A collection of functions and value classes related to SparkSQL DataFrames
+ */
 object DataFrameOps {
+
   implicit class WrappedDF(val df: DataFrame) extends AnyVal {
 
     /**

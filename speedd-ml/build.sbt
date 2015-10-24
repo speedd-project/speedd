@@ -119,7 +119,7 @@ libraryDependencies += "org.apache.spark" %% "spark-sql" % "1.5.1" exclude("org.
 
 libraryDependencies += "com.databricks" %% "spark-csv" % "1.2.0"
 
-libraryDependencies += "com.datastax.spark" %% "spark-cassandra-connector" % "1.5.0-M1"
+libraryDependencies += "com.datastax.spark" %% "spark-cassandra-connector" % "1.5.0-M2"
 libraryDependencies += "org.javassist" % "javassist" % "3.20.0-GA"
 
 

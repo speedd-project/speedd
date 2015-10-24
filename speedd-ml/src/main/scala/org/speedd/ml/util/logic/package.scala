@@ -88,4 +88,34 @@ package object logic {
     outputPath
   }
 
+
+  /**
+   * Parses the given string, which is expected to contain atomic signatures that are separated by commas. For example,
+   * consider the following string:
+   *
+   * {{{
+   *   parseSignatures(src = "HoldsAt/2,InitiatedAt/2, TerminatedAt/2")
+   * }}}
+   *
+   * For the above string this function will produce the following successful result:
+   *
+   * {{{
+   *   Success( Set( AtomSignature("HoldsAt", 2), AtomSignature("InitiatedAt", 2), AtomSignature("TerminatedAt", 2) ) )
+   * }}}
+   *
+   * In situations where the given string is not following the expected format, this function will give a Failure with
+   * the caused exception.
+   *
+   * @param src source string composed of comma separated atomic signatures
+   *
+   * @return a Success try containing a collection of AtomSignatures from the specified source string, otherwise a
+   *         Failure containing the caused exception.
+   */
+  def parseSignatures(src: String): Try[Set[AtomSignature]] = Try {
+    src.split(",").map { entry =>
+      val (symbol, arity) = entry.span(_ == '/')
+      AtomSignature(symbol.trim, arity.trim.toInt)
+    }(scala.collection.breakOut)
+  }
+
 }
