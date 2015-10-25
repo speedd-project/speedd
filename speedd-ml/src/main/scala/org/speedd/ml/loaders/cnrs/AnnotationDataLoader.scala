@@ -34,8 +34,7 @@ import auxlib.log.Logging
 import org.apache.spark.SparkContext
 import org.apache.spark.sql.{Row, SQLContext}
 import org.speedd.ml.loaders.DataLoader
-import org.speedd.ml.model.CNRS
-import org.speedd.ml.model.CNRS.Annotation
+import org.speedd.ml.model.cnrs._
 import org.speedd.ml.util.data.CSV._
 import scala.language.implicitConversions
 import com.datastax.spark.connector._
@@ -73,7 +72,7 @@ object AnnotationDataLoader extends DataLoader with Logging {
 
   private val parseLocation = (src: String) => src match {
     case PRLOC(startPr, startDist, endPr, endDist) =>
-      val dist = CNRS.prDistances
+      val dist = prDistances
       try {
         val start = dist(startPr.toInt) + startDist.toInt
         val end = dist(endPr.toInt) + endDist.toInt
@@ -117,7 +116,7 @@ object AnnotationDataLoader extends DataLoader with Logging {
         .where($"state".eqNullSafe("closed") or $"state".eqNullSafe("Clos")) // take only the rows where state is closed
 
       // convert to an RDD of Annotation instances and save all of them to Cassandra database
-      dfAnnotation.flatMap(toAnnotation).saveToCassandra(CNRS.KEYSPACE, Annotation.tableName, Annotation.columns)
+      dfAnnotation.flatMap(toAnnotation).saveToCassandra(KEYSPACE, Annotation.tableName, Annotation.columns)
 
       whenDebug {
         val uniqLabels = dfAnnotation.select($"description").distinct().collect().map(_(0))

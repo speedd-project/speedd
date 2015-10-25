@@ -28,6 +28,10 @@
 
 package org.speedd.ml.model
 
-object FZ {
-// todo
+package object fz {
+
+  /**
+   * The Cassandra keyspace to use
+   */
+  val KEYSPACE = "fz"
 }

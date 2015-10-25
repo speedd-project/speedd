@@ -31,24 +31,22 @@ package org.speedd.ml.learners
 import java.io._
 import auxlib.log.Logging
 import lomrf.logic._
-import lomrf.mln.model.{ConstantsDomain, EvidenceBuilder, KB}
+import lomrf.mln.model.{EvidenceBuilder, KB}
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
-import org.apache.spark.sql.{DataFrame, SQLContext}
+import org.apache.spark.sql.SQLContext
 import com.datastax.spark.connector._
-import org.speedd.ml.model.CNRS
-import org.speedd.ml.model.CNRS.{Location, Annotation, RawInput}
+import org.speedd.ml.model.cnrs._
 import org.speedd.ml.util.data._
 import scala.collection.breakOut
 import scala.language.implicitConversions
-import scala.reflect.macros.whitebox
 import scala.util.{Failure, Success}
 import org.speedd.ml.util.logic._
 
 object CNRSWeightsEstimator extends WeightEstimator with Logging {
 
   private val queryPredicates = Set[AtomSignature](AtomSignature("HoldsAt", 2))
-  private val hiddenPredicates = Set[AtomSignature](AtomSignature("InitiatedAt", 2), AtomSignature("TerminatedAt", 2))
+
   private val convertFunctionsToPredicates = false
 
   private val tempEvidenceTableName = "TEMP_EVIDENCE"
@@ -68,40 +66,26 @@ object CNRSWeightsEstimator extends WeightEstimator with Logging {
     // quantified variables that may appear in the body part of each definite clause
     info(s"Processing the given input KB '${inputKB.getPath}', in order to make simplifications.")
     val (kb, constantsDomainBuilder) = KB.fromFile(inputKB.getPath)
+    val kbConstants = constantsDomainBuilder.result()
 
     // Try to simplify the knowledge base, in order to eliminate existential quantifiers.
-    val ruleTransformations = KBSimplifier
-      .transform(kb.definiteClauses, inputSignatures, targetSignatures, constantsDomainBuilder.result()) match {
-      case Success(result) =>
-        // Output all transformations into a log file
-        exportTransformations(
-          ruleTransformations = result,
-          outputPath = inputKB.getPath + s"_$startTime-$endTime.log",
-          interval = Some((startTime, endTime))) match {
+    val (ruleTransformations, predicateSchema) = kb
+      .simplify(inputSignatures, targetSignatures, kbConstants)
+      .getOrElse(fatal(s"Failed to transform the given knowledge base '${inputKB.getPath}'"))
 
-          case Success(path) => info(s"KB transformations are written into '$path'")
 
-          case Failure(ex) => error(s"Failed to write KB transformations", ex)
-        }
-
-        // give the resulting transformations
-        result
-      case Failure(ex) => fatal(s"Failed to transform the given knowledge base '${inputKB.getPath}'", ex)
+    // Output all transformations into a log file
+    exportTransformations( ruleTransformations,
+      outputPath = inputKB.getPath + s"_$startTime-$endTime.log",
+      interval = Some((startTime, endTime))) match {
+      case Success(path) => info(s"KB transformations are written into '$path'")
+      case Failure(ex) => error(s"Failed to write KB transformations", ex)
     }
 
-    // ---
-    // --- Create final predicate schema:
-    // ---
-    // That is, query predicates, evidence predicates and all derived atoms from rule transformations.
-    // Please note that weight learning does not support hidden predicates, therefore we do not include their signatures.
-    var finalPredicateSchema = kb.predicateSchema -- hiddenPredicates
+    val (rawInputDF, locationDF, annotationsDF, annotatedLocations) = loadFor(startTime, endTime)
 
-    for (transformation <- ruleTransformations)
-      finalPredicateSchema ++= transformation.schema
-
-
-    val (timestampsDF, rawInputDF, locationDF, annotationsDF, annotatedLocations) = loadFor(startTime, endTime)
-
+    // Represent the selected data as a temporary in-memory table, named as `TEMP_EVIDENCE`.
+    rawInputDF.registerTempTable(tempEvidenceTableName)
 
     // ---
     // --- Create constant domains:
@@ -110,15 +94,17 @@ object CNRSWeightsEstimator extends WeightEstimator with Logging {
     val domainMap = symbolsPerColumn(
       rawInputDF.select("avg_speed", "occupancy", "vehicles").distinct(),
       locationDF.select("loc_id", "lane").distinct(),
-      annotatedLocations.select("description").distinct()
-    )(domainAliases)
+      annotatedLocations.select("description").distinct())(domainAliases)
 
     constantsDomainBuilder ++=("timestamp", startTime to endTime map (_.toString))
 
     for ((domainName, constantsRDD) <- domainMap)
-      constantsDomainBuilder ++=(domainName, constantsRDD.collect())
+      constantsDomainBuilder ++= (domainName, constantsRDD.collect())
 
-    domainMap.foreach(x => println(s"${x._1} -> (${x._2.count()}})"))
+    whenDebug{
+      domainMap.foreach(x => println(s"${x._1} -> (${x._2.count()}})"))
+    }
+
 
 
     // ---
@@ -126,7 +112,7 @@ object CNRSWeightsEstimator extends WeightEstimator with Logging {
     // ---
     val functionMappings = new Array[RDD[(String, FunctionMapping)]](kb.functionSchema.size)
 
-    for (((signature, (retDomain, argDomains)), index) <- kb.functionSchema.zipWithIndex) {
+    for (((signature, (retDomain, argDomains)), index) <- kb.functionSchema.zipWithIndex.par) {
       val symbol = signature.symbol
 
       if (domainMap.contains(retDomain))
@@ -161,7 +147,7 @@ object CNRSWeightsEstimator extends WeightEstimator with Logging {
     // --- Create a new evidence builder
     // ---
     // With evidence builder we can incrementally create an evidence database for LoMRF
-    val trainingDB = EvidenceBuilder(finalPredicateSchema, kb.functionSchema, queryPredicates,
+    val trainingDB = EvidenceBuilder(predicateSchema, kb.functionSchema, queryPredicates,
       hiddenPredicates = Set.empty, constantsDomain, convertFunctionsToPredicates)
 
     // ---
@@ -246,10 +232,6 @@ object CNRSWeightsEstimator extends WeightEstimator with Logging {
         if (sterms.forall(_.isConstant)) {
           val fluentSignature = AtomSignature(symbol, sterms.size)
 
-          //val resultingSymbolOpt = functionMappingsMap.value.get(fluentSignature).flatMap(mapper => mapper.get(sterms.map(_.toText)))
-
-          //resultingSymbolOpt
-
           functionMappingsMap.value.get(fluentSignature) match {
             case Some(mapper) =>
               mapper.get(sterms.map(_.toText)) match {
@@ -273,8 +255,6 @@ object CNRSWeightsEstimator extends WeightEstimator with Logging {
 
       }
 
-      //holdsAtInstances.take(10).foreach(println)
-
       val holdsAtInstances = holdsAtInstancesRDD.collect()
 
       for (atom <- holdsAtInstances) try {
@@ -295,8 +275,6 @@ object CNRSWeightsEstimator extends WeightEstimator with Logging {
           }
       }
 
-      //trainingDB.evidence ++= holdsAtInstancesRDD.collect()
-
     }
 
     val edb = trainingDB.result().db
@@ -305,68 +283,6 @@ object CNRSWeightsEstimator extends WeightEstimator with Logging {
 
   }
 
-  private def loadFor(startTime: Long, endTime: Long)(implicit sc: SparkContext, sqlContext: SQLContext) = {
-    import sqlContext.implicits._
 
-    // make sure that we have all time-points of the specified temporal interval
-    val timestampsDF = sc.parallelize(startTime to endTime).toDF("timestamp").cache()
-
-    // ---
-    // --- Load raw data for the specified temporal interval
-    // ---
-    // The data is loaded from raw input
-    info(s"Loading raw data for the temporal interval [$startTime, $endTime]")
-
-    val rawInputDF = RawInput.loadDF
-      .where(s"timestamp >= $startTime AND timestamp <= $endTime")
-      .cache()
-
-    // Represent the selected data as a temporary in-memory table, named as `TEMP_EVIDENCE`.
-    rawInputDF.registerTempTable(tempEvidenceTableName)
-
-    // ---
-    // --- Load location data for the specified temporal interval
-    // ---
-    info(s"Loading location data")
-    val locationDF = Location.loadDF.cache()
-
-    // ---
-    // --- Load annotation data for the specified interval
-    // ---
-    info(s"Loading annotation data for the temporal interval [$startTime, $endTime]")
-
-    val annotatedLocations = Annotation.loadDF
-      .where(s"start_ts <= $endTime AND end_ts >= $startTime")
-      .withColumnRenamed("event_num", "eid")
-      .cache()
-
-    val annotationsDF = expandAnnotation(annotatedLocations, locationDF, timestampsDF).cache()
-
-    (timestampsDF, rawInputDF, locationDF, annotationsDF, annotatedLocations)
-  }
-
-  private def expandAnnotation(annotatedLocations: DataFrame, locationDF: DataFrame, timestampsDF: DataFrame)
-                              (implicit sc: SparkContext, sqlContext: SQLContext): DataFrame = {
-    import sqlContext.implicits._
-
-    val annotatedLocationWIds = locationDF.select("loc_id", "dist", "lane").distinct()
-      .join(annotatedLocations, $"dist" <= $"start_loc" and $"dist" >= $"end_loc")
-      .select("loc_id", "start_ts", "end_ts", "description", "lane")
-      .flatMap { r =>
-        val loc_id = r.getLong(0)
-        val description = r.getString(3)
-        val lane = r.getString(4)
-        (r.getInt(1) to r.getInt(2)).map(t => (t, loc_id, description, lane))
-      }
-      .toDF("ts", "loc_id", "description", "lane")
-
-    // We take the left outer join between `timestampsDF` and `overlappingAnnotations`, in order to collect the
-    // annotation data (including missing instances as nulls) for the specified temporal interval [startTime, endTime].
-    val result = timestampsDF
-      .join(annotatedLocationWIds, $"timestamp" === $"ts", "left_outer")
-      .select("timestamp", "loc_id", "description", "lane")
-
-    result
-  }
 
 }

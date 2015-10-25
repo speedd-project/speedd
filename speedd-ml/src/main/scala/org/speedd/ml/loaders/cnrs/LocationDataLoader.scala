@@ -34,8 +34,7 @@ import auxlib.log.Logging
 import org.apache.spark.SparkContext
 import org.apache.spark.sql.{Row, SQLContext}
 import org.speedd.ml.loaders.DataLoader
-import org.speedd.ml.model.CNRS
-import org.speedd.ml.model.CNRS.Location
+import org.speedd.ml.model.cnrs._
 import org.speedd.ml.util.data.CSV._
 import scala.language.implicitConversions
 import com.datastax.spark.connector._
@@ -73,7 +72,7 @@ object LocationDataLoader extends DataLoader with Logging {
 
       info(s"Persisting the filtered contents from file '$filename'")
 
-      locations.saveToCassandra(CNRS.KEYSPACE, Location.tableName, Location.columns)
+      locations.saveToCassandra(KEYSPACE, Location.tableName, Location.columns)
       val nLocations = locations.count().toInt
 
       info(s"Saved location data from '$filename'. Total $nLocations locations persisted.")

@@ -186,9 +186,6 @@ object WeightLearnerCLI extends App with CommonOptions with Logging {
     .setMaster(master)
     .set("spark.cassandra.connection.host", cassandraConnectionHost)
     .set("spark.cassandra.connection.port", cassandraConnectionPort)
-    /*.set("spark.cassandra.input.split.size_in_mb", "67108864")
-    .set("spark.executor.memory", "1g")
-    .set("spark.driver.memory", "2g")*/
 
 
   info(s"Spark configuration:\n${conf.toDebugString}")

@@ -31,14 +31,33 @@ package org.speedd.ml.util
 import java.io._
 
 import lomrf.logic._
-import lomrf.logic.dynamic.DynEqualsBuilder
-import lomrf.mln.model._
+import lomrf.mln.model.{ConstantsDomain, PredicateSchema, KB}
 import scala.collection.mutable
 import scala.util.Try
 
 package object logic {
 
-  type PredicateSchema = Map[AtomSignature, Seq[String]]
+  /**
+   * Default predefined collection of atomic signatures that correspond to predicates having
+   * infix notation (e.g., =, >=, etc)
+   */
+  val INFIX_SIGNATURES = Set[AtomSignature](
+      AtomSignature("equals", 2), // corresponding infix notation: =
+      AtomSignature("not_equals", 2), // corresponding infix notation: !=
+      AtomSignature("greaterThan", 2), // corresponding infix notation: >
+      AtomSignature("greaterThanEq", 2), // corresponding infix notation: >=
+      AtomSignature("lessThan", 2), // corresponding infix notation: <
+      AtomSignature("lessThanEq", 2) // corresponding infix notation: <=
+    )
+
+  implicit class WrappedKB(val kb: KB) extends AnyVal {
+
+    def simplify(inputSignatures: Set[AtomSignature], targetSignatures: Set[AtomSignature], domains: ConstantsDomain,
+                 infixSignatures: Set[AtomSignature] = INFIX_SIGNATURES): Try[(Iterable[RuleTransformation], PredicateSchema)] = {
+
+      KBSimplifier.simplify(kb,inputSignatures, targetSignatures,domains,infixSignatures)
+    }
+  }
 
 
   implicit class WrappedBody(val body: DefiniteClauseConstruct) extends AnyVal {

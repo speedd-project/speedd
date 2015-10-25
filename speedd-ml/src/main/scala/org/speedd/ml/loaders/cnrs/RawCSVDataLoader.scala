@@ -34,8 +34,7 @@ import auxlib.log.Logging
 import org.apache.spark.SparkContext
 import org.apache.spark.sql.{Row, SQLContext}
 import org.speedd.ml.loaders.DataLoader
-import org.speedd.ml.model.CNRS
-import org.speedd.ml.model.CNRS.RawInput
+import org.speedd.ml.model.cnrs._
 import org.speedd.ml.util.data.CSV._
 import java.sql.Timestamp
 import scala.language.implicitConversions
@@ -125,7 +124,7 @@ object RawCSVDataLoader extends DataLoader with Logging {
         .map(asRawInput)
 
       // Save RawInput to Cassandra database
-      rawInput.saveToCassandra(CNRS.KEYSPACE, RawInput.tableName, RawInput.columns)
+      rawInput.saveToCassandra(KEYSPACE, RawInput.tableName, RawInput.columns)
 
       val endTime = System.currentTimeMillis()
 

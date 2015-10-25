@@ -26,8 +26,25 @@
  * along with program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.speedd.ml.learners
+package org.speedd.ml.model
 
-import org.apache.spark.sql.DataFrame
+import com.datastax.spark.connector.{ColumnName, SomeColumns}
+import org.apache.spark.sql.{DataFrame, SQLContext}
 
-case class DataSet(evidence: DataFrame, annotation: DataFrame)
+trait EntityFactory {
+
+  type SCHEMA
+
+  val tableName: String
+
+  val keyspace: String
+
+  val columnNames: IndexedSeq[String]
+
+  lazy val fullName: String = keyspace+"."+tableName
+
+  lazy val columns = SomeColumns(columnNames.map(ColumnName(_)): _*)
+
+  def loadDF(implicit sqlContext: SQLContext): DataFrame
+
+}

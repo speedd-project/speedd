@@ -39,20 +39,35 @@ object KBSimplifier {
 
   private val log = Logger(this.getClass)
 
-  private val infixSignatures = Set[AtomSignature](
-    AtomSignature("equals", 2),
-    AtomSignature("not_equals", 2),
-    AtomSignature("greaterThan", 2),
-    AtomSignature("greaterThanEq", 2),
-    AtomSignature("lessThan", 2),
-    AtomSignature("lessThanEq", 2)
-  )
+  def simplify(kb: KB,
+               inputSignatures: Set[AtomSignature],
+               targetSignatures: Set[AtomSignature],
+               domains: ConstantsDomain,
+               infixSignatures: Set[AtomSignature] = INFIX_SIGNATURES): Try[(Iterable[RuleTransformation], PredicateSchema)] ={
+
+    transform(kb.definiteClauses, inputSignatures, targetSignatures, domains, infixSignatures) map { transformations =>
+
+      // ---
+      // --- Create final predicate schema:
+      // ---
+      // That is, query predicates, evidence predicates and all derived atoms from rule transformations.
+      // Please note that weight learning does not support hidden predicates, therefore we do not include the
+      // signatures of target predicates.
+
+      val predicateSchema = transformations.foldLeft(kb.predicateSchema -- targetSignatures){
+        (schema, transformation) => schema ++ transformation.schema
+      }
+
+      (transformations, predicateSchema)
+    }
+  }
 
 
   def transform(rules: Iterable[WeightedDefiniteClause],
                 inputSignatures: Set[AtomSignature],
                 targetSignatures: Set[AtomSignature],
-                domains: ConstantsDomain): Try[Iterable[RuleTransformation]] = {
+                domains: ConstantsDomain,
+                infixSignatures: Set[AtomSignature] = INFIX_SIGNATURES): Try[Iterable[RuleTransformation]] = {
 
     var result = List.empty[RuleTransformation]
 
