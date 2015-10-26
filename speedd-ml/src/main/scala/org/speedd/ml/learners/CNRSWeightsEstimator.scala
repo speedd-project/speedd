@@ -30,7 +30,10 @@ package org.speedd.ml.learners
 
 import java.io._
 import auxlib.log.Logging
+import lomrf.app.Algorithm
 import lomrf.logic._
+import lomrf.mln.grounding.MRFBuilder
+import lomrf.mln.learning.weight.OnlineLearner
 import lomrf.mln.model._
 import org.apache.spark.SparkContext
 import org.apache.spark.sql.SQLContext
@@ -55,6 +58,8 @@ final class CNRSWeightsEstimator private(kb: KB,
 
     val microIntervals = (startTime to endTime by batchSize).sliding(2).map(i => (i.head, i.last)).toList
     info(s"Number of micro-intervals: ${microIntervals.size}")
+
+    var learner: OnlineLearner = null
 
     for ( ((currStartTime, currEndTime), idx) <- microIntervals.zipWithIndex) {
       info(s"Loading micro-batch training data no. $idx, for the temporal interval [$currStartTime, $currEndTime]")
@@ -97,7 +102,25 @@ final class CNRSWeightsEstimator private(kb: KB,
 
       val mln = new MLN(batch.mlnSchema, domainSpace, evidence, batch.clauses)
       info(mln.toString())
+
+      /*println("mln.schema.dynamicFunctions:")
+      mln.schema.dynamicFunctions.foreach(println)
+      println("mln.evidence.functionMappers:")
+      mln.evidence.functionMappers.foreach(println)*/
+
+      /*mln.clauses.foreach(println)
+      sys.exit()*/
+
+      info("Creating MRF...")
+      val mrfBuilder = new MRFBuilder(mln, createDependencyMap = true)
+      val mrf = mrfBuilder.buildNetwork
+
+      if(idx == 0) learner = new OnlineLearner(mln, algorithm = Algorithm.ADAGRAD_FB, lossAugmented = true, printLearnedWeightsPerIteration = true)
+      learner.learningStep(idx + 1, mrf, annotationDB)
+
     }
+
+    learner.writeResults(new PrintStream(outputKB))
 
 
   }

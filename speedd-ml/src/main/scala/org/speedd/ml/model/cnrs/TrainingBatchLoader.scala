@@ -102,7 +102,7 @@ final class TrainingBatchLoader(kb: KB,
     // --- Create a new evidence builder
     // ---
     // With evidence builder we can incrementally create an evidence database for LoMRF
-    val trainingDB = EvidenceBuilder(_predicateSchema, _functionSchema, _queryPredicates, hiddenPredicates = Set.empty, constantsDomain)
+    val trainingDB = EvidenceBuilder(_predicateSchema, _functionSchema, _queryPredicates, hiddenPredicates = Set.empty, constantsDomain).withDynamicFunctions(predef.dynFunctions)
 
     // ---
     // --- Store previously computed function mappings

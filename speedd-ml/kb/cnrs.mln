@@ -25,7 +25,7 @@ InitiatedAt(traffic_jam(lid, l), t) :-
     HappensAt(aggr(lid, l, occ, vec, avgspd), t) ^
 	vec = V0.
 
-InitiatedAt(traffic_jam(lid, l), t) :-
+TerminatedAt(traffic_jam(lid, l), t) :-
 	HappensAt(aggr(lid, l, occ, vec, avgspd), t) ^
 	avgspd = S2.
 
