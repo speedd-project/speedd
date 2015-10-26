@@ -33,6 +33,7 @@ import auxlib.log.Logging
 import lomrf.app.Algorithm
 import lomrf.logic._
 import lomrf.mln.grounding.MRFBuilder
+import lomrf.mln.inference.Solver
 import lomrf.mln.learning.weight.OnlineLearner
 import lomrf.mln.model._
 import org.apache.spark.SparkContext
@@ -103,25 +104,20 @@ final class CNRSWeightsEstimator private(kb: KB,
       val mln = new MLN(batch.mlnSchema, domainSpace, evidence, batch.clauses)
       info(mln.toString())
 
-      /*println("mln.schema.dynamicFunctions:")
-      mln.schema.dynamicFunctions.foreach(println)
-      println("mln.evidence.functionMappers:")
-      mln.evidence.functionMappers.foreach(println)*/
-
-      /*mln.clauses.foreach(println)
-      sys.exit()*/
-
       info("Creating MRF...")
       val mrfBuilder = new MRFBuilder(mln, createDependencyMap = true)
       val mrf = mrfBuilder.buildNetwork
 
-      if(idx == 0) learner = new OnlineLearner(mln, algorithm = Algorithm.ADAGRAD_FB, lossAugmented = true, printLearnedWeightsPerIteration = true)
+      if(idx == 0) learner = new OnlineLearner(mln, algorithm = Algorithm.ADAGRAD_FB, lossAugmented = true, printLearnedWeightsPerIteration = true, ilpSolver = Solver.LPSOLVE)
       learner.learningStep(idx + 1, mrf, annotationDB)
 
     }
 
+    info("Weight learning is complete!")
+
     learner.writeResults(new PrintStream(outputKB))
 
+    info(s"Resulting trained MLN file is written to '${outputKB.getPath}'.")
 
   }
 }

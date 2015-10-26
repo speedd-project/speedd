@@ -12,8 +12,8 @@ event aggr(loc_id, lane, occupancy, vehicles, avg_speed)
 fluent traffic_jam(loc_id, lane)
 
 
-InitiatedAt(f, t) => HoldsAt(f, t++).
-TerminatedAt(f, t) => !HoldsAt(f, t++).
+InitiatedAt(f, t) => HoldsAt(f, t++)
+TerminatedAt(f, t) => !HoldsAt(f, t++)
 
 HoldsAt(f, t) ^ !TerminatedAt(f, t) => HoldsAt(f, t++).
 !HoldsAt(f, t) ^ !InitiatedAt(f, t) => !HoldsAt(f, t++).
@@ -23,9 +23,9 @@ StartTime(t) => !HoldsAt(f, t).
 
 InitiatedAt(traffic_jam(lid, l), t) :-
     HappensAt(aggr(lid, l, occ, vec, avgspd), t) ^
-	vec = V0.
+	vec = V0
 
 TerminatedAt(traffic_jam(lid, l), t) :-
 	HappensAt(aggr(lid, l, occ, vec, avgspd), t) ^
-	avgspd = S2.
+	avgspd = S2
 

@@ -198,11 +198,12 @@ object WeightLearnerCLI extends App with CommonOptions with Logging {
     case _ => fatal("Please specify a task name")
   }
 
-  weightEstimator.trainFor(startTime, endTime, batchSize)
+
 
   sys.addShutdownHook {
     info("Shutting down Spark Context")
     sc.stop()
   }
 
+  weightEstimator.trainFor(startTime, endTime, batchSize)
 }
