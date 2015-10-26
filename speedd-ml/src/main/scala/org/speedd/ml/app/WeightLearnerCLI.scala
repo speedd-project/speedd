@@ -165,20 +165,16 @@ object WeightLearnerCLI extends App with CommonOptions with Logging {
 
   // The batch size of the data that will given each time to the online learner
   val batchSize = batchSizeOpt match {
-    case Some(bs) if bs <= intervalLength => bs // batch size must be bs <= intervalLength
-    case Some(bs) =>
-      fatal(
-        s"Please specify a batch size that is less or equal to the length ($intervalLength) of the specified " +
-        s"interval [$startTime, $endTime]")
-
+    case Some(bs) if bs <= Int.MaxValue =>
+      // batch size must be bs <= intervalLength
+      if (bs <= intervalLength) bs.toInt
+      else fatal(s"Please specify a batch size that is less or equal to the length ($intervalLength) of the specified interval [$startTime, $endTime]")
+    case Some(bs) if bs > Int.MaxValue =>
+      fatal(s"Batch sizes greater that ${Int.MaxValue} are not supported, please give a smaller number.")
     case _ => fatal("Please specify a batch size")
   }
 
-  val weightEstimator: WeightEstimator = taskOpt.getOrElse(fatal("Please specify a task name")) match {
-    case "CNRS" => CNRSWeightsEstimator
-    case "FEEDZAI" => FzWeightsEstimator
-    case _ => fatal("Please specify a task name")
-  }
+
 
   // --- 2. Prepare Spark context
   val conf = new SparkConf()
@@ -196,7 +192,13 @@ object WeightLearnerCLI extends App with CommonOptions with Logging {
   implicit val sqlContext = new SQLContext(sc)
   info(s"SparkSQL context initialised")
 
-  weightEstimator.learn(startTime, endTime, kbFile, outputFile, evidencePredicates, targetPredicates)
+  val weightEstimator: WeightEstimator = taskOpt.getOrElse(fatal("Please specify a task name")) match {
+    case "CNRS" => CNRSWeightsEstimator(kbFile,outputFile,evidencePredicates, targetPredicates)
+    //case "FEEDZAI" => FzWeightsEstimator
+    case _ => fatal("Please specify a task name")
+  }
+
+  weightEstimator.trainFor(startTime, endTime, batchSize)
 
   sys.addShutdownHook {
     info("Shutting down Spark Context")

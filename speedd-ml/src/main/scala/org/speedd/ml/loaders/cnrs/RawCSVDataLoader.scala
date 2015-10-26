@@ -121,7 +121,7 @@ object RawCSVDataLoader extends DataLoader with Logging {
         .options(CSV_OPTIONS)
         .schema(inputCSVSchema)
         .load(file.getPath)
-        .map(asRawInput)
+        .flatMap(asRawInput)
 
       // Save RawInput to Cassandra database
       rawInput.saveToCassandra(KEYSPACE, RawInput.tableName, RawInput.columns)
@@ -141,7 +141,7 @@ object RawCSVDataLoader extends DataLoader with Logging {
    * @param source the source Row instance
    * @return the corresponding RawInput instance
    */
-  private def asRawInput(source: Row): RawInput ={
+  private def asRawInput(source: Row): Option[RawInput] ={
 
     def mkSparseHistogram(range: Range): Map[Int, Double] ={
       (for {
@@ -156,39 +156,44 @@ object RawCSVDataLoader extends DataLoader with Logging {
       else Some(number)
     }
 
-    // Please note that the arguments `occupancy`, `vehicles` and `avgSpeed` are implicitly converted to Option[Double]
-    // instances. When their values are equal or below zero are considered as `None`, otherwise are instantiated as
-    // Some(value).
+    val lane = source.getAs[String]("lane").trim
 
-    RawInput(
-      // Column `loc_id`:
-      java.lang.Long.valueOf(source.getAs[String]("loc"), 16),
+    if(lane.isEmpty) None
+    else {
+      // Please note that the arguments `occupancy`, `vehicles` and `avgSpeed` are implicitly converted to Option[Double]
+      // instances. When their values are equal or below zero are considered as `None`, otherwise are instantiated as
+      // Some(value).
+      Some(
+        RawInput(
+          // Column `loc_id`:
+          java.lang.Long.valueOf(source.getAs[String]("loc"), 16),
 
-      // Column `lane`:
-      source.getAs[String]("lane"),
+          // Column `lane`:
+          lane,
 
-      // Column `timestamp`:
-      (Timestamp.valueOf(source.getAs[String]("date") + " " + source.getAs[String]("time")).getTime / 1000).toInt,
+          // Column `timestamp`:
+          (Timestamp.valueOf(source.getAs[String]("date") + " " + source.getAs[String]("time")).getTime / 1000).toInt,
 
-      // Column `occupancy`:
-      source.getAs[Double]("occupancy"),
+          // Column `occupancy`:
+          source.getAs[Double]("occupancy"),
 
-      // Column `vehicles`:
-      source.getAs[Double]("vehicles"),
+          // Column `vehicles`:
+          source.getAs[Double]("vehicles"),
 
-      // Column `vehicles`:
-      source.getAs[Double]("avg_speed"),
+          // Column `vehicles`:
+          source.getAs[Double]("avg_speed"),
 
-      // Column `hs`:
-      // Represent the histogram from columns 8 to 27, using a Map[position -> value] (sparse representation)
-      // That sparse representation is the entry of the 7th column (array index=6)
-      mkSparseHistogram(8 to 27),
+          // Column `hs`:
+          // Represent the histogram from columns 8 to 27, using a Map[position -> value] (sparse representation)
+          // That sparse representation is the entry of the 7th column (array index=6)
+          mkSparseHistogram(8 to 27),
 
-      // Column `hl`:
-      // Represent the histogram from columns 28 to 127, using a Map[position -> value] (sparse representation)
-      // That sparse representation is the entry of the 8th column (array index=7)
-      mkSparseHistogram(28 to 127)
-    )
+          // Column `hl`:
+          // Represent the histogram from columns 28 to 127, using a Map[position -> value] (sparse representation)
+          // That sparse representation is the entry of the 8th column (array index=7)
+          mkSparseHistogram(28 to 127)
+        ))
+    }
   }
 
 }

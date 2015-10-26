@@ -31,34 +31,87 @@ package org.speedd.ml.learners
 import java.io._
 import auxlib.log.Logging
 import lomrf.logic._
-import lomrf.mln.model.{EvidenceBuilder, KB}
+import lomrf.mln.model._
 import org.apache.spark.SparkContext
-import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SQLContext
-import com.datastax.spark.connector._
 import org.speedd.ml.model.cnrs._
-import org.speedd.ml.util.data._
-import scala.collection.breakOut
 import scala.language.implicitConversions
 import scala.util.{Failure, Success}
 import org.speedd.ml.util.logic._
 
-object CNRSWeightsEstimator extends WeightEstimator with Logging {
+final class CNRSWeightsEstimator private(kb: KB,
+                                         kbConstants: ConstantsDomain,
+                                         predicateSchema: PredicateSchema,
+                                         ruleTransformations: Iterable[RuleTransformation],
+                                         inputKB: File,
+                                         outputKB: File,
+                                         inputSignatures: Set[AtomSignature],
+                                         targetSignatures: Set[AtomSignature],
+                                         nonEvidenceAtoms: Set[AtomSignature]) extends WeightEstimator with Logging {
 
-  private val queryPredicates = Set[AtomSignature](AtomSignature("HoldsAt", 2))
+  private lazy val batchLoader = new TrainingBatchLoader(kb, kbConstants, predicateSchema, nonEvidenceAtoms, ruleTransformations)
 
-  private val convertFunctionsToPredicates = false
+  override def trainFor(startTime: Long, endTime: Long, batchSize: Int)(implicit sc: SparkContext, sqlContext: SQLContext): Unit = {
 
-  private val tempEvidenceTableName = "TEMP_EVIDENCE"
+    val microIntervals = (startTime to endTime by batchSize).sliding(2).map(i => (i.head, i.last)).toList
+    info(s"Number of micro-intervals: ${microIntervals.size}")
 
-  private val domainAliases = Map("start_loc" -> "loc_id", "end_loc" -> "loc_id")
+    for ( ((currStartTime, currEndTime), idx) <- microIntervals.zipWithIndex) {
+      info(s"Loading micro-batch training data no. $idx, for the temporal interval [$currStartTime, $currEndTime]")
+      val batch = batchLoader.forInterval(currStartTime, currEndTime)
 
-  override def learn(startTime: Long, endTime: Long, inputKB: File, outputKB: File,
-                     inputSignatures: Set[AtomSignature], targetSignatures: Set[AtomSignature])
-                    (implicit sc: SparkContext, sqlContext: SQLContext): Unit = {
 
-    import sqlContext.implicits._
+      val domainSpace = PredicateSpace(batch.mlnSchema, nonEvidenceAtoms, batch.trainingEvidence.constants)
 
+      val evidenceAtoms = predicateSchema.keySet -- nonEvidenceAtoms
+
+      // Partition the training data into annotation and evidence databases
+      var (annotationDB, atomStateDB) = batch.trainingEvidence.db.partition(e => nonEvidenceAtoms.contains(e._1))
+
+      // Show stats for the current batch
+      info{
+        s"""
+          |${batch.trainingEvidence.constants.map(e =>s"Domain '${e._1}' contains '${e._2.size}' constants.").mkString("\n")}
+          |Total number of 'True' evidence atom instances: ${atomStateDB.values.map(_.numberOfTrue).sum}
+          |Total number of 'True' non-evidence atom instances: ${annotationDB.values.map(_.numberOfTrue).sum}
+        """.stripMargin
+      }
+
+      // Define all non evidence atoms as unknown in the evidence database
+      for (signature <- annotationDB.keysIterator)
+        atomStateDB += (signature -> AtomEvidenceDB.allUnknown(domainSpace.identities(signature)))
+
+      // Define all non evidence atoms for which annotation was not given as false in the annotation database (close world assumption)
+      for (signature <- nonEvidenceAtoms; if !annotationDB.contains(signature)) {
+        warn(s"Annotation was not given in the training data for predicate '$signature', assuming FALSE state for all its groundings.")
+        annotationDB += (signature -> AtomEvidenceDB.allFalse(domainSpace.identities(signature)))
+      }
+
+      for (signature <- kb.predicateSchema.keysIterator; if !atomStateDB.contains(signature)) {
+        if (evidenceAtoms.contains(signature))
+          atomStateDB += (signature -> AtomEvidenceDB.allFalse(domainSpace.identities(signature)))
+      }
+
+
+      val evidence = new Evidence(batch.trainingEvidence.constants, atomStateDB, batch.trainingEvidence.functionMappers)
+
+      val mln = new MLN(batch.mlnSchema, domainSpace, evidence, batch.clauses)
+      info(mln.toString())
+    }
+
+
+  }
+}
+
+object CNRSWeightsEstimator extends Logging {
+
+  val DEFAULT_NON_EVIDENCE_ATOMS = Set[AtomSignature](AtomSignature("HoldsAt", 2))
+
+  def apply(inputKB: File,
+            outputKB: File,
+            inputSignatures: Set[AtomSignature],
+            targetSignatures: Set[AtomSignature],
+            nonEvidenceAtoms: Set[AtomSignature] = DEFAULT_NON_EVIDENCE_ATOMS): CNRSWeightsEstimator = {
     // ---
     // --- Prepare the KB:
     // ---
@@ -68,6 +121,7 @@ object CNRSWeightsEstimator extends WeightEstimator with Logging {
     val (kb, constantsDomainBuilder) = KB.fromFile(inputKB.getPath)
     val kbConstants = constantsDomainBuilder.result()
 
+
     // Try to simplify the knowledge base, in order to eliminate existential quantifiers.
     val (ruleTransformations, predicateSchema) = kb
       .simplify(inputSignatures, targetSignatures, kbConstants)
@@ -75,214 +129,17 @@ object CNRSWeightsEstimator extends WeightEstimator with Logging {
 
 
     // Output all transformations into a log file
-    exportTransformations( ruleTransformations,
-      outputPath = inputKB.getPath + s"_$startTime-$endTime.log",
-      interval = Some((startTime, endTime))) match {
+    exportTransformations(ruleTransformations, outputKB.getPath + "_rule_transformations.log") match {
       case Success(path) => info(s"KB transformations are written into '$path'")
       case Failure(ex) => error(s"Failed to write KB transformations", ex)
     }
 
-    val (rawInputDF, locationDF, annotationsDF, annotatedLocations) = loadFor(startTime, endTime)
 
-    // Represent the selected data as a temporary in-memory table, named as `TEMP_EVIDENCE`.
-    rawInputDF.registerTempTable(tempEvidenceTableName)
-
-    // ---
-    // --- Create constant domains:
-    // ---
-    //
-    val domainMap = symbolsPerColumn(
-      rawInputDF.select("avg_speed", "occupancy", "vehicles").distinct(),
-      locationDF.select("loc_id", "lane").distinct(),
-      annotatedLocations.select("description").distinct())(domainAliases)
-
-    constantsDomainBuilder ++=("timestamp", startTime to endTime map (_.toString))
-
-    for ((domainName, constantsRDD) <- domainMap)
-      constantsDomainBuilder ++= (domainName, constantsRDD.collect())
-
-    whenDebug{
-      domainMap.foreach(x => println(s"${x._1} -> (${x._2.count()}})"))
-    }
-
-
-
-    // ---
-    // --- Compute function mappings and their corresponding function mappings
-    // ---
-    val functionMappings = new Array[RDD[(String, FunctionMapping)]](kb.functionSchema.size)
-
-    for (((signature, (retDomain, argDomains)), index) <- kb.functionSchema.zipWithIndex.par) {
-      val symbol = signature.symbol
-
-      if (domainMap.contains(retDomain))
-        fatal(s"Cannot reassign domain '$retDomain' using function mappings.")
-
-      val argDomainsDF = argDomains.map { name =>
-        val colName = domainAliases.getOrElse(name, name)
-        domainMap.getOrElse(colName, fatal(s"Unknown domain name '$colName'")).toDF(name)
-      }
-
-      val products = argDomainsDF.reduceLeft((a, b) => a.repartition(1).join(b.repartition(1)))
-        .map(r => (0 until r.length).map(i => Constant(r.get(i).toString)))
-        .zipWithUniqueId()
-        .map {
-          case (constants, uid) =>
-            val retConstant = s"r_${index}_$uid"
-            retConstant -> FunctionMapping(retConstant, symbol, constants.toVector)
-        }.cache()
-
-      val retConstants = products.keys.collect()
-      constantsDomainBuilder ++=(retDomain, retConstants)
-
-      info(s"function mapping $symbol(${argDomains.mkString(",")}): ${retConstants.length} groundings")
-
-
-      functionMappings(index) = products
-    }
-
-    val constantsDomain = constantsDomainBuilder.result()
-
-    // ---
-    // --- Create a new evidence builder
-    // ---
-    // With evidence builder we can incrementally create an evidence database for LoMRF
-    val trainingDB = EvidenceBuilder(predicateSchema, kb.functionSchema, queryPredicates,
-      hiddenPredicates = Set.empty, constantsDomain, convertFunctionsToPredicates)
-
-    // ---
-    // --- Store previously computed function mappings
-    // ---
-    for (fm <- functionMappings) {
-      trainingDB.functions ++= fm.values.collect()
-      fm.unpersist()
-    }
-
-    // ---
-    // --- Create auxiliary predicates and give them as evidence facts:
-    // ---
-    // Compute instances of the auxiliary derived atoms from the raw data in the specified temporal interval.
-    info(s"Generating derived events for the temporal interval [$startTime, $endTime]")
-
-    for {transformation <- ruleTransformations
-         transformedRule = transformation.transformedRule
-         (derivedAtom, sqlConstraint) <- transformation.atomMappings} {
-
-      val terms = transformation.schema(derivedAtom.signature).mkString(",")
-      val arity = derivedAtom.arity
-      val symbol = derivedAtom.symbol
-
-      val query = s"SELECT $terms FROM $tempEvidenceTableName WHERE $sqlConstraint"
-
-      val instancesDF = sqlContext.sql(query)
-
-      whenDebug {
-        debug(s"For the derived atom '${derivedAtom.toText}' we map the query '$query', which gives ${instancesDF.count()} results " +
-          s"for the temporal interval [$startTime, $endTime]")
-      }
-
-      trainingDB.evidence ++= instancesDF.map { row =>
-        // Create a vector of constants from the elements of the current row
-        val constants: Vector[Constant] = (0 until arity).map(i => Constant(row.get(i).toString))(breakOut)
-        // Create the corresponding evidence atom
-        EvidenceAtom.asTrue(symbol, constants)
-      }.collect()
-    }
-
-    // No need to keep raw input data frame cached in memory
-    rawInputDF.unpersist()
-
-    // take the collected function mappings
-    val functionMappingsMap = sc.broadcast(trainingDB.functions.result())
-
-    //annotationsDF.filter($"description".isNotNull).distinct().collect().foreach(println)
-
-    // ---
-    // --- Create ground-truth predicates (HoldsAt/2)
-    // ---
-    info(s"Generating annotation predicates for the temporal interval [$startTime, $endTime]")
-    val headSignatures = Set(AtomSignature("InitiatedAt", 2), AtomSignature("TerminatedAt", 2))
-
-    val fluents = kb.definiteClauses
-      .withFilter(wc => headSignatures.contains(wc.clause.head.signature))
-      .map(_.clause.head.terms.head)
-      .flatMap {
-        case TermFunction(symbol, terms, "fluent") => Some((symbol, terms))
-        case _ => None
-      }
-
-    for ((symbol, terms) <- fluents) {
-
-      val holdsAtInstancesRDD = annotationsDF
-        .filter($"description".isNotNull and $"description" === symbol).flatMap { row =>
-
-        val domainMap = Map[String, Constant](
-          "timestamp" -> Constant(row.get(0).toString),
-          "loc_id" -> Constant(row.get(1).toString),
-          "lane" -> Constant(row.get(3).toString)
-        )
-
-        val theta = terms.withFilter(_.isVariable)
-          .map(_.asInstanceOf[Variable])
-          .map(v => v -> domainMap(v.domain))
-          .toMap[Term, Term]
-
-        val sterms = terms.map(_.substitute(theta))
-
-        if (sterms.forall(_.isConstant)) {
-          val fluentSignature = AtomSignature(symbol, sterms.size)
-
-          functionMappingsMap.value.get(fluentSignature) match {
-            case Some(mapper) =>
-              mapper.get(sterms.map(_.toText)) match {
-                case Some(resultingSymbol) =>
-                  Some(EvidenceAtom.asTrue("HoldsAt", Vector(Constant(resultingSymbol), Constant(row.get(0).toString))))
-
-                case _ =>
-                  error(s"Unknown function mapping for terms '${sterms.map(_.toText).mkString(",")}' for the function with signature '$fluentSignature'")
-                  None
-
-              }
-            case _ =>
-              error(s"Unknown fluent signature '$fluentSignature'")
-              None
-          }
-        }
-        else {
-          error(s"Found non-constant terms in '${sterms.map(_.toText).mkString(",")}'")
-          None
-        }
-
-      }
-
-      val holdsAtInstances = holdsAtInstancesRDD.collect()
-
-      for (atom <- holdsAtInstances) try {
-        trainingDB.evidence += atom
-      } catch {
-        case ex: java.util.NoSuchElementException =>
-          val fluent = atom.terms.head
-          val timestamp = atom.terms.last
-
-          constantsDomain("fluent").get(fluent.symbol) match {
-            case None => error(s"fluent constant ${fluent.symbol} is missing from constants domain}")
-            case _ =>
-          }
-
-          constantsDomain("timestamp").get(timestamp.symbol) match {
-            case None => error(s"timestamp constant ${timestamp.symbol} is missing from constants domain}")
-            case _ =>
-          }
-      }
-
-    }
-
-    val edb = trainingDB.result().db
-
-    println("ANNOTATION length: " + edb(AtomSignature("HoldsAt", 2)).numberOfTrue)
-
+    new CNRSWeightsEstimator(
+      kb, kbConstants, predicateSchema, ruleTransformations, inputKB,
+      outputKB, inputSignatures, targetSignatures, nonEvidenceAtoms
+    )
   }
-
 
 
 }

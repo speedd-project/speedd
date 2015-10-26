@@ -26,8 +26,14 @@
  * along with program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.speedd.ml.learners
+package org.speedd.ml.model
 
-import org.apache.spark.sql.DataFrame
+import org.apache.spark.SparkContext
+import org.apache.spark.sql.SQLContext
 
-case class DataSet(evidence: DataFrame, annotation: DataFrame)
+trait BatchLoader {
+
+  def forInterval(startTime: Long, endTime: Long)
+                   (implicit sc: SparkContext, sqlContext: SQLContext): TrainingBatch
+
+}

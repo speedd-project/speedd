@@ -28,14 +28,11 @@
 
 package org.speedd.ml.learners
 
-import java.io.File
-
-import lomrf.logic.AtomSignature
 import org.apache.spark.SparkContext
 import org.apache.spark.sql.SQLContext
 
 trait WeightEstimator {
 
-  def learn(startTime: Long, endTime:Long, inputKB: File, outputKB: File, inputSignatures: Set[AtomSignature], targetSignatures: Set[AtomSignature])(implicit sc: SparkContext, sqlContext: SQLContext): Unit
+  def trainFor(startTime: Long, endTime:Long, batchSize: Int)(implicit sc: SparkContext, sqlContext: SQLContext): Unit
 
 }

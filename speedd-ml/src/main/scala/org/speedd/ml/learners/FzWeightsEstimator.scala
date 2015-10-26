@@ -35,15 +35,7 @@ import lomrf.logic.AtomSignature
 import org.apache.spark.SparkContext
 import org.apache.spark.sql.SQLContext
 
-object FzWeightsEstimator extends WeightEstimator with Logging {
+object FzWeightsEstimator extends  Logging {
 
-  override def learn(startTime: Long,
-                     endTime: Long,
-                     inputKB: File,
-                     outputKB: File,
-                     inputSignatures: Set[AtomSignature],
-                     targetSignatures: Set[AtomSignature])
-                    (implicit sc: SparkContext, sqlContext: SQLContext): Unit = {
-    ???
-  }
+
 }

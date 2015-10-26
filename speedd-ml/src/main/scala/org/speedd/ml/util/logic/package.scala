@@ -31,9 +31,13 @@ package org.speedd.ml.util
 import java.io._
 
 import lomrf.logic._
-import lomrf.mln.model.{ConstantsDomain, PredicateSchema, KB}
+import lomrf.mln.model._
+import org.apache.spark.SparkContext
+import org.apache.spark.rdd.RDD
+import org.apache.spark.sql.{SQLContext, DataFrame}
+import org.speedd.ml.util.data._
 import scala.collection.mutable
-import scala.util.Try
+import scala.util.{Failure, Success, Try}
 
 package object logic {
 
@@ -55,16 +59,16 @@ package object logic {
     def simplify(inputSignatures: Set[AtomSignature], targetSignatures: Set[AtomSignature], domains: ConstantsDomain,
                  infixSignatures: Set[AtomSignature] = INFIX_SIGNATURES): Try[(Iterable[RuleTransformation], PredicateSchema)] = {
 
-      KBSimplifier.simplify(kb,inputSignatures, targetSignatures,domains,infixSignatures)
+      KBSimplifier.simplify(kb, inputSignatures, targetSignatures, domains, infixSignatures)
     }
   }
 
 
   implicit class WrappedBody(val body: DefiniteClauseConstruct) extends AnyVal {
 
-    def findAtoms(f: (AtomicFormula) => Boolean): Vector[AtomicFormula] ={
+    def findAtoms(f: (AtomicFormula) => Boolean): Vector[AtomicFormula] = {
       body match {
-        case a: AtomicFormula => if(f(a)) Vector(a) else Vector.empty[AtomicFormula]
+        case a: AtomicFormula => if (f(a)) Vector(a) else Vector.empty[AtomicFormula]
 
         case _ =>
           val queue = mutable.Queue[Formula]()
@@ -85,8 +89,28 @@ package object logic {
     }
   }
 
+  def unionDomains(initial: ConstantsDomain = Map.empty,
+                   static: List[(String, Iterable[String])] = List.empty,
+                   df: List[DataFrame] = List.empty,
+                   aliases: Map[String, String] = Map.empty)(implicit sc: SparkContext, sqlContext: SQLContext): Map[String, RDD[String]] = {
 
-  def exportTransformations(ruleTransformations: Iterable[RuleTransformation], outputPath: String, interval: Option[(Long, Long)] = None) = Try[String]{
+    import sqlContext.implicits._
+
+    var listDF: List[DataFrame] = df
+
+    for ((name, set) <- initial)
+      listDF = sc.parallelize(set.toSeq).toDF(name) :: listDF
+
+    for ((name, set) <- static)
+      listDF = sc.parallelize(set.toSeq).toDF(name) :: listDF
+
+    symbolsPerColumn(listDF: _*)(aliases)
+  }
+
+
+  def exportTransformations(ruleTransformations: Iterable[RuleTransformation],
+                            outputPath: String,
+                            interval: Option[(Long, Long)] = None) = Try[String]{
 
     val p = new PrintWriter(new BufferedWriter(new FileWriter(outputPath, false))) // overwrite file, if exists
 
@@ -105,6 +129,46 @@ package object logic {
     p.close()
 
     outputPath
+  }
+
+  def generateFunctionMappings(functionSchema: FunctionSchema, domainMap: Map[String, RDD[String]], domainAliases: Map[String, String] = Map.empty)
+                              (implicit sc: SparkContext, sqlContext: SQLContext): Try[(Seq[(AtomSignature, RDD[FunctionMapping])], List[DataFrame])] = {
+
+    import sqlContext.implicits._
+
+    // ---
+    // --- Compute function mappings
+    // ---
+    val functionMappings = new Array[(AtomSignature, RDD[FunctionMapping])](functionSchema.size)
+
+    var generatedDomains: List[DataFrame] = Nil
+
+    for (((signature, (retDomain, argDomains)), index) <- functionSchema.zipWithIndex.par) {
+      val symbol = signature.symbol
+
+      /*if (domainMap.contains(retDomain))
+        fatal(s"Cannot reassign domain '$retDomain' using function mappings.")*/
+
+      val argDomainsDF = argDomains.map { name =>
+        val colName = domainAliases.getOrElse(name, name)
+        domainMap.getOrElse(colName, return Failure(new NoSuchElementException(s"Unknown domain name '$colName'"))).toDF(name)
+      }
+
+      val products = argDomainsDF.reduceLeft((a, b) => a.repartition(1).join(b.repartition(1)))
+        .map(r => (0 until r.length).map(i => Constant(r.get(i).toString)))
+        .zipWithUniqueId()
+        .map {
+          case (constants, uid) =>
+            val retConstant = s"r_${index}_$uid"
+            retConstant -> FunctionMapping(retConstant, symbol, constants.toVector)
+        }.cache()
+
+      generatedDomains = products.keys.toDF(retDomain) :: generatedDomains
+
+      functionMappings(index) = signature -> products.values
+    }
+
+    Success((functionMappings.toSeq, generatedDomains))
   }
 
 

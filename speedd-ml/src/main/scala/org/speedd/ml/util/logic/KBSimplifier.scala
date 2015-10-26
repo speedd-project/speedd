@@ -139,12 +139,12 @@ object KBSimplifier {
           case AtomicFormula(symbol, terms) if terms.size == 2 =>
             val leftTerm = terms.head match {
               case v:Variable => v.domain
-              case other: Term => other.toText
+              case other: Term => "'"+other.toText+"'"
             }
 
             val rightTerm = terms.last match {
               case v:Variable => v.domain
-              case other: Term => other.toText
+              case other: Term => "'"+other.toText+"'"
             }
 
 

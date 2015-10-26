@@ -23,11 +23,9 @@ StartTime(t) => !HoldsAt(f, t).
 
 InitiatedAt(traffic_jam(lid, l), t) :-
     HappensAt(aggr(lid, l, occ, vec, avgspd), t) ^
-	vec = 0.
+	vec = V0.
 
 InitiatedAt(traffic_jam(lid, l), t) :-
 	HappensAt(aggr(lid, l, occ, vec, avgspd), t) ^
-	vec > 0 ^
-	vec < 3 ^
-	avgspd < 10.
+	avgspd = S2.
 

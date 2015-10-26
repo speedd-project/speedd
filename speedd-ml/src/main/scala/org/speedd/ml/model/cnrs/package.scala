@@ -58,7 +58,6 @@ package object cnrs {
    */
   val vehicleLevels = Array(0.0, 4.0, 8.0, 16.0, 32.0)
 
-
   /**
    * Mapping of column name to user defined function
    */
@@ -67,6 +66,11 @@ package object cnrs {
     "avg_speed" -> mkSymbolicDiscretizerUDF(speedLevels, "S"),
     "vehicles" -> mkSymbolicDiscretizerUDF(vehicleLevels, "V")
   )
+
+  /**
+   * Column names in the DB tables, that are aliases of MLN domains
+   */
+  val domainAliases = Map("start_loc" -> "loc_id", "end_loc" -> "loc_id")
 
   def loadFor(startTime: Long, endTime: Long)(implicit sc: SparkContext, sqlContext: SQLContext) = {
     import sqlContext.implicits._
@@ -77,9 +81,6 @@ package object cnrs {
     // ---
     // --- Load raw data for the specified temporal interval
     // ---
-    // The data is loaded from raw input
-    //info(s"Loading raw data for the temporal interval [$startTime, $endTime]")
-
     val rawInputDF = RawInput.loadDF
       .where(s"timestamp >= $startTime AND timestamp <= $endTime")
       .cache()
@@ -88,14 +89,11 @@ package object cnrs {
     // ---
     // --- Load location data for the specified temporal interval
     // ---
-    //info(s"Loading location data")
     val locationDF = Location.loadDF.cache()
 
     // ---
     // --- Load annotation data for the specified interval
     // ---
-    //info(s"Loading annotation data for the temporal interval [$startTime, $endTime]")
-
     val annotatedLocations = Annotation.loadDF
       .where(s"start_ts <= $endTime AND end_ts >= $startTime")
       .withColumnRenamed("event_num", "eid")
