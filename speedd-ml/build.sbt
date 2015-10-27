@@ -123,6 +123,9 @@ libraryDependencies += "com.datastax.spark" %% "spark-cassandra-connector" % "1.
 libraryDependencies += "org.javassist" % "javassist" % "3.20.0-GA"
 
 
+// lpsolve library for optimization
+libraryDependencies += "com.datumbox" % "lpsolve" % "5.5.2.0"
+
 // Dependency overrides
 dependencyOverrides += "org.scala-lang" % "scala-compiler" % scalaVersion.value
 dependencyOverrides += "org.scala-lang" % "scala-library" % scalaVersion.value
