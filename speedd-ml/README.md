@@ -22,7 +22,7 @@ $ sbt ++2.11.7 publishLocal
 
 **2.** Clone and publish locally the Optimus project (further instructions can be found [here](https://github.com/vagm/Optimus)).
 ```bash
-$ git clone -v v1.2.1 --depth 1 https://github.com/vagm/Optimus.git
+$ git clone -b v1.2.1 --depth 1 https://github.com/vagm/Optimus.git
 $ cd Optimus
 $ sbt publishLocal
 ```
@@ -30,7 +30,7 @@ $ sbt publishLocal
 **3.** Clone and publish locally the LoMRF project (further instructions can be found [here](https://github.com/anskarl/LoMRF)).
 
 ```bash
-$ git clone -v v0.4.2 --depth 1 https://github.com/anskarl/LoMRF.git
+$ git clone -b v0.4.2 --depth 1 https://github.com/anskarl/LoMRF.git
 $ cd LoMRF
 $ sbt publishLocal
 ```

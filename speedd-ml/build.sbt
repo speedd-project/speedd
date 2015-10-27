@@ -5,7 +5,7 @@ name := "SPEEDD-ML"
 
 version := "0.1"
 
-organization := "NCSR Demokritos"
+organization := "NCSR_Demokritos"
 
 scalaVersion := "2.11.7"
 
