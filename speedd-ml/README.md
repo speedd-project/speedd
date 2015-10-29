@@ -40,7 +40,7 @@ Once you have successfully build and published `auxlib`, `Optimus` and `LoMRF` p
 To build the SPEEDD Machine Learning Module, give the following command:
 ```bash
 $ cd path/to/speedd-ml
-$ sbt dist
+$ sbt clean dist
 ```
 
 After a successful compilation, the SPEEDD Machine Learning Module is located inside the ./target/universal/speedd-ml-<version>.zip file. You can extract this file and add the path/to/speedd-ml-<version>/bin in your PATH, in order to execute the SPEEDD Machine Learning Module scripts from terminal.
@@ -50,7 +50,7 @@ After a successful compilation, the SPEEDD Machine Learning Module is located in
 To build the SPEEDD Machine Learning Module for Spark cluster (e.g., Apache Mesos), give the following command:
 ```bash
 $ cd path/to/speedd-ml
-$ sbt assembly
+$ sbt 'set test in assembly := {}' clean assembly
 ```
 
 ### Initialize database schema

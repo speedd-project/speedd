@@ -114,8 +114,8 @@ libraryDependencies += "com.nativelibs4java" %% "scalaxy-streams" % "0.3.4" % "p
 libraryDependencies += "com.github.anskarl" %% "auxlib" % "0.1"
 
 // Apache Spark
-libraryDependencies += "org.apache.spark" %% "spark-core" % "1.5.1" exclude("org.slf4j", "slf4j-log4j12")
-libraryDependencies += "org.apache.spark" %% "spark-sql" % "1.5.1" exclude("org.slf4j", "slf4j-log4j12")
+libraryDependencies += "org.apache.spark" %% "spark-core" % "1.5.1" % "provided" exclude("org.slf4j", "slf4j-log4j12")
+libraryDependencies += "org.apache.spark" %% "spark-sql" % "1.5.1"  % "provided" exclude("org.slf4j", "slf4j-log4j12")
 
 libraryDependencies += "com.databricks" %% "spark-csv" % "1.2.0"
 
@@ -140,16 +140,22 @@ dependencyOverrides += "org.slf4j" % "slf4j-api" % "1.7.12"
 
 dependencyOverrides += "io.netty" % "netty" % "3.9.0.Final"
 
+// Force Akka to version 2.3.11 (=the version that Spark 1.5.1 uses)
+dependencyOverrides += "com.typesafe.akka" %% "akka-actor"  % "2.3.11"
+dependencyOverrides += "com.typesafe.akka" %% "akka-remote"  % "2.3.11"
+dependencyOverrides += "com.typesafe.akka" %% "akka-slf4j"  % "2.3.11"
+
 // Merge strategy
 assemblyMergeStrategy in assembly := {
-  case "application.conf" => MergeStrategy.last
-  case "logback.xml" => MergeStrategy.last
-  case "logback-debug.xml" => MergeStrategy.last
-  case "logj4.properties" => MergeStrategy.first
+  case "application.conf" => MergeStrategy.rename
+  case "logback.xml" => MergeStrategy.rename
+  case "logback-debug.xml" => MergeStrategy.rename
+  case "logj4.properties" => MergeStrategy.rename
   case "META-INF/MANIFEST.MF" => MergeStrategy.discard
   case _ => MergeStrategy.first
 }
 
+assemblyJarName in assembly := "NCSR_SPEEDD-ML.jar"
 
 // Include utility bash scripts in the 'bin' directory
 mappings in Universal <++= (packageBin in Compile) map { jar =>
