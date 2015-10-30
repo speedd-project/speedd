@@ -178,11 +178,9 @@ object WeightLearnerCLI extends App with CommonOptions with Logging {
 
   // --- 2. Prepare Spark context
   val conf = new SparkConf()
-    .setAppName(appName)
-    .set("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
     .set("spark.cassandra.connection.host", cassandraConnectionHost)
     .set("spark.cassandra.connection.port", cassandraConnectionPort)
-  //.setMaster(master)
+
 
 
   info(s"Spark configuration:\n${conf.toDebugString}")

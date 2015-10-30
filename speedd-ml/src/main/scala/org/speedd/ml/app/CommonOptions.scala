@@ -32,21 +32,13 @@ import auxlib.opt.OptionParser
 
 trait CommonOptions extends OptionParser {
 
-  protected var master = s"local[${Runtime.getRuntime.availableProcessors()}]"
-  protected var appName = "SPEEDD-ML"
   protected var cassandraConnectionHost = "127.0.0.1"
   protected var cassandraConnectionPort = "9042"
 
   // -------------------------------------------------------------------------------------------------------------------
   // --- Command line interface options
   // -------------------------------------------------------------------------------------------------------------------
-  opt("M", "Master", "URL to connect to Spark master (default is locally, using the available number of logical CPUs, i.e., local[num of logical CPUs]).", {
-    v: String => master = v.trim
-  })
 
-  opt("N", "Name", s"Spark application name (default is '$appName').", {
-    v: String => appName = v.trim
-  })
 
   opt("C", "Cassandra-host", s"Specify the IP connection to Cassandra DB (default is '$cassandraConnectionHost}').", {
     v: String => cassandraConnectionHost = v

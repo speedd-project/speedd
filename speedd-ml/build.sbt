@@ -157,6 +157,23 @@ assemblyMergeStrategy in assembly := {
 
 assemblyJarName in assembly := "NCSR_SPEEDD-ML.jar"
 
+
+// Removes all jar mappings in universal and appends the fat jar
+// Fat jar is required from spark-submit tool
+mappings in Universal := {
+  // universalMappings: Seq[(File,String)]
+  val universalMappings = (mappings in Universal).value
+  val fatJar = (assembly in Compile).value
+  // removing means filtering
+  val filtered = universalMappings filter {
+    case (file, fileName) =>  ! fileName.endsWith(".jar")
+  }
+
+  // add the fat jar
+  filtered :+ (fatJar -> ("lib/" + fatJar.getName))
+}
+
+
 // Include utility bash scripts in the 'bin' directory
 mappings in Universal <++= (packageBin in Compile) map { jar =>
   val scriptsDir = new java.io.File("scripts/")

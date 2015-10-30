@@ -75,8 +75,6 @@ object CNRSLoader extends CLIDataLoaderApp {
 
   // --- 2. Prepare Spark context
   val conf = new SparkConf()
-    .setAppName(appName)
-    .setMaster(master)
     .set("spark.cassandra.connection.host", cassandraConnectionHost)
     .set("spark.cassandra.connection.port", cassandraConnectionPort)
 
