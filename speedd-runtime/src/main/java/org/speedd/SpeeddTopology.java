@@ -206,7 +206,7 @@ public class SpeeddTopology {
 	private static void runRemotely(Config conf, StormTopology speeddTopology) {
 		try {
 			logger.info("Running remotely");
-			StormSubmitter.submitTopologyWithProgressBar("speedd-runtime",
+			StormSubmitter.submitTopology("speedd-runtime",
 					conf, speeddTopology);
 		} catch (Exception e1) {
 			System.err.println("Submit topology faield: " + e1.getMessage());
