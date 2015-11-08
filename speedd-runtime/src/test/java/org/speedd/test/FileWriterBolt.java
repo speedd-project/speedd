@@ -12,7 +12,9 @@ import org.speedd.data.impl.SpeeddEventFactory;
 import org.speedd.kafka.JsonEventEncoder;
 
 import com.ibm.hrl.proton.metadata.event.EventHeader;
-import com.ibm.hrl.proton.routing.MetadataFacade;
+
+
+import com.ibm.hrl.proton.routing.STORMMetadataFacade;
 
 import backtype.storm.task.OutputCollector;
 import backtype.storm.task.TopologyContext;
@@ -56,7 +58,7 @@ public class FileWriterBolt extends BaseRichBolt {
 				.getValueByField(EventHeader.NAME_ATTRIBUTE);
 
 		Map<String, Object> inAttrs = (Map<String, Object>) input
-				.getValueByField(MetadataFacade.ATTRIBUTES_FIELD);
+				.getValueByField(STORMMetadataFacade.ATTRIBUTES_FIELD);
 
 		long timestamp = 0;
 

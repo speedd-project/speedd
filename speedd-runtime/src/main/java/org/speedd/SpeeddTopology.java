@@ -28,6 +28,7 @@ import backtype.storm.topology.TopologyBuilder;
 import backtype.storm.topology.base.BaseRichSpout;
 
 import com.ibm.hrl.proton.ProtonTopologyBuilder;
+import com.ibm.hrl.proton.metadata.parser.ParsingException;
 
 public class SpeeddTopology {
 	private BrokerHosts brokerHosts;
@@ -98,9 +99,13 @@ public class SpeeddTopology {
 
 		ProtonTopologyBuilder protonTopologyBuilder = new ProtonTopologyBuilder();
 
-		protonTopologyBuilder.buildProtonTopology(builder, trafficReaderSpout,
-				protonOutputConsumerBolt, CEP_EVENT_CONSUMER,
-				speeddConfig.epnPath);
+		try {
+			protonTopologyBuilder.buildProtonTopology(builder, trafficReaderSpout,
+					protonOutputConsumerBolt, CEP_EVENT_CONSUMER,
+					speeddConfig.epnPath);
+		} catch (ParsingException e) {
+			throw new RuntimeException("Building Proton topology failed, reason: ", e);
+		}
 
 		builder.setBolt(OUT_EVENT_WRITER, eventWriterBolt).shuffleGrouping(
 				CEP_EVENT_CONSUMER);
