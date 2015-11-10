@@ -39,6 +39,7 @@ public class EventPlayer {
 		Statistics stats = eventFileReader.getStatistics();
 		
 		System.out.println(String.format("Event playback complete: total events = %d, sent = %d, failed = %d", stats.getNumOfAttempts(), stats.getNumOfSent(), stats.getNumOfFailed()));
+		System.out.println(String.format("Elapsed time: %d ms", stats.getElapsedTimeMilliseconds()));
 	}
 
 	public EventPlayer(String configPath, String topic, EventParser eventParser)
