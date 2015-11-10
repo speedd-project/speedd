@@ -6,14 +6,13 @@ import java.lang.reflect.Constructor;
 import java.util.List;
 import java.util.Properties;
 
-import kafka.producer.ProducerConfig;
-
 import org.apache.commons.cli.BasicParser;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
+import org.speedd.EventFileReader.Statistics;
 import org.speedd.EventParser;
 import org.speedd.TimedEventFileReader;
 import org.speedd.data.EventFactory;
@@ -37,7 +36,9 @@ public class EventPlayer {
 
 		eventFileReader.streamEvents();
 
-		System.out.println("Event playback complete.");
+		Statistics stats = eventFileReader.getStatistics();
+		
+		System.out.println(String.format("Event playback complete: total events = %d, sent = %d, failed = %d", stats.getNumOfAttempts(), stats.getNumOfSent(), stats.getNumOfFailed()));
 	}
 
 	public EventPlayer(String configPath, String topic, EventParser eventParser)
@@ -110,7 +111,7 @@ public class EventPlayer {
 				(EventParser) constructor.newInstance(SpeeddEventFactory.getInstance()));
 
 		player.playEventsFromFile(eventFile);
-
+		
 		return;
 	}
 

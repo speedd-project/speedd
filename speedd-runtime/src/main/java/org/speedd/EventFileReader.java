@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
+import java.util.concurrent.atomic.AtomicLong;
 
 import org.apache.kafka.clients.producer.Callback;
 import org.apache.kafka.clients.producer.KafkaProducer;
@@ -33,18 +34,76 @@ public class EventFileReader {
 	
 	private static class ProducerSendCallback implements Callback {
 		private final Logger log;
+		private Statistics stats;
 		
-		public ProducerSendCallback(Logger log) {
+		public ProducerSendCallback(Logger log, Statistics stats) {
 			this.log = log;
+			this.stats = stats;
 		}
 
 		@Override
 		public void onCompletion(RecordMetadata metadata, Exception exception) {
-			if(exception != null){
+			if(exception == null){
+				this.stats.nSent.incrementAndGet();
+			}
+			else {
 				log.warn("Send failed", exception);
+				this.stats.nFailed.incrementAndGet();
 			}
 		}
 		
+	}
+	
+	public static class Statistics {
+		private AtomicLong nFailed;
+		private AtomicLong nSent;
+		private AtomicLong nAttempted;
+		private long startTime;
+		private long endTime;
+		
+		protected void reset(){
+			nFailed = new AtomicLong(0);
+			nSent  = new AtomicLong(0);
+			nAttempted  = new AtomicLong(0);
+			startTime = System.currentTimeMillis();
+			endTime = 0;
+		}
+		
+		public Statistics(){
+			reset();
+		}
+		
+		public long getNumOfAttempts(){
+			return nAttempted.get();
+		}
+		
+		public long getNumOfSent(){
+			return nSent.get();
+		}
+		
+		public long getNumOfFailed(){
+			return nFailed.get();
+		}
+		
+		public long getStartTimestamp(){
+			return startTime;
+		}
+		
+		public long getEndTimestamp(){
+			return endTime;
+		}
+		
+		public long getElapsedTimeMilliseconds(){
+			return isFinished()? endTime - startTime : 0;
+		}
+		
+		public boolean isFinished(){
+			return endTime > 0;
+		}
+
+		public void setFinished() {
+			endTime = System.currentTimeMillis();
+		}
 	}
 	
 	private String path;
@@ -63,6 +122,8 @@ public class EventFileReader {
 	protected static final long DEFAULT_SEND_DELAY = 10;
 
 	protected static final int FAILURES_TO_GIVEUP = 3;
+	
+	private Statistics stats;
 
 	public EventFileReader(String filePath, String topic,
 			Properties kafkaProducerProperties) {
@@ -84,7 +145,9 @@ public class EventFileReader {
 		
 		listeners = new ArrayList<EventListener>();
 		
-		sendCallback = new ProducerSendCallback(logger);
+		stats = new Statistics();
+		
+		sendCallback = new ProducerSendCallback(logger, stats);
 	}
 
 	public void addListener(EventListener eventListener){
@@ -138,6 +201,8 @@ public class EventFileReader {
 		int failures = 0;
 
 		boolean done = false;
+		
+		stats.reset();
 
 		while (!done) {
 			try {
@@ -151,6 +216,8 @@ public class EventFileReader {
 							topic, eventMessageRecord.messageText);
 
 					producer.send(message, sendCallback);
+					
+					stats.nAttempted.incrementAndGet();
 					
 					notifyListeners(eventMessageRecord);
 				} else {
@@ -171,6 +238,8 @@ public class EventFileReader {
 			}
 		}
 
+		stats.setFinished();
+		
 		close();
 	}
 
@@ -196,5 +265,9 @@ public class EventFileReader {
 		for (EventListener listener : listeners) {
 			listener.onEvent(eventMessageRecord);
 		}
+	}
+	
+	public Statistics getStatistics(){
+		return stats;
 	}
 }

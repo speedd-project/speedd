@@ -1,6 +1,8 @@
 package org.speedd;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -17,7 +19,6 @@ import kafka.consumer.ConsumerConfig;
 import kafka.consumer.ConsumerIterator;
 import kafka.consumer.KafkaStream;
 import kafka.javaapi.consumer.ConsumerConnector;
-import kafka.producer.ProducerConfig;
 import kafka.server.KafkaServer;
 import kafka.utils.TestUtils;
 
@@ -25,6 +26,7 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.speedd.EventFileReader.EventMessageRecord;
+import org.speedd.EventFileReader.Statistics;
 import org.speedd.data.impl.SpeeddEventFactory;
 import org.speedd.test.TestUtil;
 import org.speedd.traffic.TrafficAggregatedReadingCsv2Event;
@@ -121,7 +123,16 @@ public class TimedEventFileReaderTest {
 		eventFileReader.addListener(eventListener);
 
 		eventFileReader.streamEvents();
-
+		
+		Statistics stats = eventFileReader.getStatistics();
+		
+		assertNotNull("Statistics must not be null", stats);
+		assertEquals(10, stats.getNumOfAttempts());
+		assertEquals(10, stats.getNumOfSent());
+		assertEquals(0, stats.getNumOfFailed());
+		assertTrue(stats.isFinished());
+		assertTrue("Elapsed time must be a positive number", stats.getElapsedTimeMilliseconds() > 0);	
+		
 		Properties consumerProperties = TestUtils.createConsumerProperties(zkConnect, "group1", "consumer1", -1);
 		ConsumerConfig consumerConfig = new ConsumerConfig(consumerProperties);
 
