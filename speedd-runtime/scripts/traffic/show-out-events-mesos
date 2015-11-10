@@ -1,0 +1,4 @@
+#!/bin/bash
+source ../setup-env-mesos
+
+$KAFKA_HOME/bin/kafka-console-consumer.sh --zookeeper 10.0.11.11:2181 --topic speedd-traffic-out-events --from-beginning

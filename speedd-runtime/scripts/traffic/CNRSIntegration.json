@@ -1058,7 +1058,7 @@
         "properties": [
           {
             "name": "filename",
-            "value": "D:\\EP\\Projects\\EU\\SPEEDD\\usecases\\CNRS\\dataRushHourTruncated.txt"
+            "value": "/tmp/speedd-cep.out"
           },
           {
             "name": "pollingInterval",

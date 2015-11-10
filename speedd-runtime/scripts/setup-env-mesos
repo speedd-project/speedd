@@ -1,0 +1,38 @@
+#!/bin/bash
+
+if [ -z ${SPEEDD_HOME+x} ]; 
+then 
+	SPEEDD_HOME=$( cd "$( dirname "${BASH_SOURCE[0]}" )/../.." && pwd );
+	echo "SPEEDD_HOME is unset, setting to $SPEEDD_HOME";
+else 
+	echo "SPEEDD_HOME is set to $SPEEDD_HOME"; 
+fi
+
+if [ -z ${STORM_HOME+x} ]; 
+then 
+	STORM_HOME=~/storm-mesos-0.9.3
+	echo "STORM_HOME is unset, setting to $STORM_HOME";
+else 
+	echo "STORM_HOME is set to $STORM_HOME"; 
+fi
+
+if [ -z ${KAFKA_HOME+x} ]; 
+then 
+	KAFKA_HOME=~/kafka_2.10-0.8.2.1
+	echo "KAFKA_HOME is unset, setting to $KAFKA_HOME";
+else 
+	echo "KAFKA_HOME is set to $KAFKA_HOME"; 
+fi
+
+SPEEDD_RUNTIME_HOME=$SPEEDD_HOME/speedd-runtime
+
+STORM_CMD=$STORM_HOME/bin/storm
+
+SPEEDD_RUNTIME_LIB=$SPEEDD_RUNTIME_HOME/target
+
+if [ -z ${JAVA_HOME+x} ];
+then
+	JAVA_CMD=java;
+else
+	JAVA_CMD=$JAVA_HOME/bin/java;
+fi
