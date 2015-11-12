@@ -12,6 +12,9 @@ import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.speedd.EventFileReader;
 import org.speedd.EventFileReader.Statistics;
 import org.speedd.EventParser;
 import org.speedd.TimedEventFileReader;
@@ -29,20 +32,52 @@ public class EventPlayer {
 	private String topic;
 
 	private EventParser eventParser;
+	
+	private boolean stressModeOn;
+	
+	private boolean repModeOn;
+	
+	private boolean endless;
+	
+	private int reps;
+	
+	private static final Logger log = LoggerFactory.getLogger(EventPlayer.class);
 
 	public void playEventsFromFile(String path) throws Exception {
-		TimedEventFileReader eventFileReader = new TimedEventFileReader(path,
-				topic, kafkaProducerProperties, eventParser);
+		EventFileReader eventFileReader = stressModeOn? 
+				new BufferedEventFileReader(path, topic, kafkaProducerProperties, 0, reps) : 
+				new TimedEventFileReader(path, topic, kafkaProducerProperties, eventParser);
 
 		eventFileReader.streamEvents();
 
 		Statistics stats = eventFileReader.getStatistics();
 		
-		System.out.println(String.format("Event playback complete: total events = %d, sent = %d, failed = %d", stats.getNumOfAttempts(), stats.getNumOfSent(), stats.getNumOfFailed()));
-		System.out.println(String.format("Elapsed time: %d ms", stats.getElapsedTimeMilliseconds()));
+		log.info(String.format("Event playback complete: total events = %d, sent = %d, failed = %d", stats.getNumOfAttempts(), stats.getNumOfSent(), stats.getNumOfFailed()));
+		log.info(String.format("Elapsed time: %d ms", stats.getElapsedTimeMilliseconds()));
+
+//		boolean done = false;
+//		int repsToGo = repModeOn? reps : 0;
+//		
+//		while(!done){
+//			eventFileReader.streamEvents();
+//
+//			Statistics stats = eventFileReader.getStatistics();
+//			
+//			log.info(String.format("Event playback complete: total events = %d, sent = %d, failed = %d", stats.getNumOfAttempts(), stats.getNumOfSent(), stats.getNumOfFailed()));
+//			log.info(String.format("Elapsed time: %d ms", stats.getElapsedTimeMilliseconds()));
+//
+//			if(!repModeOn){
+//				done = true;
+//			} else if (!endless){
+//				repsToGo--;
+//				done = repsToGo == 0;
+//			}
+//		}
+		
 	}
 
-	public EventPlayer(String configPath, String topic, EventParser eventParser)
+	
+	public EventPlayer(String configPath, String topic, EventParser eventParser, boolean isStressMode, boolean isRepMode, int reps)
 			throws IOException {
 		kafkaProducerProperties = new Properties();
 		kafkaProducerProperties.load(new FileReader(configPath));
@@ -52,14 +87,26 @@ public class EventPlayer {
 		this.topic = topic;
 
 		this.eventParser = eventParser;
+		
+		this.stressModeOn = isStressMode;
+		
+		this.repModeOn = isRepMode;
+		
+		if(this.repModeOn){
+			this.reps = reps;
+			this.endless = reps == 0;
+		}
+		
 	}
-
+	
 	public static void main(String[] args) throws Exception {
 		Options options = new Options();
 
 		options.addOption("c", "configuration", true, "configuration file");
 		options.addOption("t", "topic", true, "topic");
 		options.addOption("p", "parser", true, "event parser class name (FQN)");
+		options.addOption("s", "stress", false, "run in stress test mode - no pauses between events");
+		options.addOption("r", "repeat", true, "repeat (n times), 0 = endless loop");
 
 		CommandLineParser clParser = new BasicParser();
 
@@ -70,6 +117,12 @@ public class EventPlayer {
 		String topic = null;
 
 		String eventParserClassName = null;
+		
+		boolean stressModeOn = false;
+		
+		int reps = 0;
+		
+		boolean repModeOn = false;
 
 		try {
 			CommandLine cmd = clParser.parse(options, args);
@@ -80,10 +133,21 @@ public class EventPlayer {
 			topic = cmd.hasOption('t') ? cmd.getOptionValue('t')
 					: DEFAULT_TOPIC;
 
-			if (cmd.hasOption('p')) {
-				eventParserClassName = cmd.getOptionValue('p');
-			} else {
-				throw new ParseException("Event parser class name missing");
+			if (cmd.hasOption('s')){
+				stressModeOn = true;
+			}
+			
+			if (cmd.hasOption('r')){
+				reps = Integer.parseInt(cmd.getOptionValue('r'));
+				repModeOn = true;
+			}
+
+			if(!stressModeOn){
+				if (cmd.hasOption('p')) {
+					eventParserClassName = cmd.getOptionValue('p');
+				} else {
+					throw new ParseException("Event parser class name missing");
+				}
 			}
 
 			@SuppressWarnings("unchecked")
@@ -107,10 +171,16 @@ public class EventPlayer {
 		System.out.println("Event file: " + eventFile);
 		System.out.println("Sending events to topic: " + topic);
 
-		Constructor constructor = Class.forName(eventParserClassName).getDeclaredConstructor(EventFactory.class);
-		EventPlayer player = new EventPlayer(configPath, topic,
-				(EventParser) constructor.newInstance(SpeeddEventFactory.getInstance()));
-
+		EventPlayer player;
+		
+		if(eventParserClassName != null){
+			Constructor<? extends EventParser> constructor = (Constructor<? extends EventParser>) Class.forName(eventParserClassName).getDeclaredConstructor(EventFactory.class);
+			player = new EventPlayer(configPath, topic,
+				(EventParser) constructor.newInstance(SpeeddEventFactory.getInstance()), stressModeOn, repModeOn, reps);
+		} else {
+			player = new EventPlayer(configPath, topic,
+					null, stressModeOn, repModeOn, reps);
+		}
 		player.playEventsFromFile(eventFile);
 		
 		return;

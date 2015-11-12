@@ -18,7 +18,7 @@ import org.slf4j.LoggerFactory;
 
 public class EventFileReader {
 	
-	static class EventMessageRecord {
+	protected static class EventMessageRecord {
 		public final String messageText;
 		public final long sendDelayMillis;
 
@@ -113,7 +113,7 @@ public class EventFileReader {
 	protected String topic;
 	protected Logger logger;
 
-	private long delayMillis;
+	protected long delayMillis;
 	
 	protected List<EventListener> listeners;
 	
@@ -166,7 +166,7 @@ public class EventFileReader {
 		listeners.clear();
 	}
 	
-	public void open() throws EventReaderException {
+	protected void open() throws EventReaderException {
 		try {
 			reader = new BufferedReader(new FileReader(path));
 
@@ -186,24 +186,9 @@ public class EventFileReader {
 		return line != null ? new EventMessageRecord(line, delayMillis) : null;
 	}
 
-	public void streamEvents() {
-		try {
-			open();
-		} catch (EventReaderException e) {
-			logger.error(e.getMessage(), e);
-		}
-
-		if (reader == null) {
-			logger.warn("Reader is null, probably not initialized, - no data will be streamed.");
-			return;
-		}
-
-		int failures = 0;
-
+	private void doStreamEvents(){
 		boolean done = false;
 		
-		stats.reset();
-
 		while (!done) {
 			try {
 				EventMessageRecord eventMessageRecord = nextEventMessageRecord();
@@ -227,23 +212,33 @@ public class EventFileReader {
 
 			} catch (IOException e) {
 				logger.warn("Read from file failed", e);
-				failures++;
-				if (failures >= FAILURES_TO_GIVEUP) {
-					done = true;
-					logger.error(String.format(
-							"%d attempts to read from file failed. Giving up.",
-							failures));
-				}
 			} catch (InterruptedException e) {
 			}
 		}
+	}
 
+	public void streamEvents() {
+		try {
+			open();
+		} catch (EventReaderException e) {
+			logger.error(e.getMessage(), e);
+		}
+
+		if (reader == null) {
+			logger.warn("Reader is null, probably not initialized, - no data will be streamed.");
+			return;
+		}
+
+		stats.reset();
+
+		doStreamEvents();
+		
 		stats.setFinished();
 		
 		close();
 	}
 
-	public void close() {
+	protected void close() {
 		try {
 
 			if (reader != null) {

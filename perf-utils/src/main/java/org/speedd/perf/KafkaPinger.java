@@ -61,9 +61,11 @@ public class KafkaPinger {
 		config.put("bootstrap.servers", bootstrapServers);
 		config.put("request.required.acks", 1);
 		config.put("producer.type", "sync");
-		config.put("serializer.class", StringSerializer.class);
+		//config.put("serializer.class", StringSerializer.class);
 		config.put("value.serializer", StringSerializer.class);
 		config.put("key.serializer", StringSerializer.class);
+		config.put("metadata.fetch.timeout.ms", 10000);
+		config.put("timeout.ms", 10000);
 		
 		KafkaProducer<String, String> producer = new KafkaProducer<String, String>(config);
 		
@@ -79,6 +81,8 @@ public class KafkaPinger {
 			}
 		}
 
+		producer.close();
+		
 		System.out.println("Completed.");
 	}
 	
