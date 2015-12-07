@@ -150,6 +150,40 @@
           <target>1.7</target>
         </configuration>
       </plugin>
+       <plugin>				
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-jar-plugin</artifactId>       
+        <configuration>
+          <archive>
+            <manifest>
+              <addClasspath>true</addClasspath>
+               <mainClass>com.ibm.hrl.proton.server.executor.ProtonExecutor</mainClass>                
+               <classpathPrefix>lib/</classpathPrefix>
+            </manifest>
+            <manifestEntries>
+              <Class-Path>lib/BOUtility.jar lib/jrules-all-engines.jar lib/smile.jar lib/com.ibm.ws.ejb.thinclient_7.0.0.jar lib/com.ibm.ws.orb_7.0.0.jar lib/com.ibm.ws.sib.client.thin.jms_7.0.0.jar</Class-Path>
+            </manifestEntries>
+          </archive>
+        </configuration>       
+      </plugin>	      
+      <plugin>
+      <artifactId>maven-assembly-plugin</artifactId>     
+      <configuration>
+        <descriptors>
+          <descriptor>assembly/dep.xml</descriptor>
+        </descriptors>
+         <finalName>IBMProton</finalName>
+      </configuration>
+      <executions>
+        <execution>
+          <phase>package</phase>
+          <goals>
+            <goal>single</goal>
+          </goals>
+        </execution>
+      </executions>	
+      </plugin>	        
     </plugins>
+    
   </build>
 </project>

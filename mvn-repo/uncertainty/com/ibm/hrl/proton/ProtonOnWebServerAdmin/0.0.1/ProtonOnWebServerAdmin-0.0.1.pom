@@ -28,9 +28,9 @@
 		</repository> 			
 	</repositories>
 
-   <dependencies>		
+   <dependencies>				
 		<dependency>
-			<groupId>com.ibm.hrl.json</groupId>
+			<groupId>uncertainty.com.ibm.hrl.json</groupId>
 			<artifactId>JSON</artifactId>
 			<version>0.1.0</version>
 		</dependency>

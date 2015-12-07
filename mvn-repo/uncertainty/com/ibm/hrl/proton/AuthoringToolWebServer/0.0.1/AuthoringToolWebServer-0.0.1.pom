@@ -30,10 +30,10 @@
 
 <dependencies>
 		<dependency>
-			<groupId>com.ibm.hrl.eep</groupId>
+			<groupId>uncertainty.com.ibm.hrl.eep</groupId>
 			<artifactId>EEP</artifactId>
 			<version>0.1.0</version>
-		</dependency>		
+		</dependency>			
 		<dependency>		
 			<groupId>uncertainty.com.ibm.hrl.proton</groupId>
 			<artifactId>ProtonJ2SE</artifactId>
