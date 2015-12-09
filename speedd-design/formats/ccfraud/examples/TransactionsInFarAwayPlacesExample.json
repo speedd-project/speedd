@@ -1,0 +1,13 @@
+{
+  "Cost": "0.0",
+  "Certainty": "1.0",
+  "Name": "TransactionsInFarAwayPlaces",
+  "EventSource": "",
+  "OccurrenceTime": "07/12/2015-16:00:58",
+  "transaction_ids": "[755efd3a1d9049158cb4340d9ca97bb7, 4017b70b1d0f4b36a77078ed4c620ed9]",
+  "Duration": "0",
+  "Annotation": "",
+  "EventId": "07a19ace-227f-4dec-98e4-5a5cd91ad4e7",
+  "card_pan": "926653643724413fbc28b896f799985d",
+  "DetectionTime": "07/12/2015-16:00:58"
+}
