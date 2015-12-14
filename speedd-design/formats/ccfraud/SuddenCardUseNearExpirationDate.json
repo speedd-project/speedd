@@ -1,5 +1,5 @@
-  {
-        "name": "TransactionsInFarAwayPlaces",
+{
+        "name": "SuddenCardUseNearExpirationDate",
         "createdDate": "Tue Aug 05 2014",
         "attributes": [
           {
@@ -39,12 +39,22 @@
             "type": "String",
             "dimension": 0
           },
+          {
+            "name": "TransactionsCount",
+            "type": "Integer",
+            "dimension": 0
+          },
+          {
+            "name": "is_cnp",
+            "type": "Integer",
+            "dimension": 0
+          },
            {
             "name": "transaction_ids",
             "type": "String",
             "dimension": 1
           },
-           {
+          {
             "name": "timestamps",
             "type": "Date",
             "dimension": 1

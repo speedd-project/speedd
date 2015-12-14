@@ -1,58 +1,18 @@
 {
-        "name": "SuddenCardUseNearExpirationDate",
-        "createdDate": "Tue Aug 05 2014",
-        "attributes": [
-          {
-            "name": "Certainty",
-            "type": "Double",
-            "defaultValue": "1",
-            "dimension": 0,
-            "description": "The certainty that this event happen (value between 0 to 1)"
-          },
-          {
-            "name": "OccurrenceTime",
-            "type": "Date",
-            "dimension": 0,
-            "description": "No value means it equals the event detection time, other option is to use one of the defined distribution functions with parameters"
-          },
-          {
-            "name": "ExpirationTime",
-            "type": "Date",
-            "dimension": 0,
-            "description": "Only till this time the cost and certainty parameters of the event are valid, and only till this time a proactive action is considered"
-          },
-          {
-            "name": "Cost",
-            "type": "Double",
-            "dimension": 0,
-            "description": "The cost of this event occurrence. Negative if this is an opportunity"
-          },
-          {
-            "name": "Duration",
-            "type": "Double",
-            "defaultValue": "0",
-            "dimension": 0,
-            "description": "Used in case the this event occur within an interval"
-          },
-          {
-            "name": "card_pan",
-            "type": "String",
-            "dimension": 0
-          },
-          {
-            "name": "TransactionsCount",
-            "type": "Integer",
-            "dimension": 0
-          },
-          {
-            "name": "is_cnp",
-            "type": "Integer",
-            "dimension": 0
-          },
-           {
-            "name": "transaction_ids",
-            "type": "String",
-            "dimension": 1
-          }
-        ]
-      }
+  "is_cnp": "0",
+  "timestamps": "[2224702800000, 2224702800000, 2224702800000]",
+  "transaction_ids": "[9d47b44380024e82aedcf359f8be8dfb, 8727070543664142bc7d2ba980dc1f19, b1dedbeb44ad431f995076153c7bdcc8]",
+  "EventId": "c809754d-1362-49cf-b417-c903412a1b5a",
+  "TransactionsCount": "3.0",
+  "DetectionTime": "14/12/2015-12:00:32",
+  "Name": "SuddenCardUseNearExpirationDate",
+  "Cost": "0.0",
+  "Certainty": "0.5998883688639982",
+  "EventSource": "",
+  "OccurrenceTime": "14/12/2015-12:00:32",
+  "Duration": "0",
+  "Annotation": "",
+  "card_country": "5430",
+  "acquirer_country": "[49, 49, 49]",
+  "card_pan": "8de8552de9b94c1da2f798fcefe1ac16"
+}
