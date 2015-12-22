@@ -7,16 +7,18 @@ import org.speedd.ParsingError;
 import org.speedd.data.Event;
 import org.speedd.data.EventFactory;
 
+import java.text.SimpleDateFormat;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.HashMap;
 
 public class FraudAggregatedReadingCsv2Event implements EventParser, Constants {
-    private static final String ATTR_TIMESTAMP            = "timestamp";
+    private static final String ATTR_TIMESTAMP            = "OccurrenceTime";
     private static final String ATTR_TRANSACTION_ID       = "transaction_id";
     private static final String ATTR_IS_CNP               = "is_cnp";
     private static final String ATTR_AMOUNT_EUR           = "amount_eur";
     private static final String ATTR_CARD_PAN             = "card_pan";
-    private static final String ATTR_CARD_EXP_DATE        = "card_exp";
+    private static final String ATTR_CARD_EXP_DATE        = "card_exp_date";
     private static final String ATTR_CARD_COUNTRY         = "card_country";
     private static final String ATTR_CARD_FAMILY          = "card_family";
     private static final String ATTR_CARD_TYPE            = "card_type";
@@ -33,7 +35,7 @@ public class FraudAggregatedReadingCsv2Event implements EventParser, Constants {
     private static final String ATTR_CLIENT_AUTH          = "client_auth";
     private static final String ATTR_CARD_BRAND           = "card_brand";
     private static final String ATTR_CVV_VALIDATION       = "cvv_validation";
-    private static final String ATTR_TMP_CARD_PAN         = "tmp_card";
+    private static final String ATTR_TMP_CARD_PAN         = "tmp_card_pan";
     private static final String ATTR_TMP_CARD_EXP_DATE    = "tmp_card_exp_date";
     private static final String ATTR_TRANSACTION_TYPE     = "transaction_type";
     private static final String ATTR_AUTH_TYPE            = "auth_type";
@@ -80,6 +82,7 @@ public class FraudAggregatedReadingCsv2Event implements EventParser, Constants {
 
 	public Event fromBytes(byte[] bytes) throws ParsingError {
 		String name = TRANSACTION;
+		SimpleDateFormat dateTimeFormat = new SimpleDateFormat("yyyyMM");
 
 		try {
 
@@ -104,12 +107,12 @@ public class FraudAggregatedReadingCsv2Event implements EventParser, Constants {
 
 			HashMap<String, Object> attrMap = new HashMap<String, Object>();
 
-            attrMap.put(ATTR_TIMESTAMP,            timestamp);
+            attrMap.put(ATTR_TIMESTAMP,            new Date(timestamp));
             attrMap.put(ATTR_TRANSACTION_ID,       tuple[ATTR_TRANSACTION_ID_INDEX]);
             attrMap.put(ATTR_IS_CNP,               getBooleanValue(tuple[ATTR_IS_CNP_INDEX], ATTR_IS_CNP));
             attrMap.put(ATTR_AMOUNT_EUR,           getDoubleValue(tuple[ATTR_AMOUNT_EUR_INDEX], ATTR_AMOUNT_EUR));
             attrMap.put(ATTR_CARD_PAN,             tuple[ATTR_CARD_PAN_INDEX]);
-            attrMap.put(ATTR_CARD_EXP_DATE,        tuple[ATTR_CARD_EXP_DATE_INDEX]);
+            attrMap.put(ATTR_CARD_EXP_DATE,        dateTimeFormat.parse(tuple[ATTR_CARD_EXP_DATE_INDEX]));
             attrMap.put(ATTR_CARD_COUNTRY,         getIntegerValue(tuple[ATTR_CARD_COUNTRY_INDEX], ATTR_CARD_COUNTRY));
             attrMap.put(ATTR_CARD_FAMILY,          getIntegerValue(tuple[ATTR_CARD_FAMILY_INDEX], ATTR_CARD_FAMILY));
             attrMap.put(ATTR_CARD_TYPE,            getIntegerValue(tuple[ATTR_CARD_TYPE_INDEX], ATTR_CARD_TYPE));
