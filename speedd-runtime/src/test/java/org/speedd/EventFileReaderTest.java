@@ -176,6 +176,8 @@ public class EventFileReaderTest {
 		assertEquals(10, c.getCount());
 		
 		consumer.shutdown();
+		
+		System.out.println("Consumer shut down");
 
 //TODO uncomment for starting using the new KafkaConsumer API
 //		Properties props = new Properties();
@@ -202,5 +204,7 @@ public class EventFileReaderTest {
 		
 		zkServer.stop();
 		zkServer.close();
+		
+		System.out.println("Stopped");
 	}
 }

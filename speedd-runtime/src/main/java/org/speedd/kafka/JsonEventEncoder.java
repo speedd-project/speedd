@@ -1,6 +1,7 @@
 package org.speedd.kafka;
 
 import java.lang.reflect.Array;
+import java.util.Date;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.UUID;
@@ -81,6 +82,11 @@ public class JsonEventEncoder implements Encoder<Object>, Fields {
 	private Object jsonizeVal(Object attrVal) {
 		if(attrVal instanceof UUID){
 			return String.valueOf(attrVal);
+		}
+		
+		if(attrVal instanceof Date){
+			return String.valueOf(attrVal);
+			 
 		}
 		return attrVal;
 	}

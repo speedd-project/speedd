@@ -1,10 +1,18 @@
 package org.speedd;
 
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.Iterator;
 import java.util.Map.Entry;
 import java.util.Properties;
 
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.CommandLineParser;
+import org.apache.commons.cli.DefaultParser;
+import org.apache.commons.cli.Option;
+import org.apache.commons.cli.Options;
+import org.apache.commons.cli.ParseException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.speedd.cep.ProtonOutputConsumerBolt;
@@ -53,6 +61,16 @@ public class SpeeddTopology {
 	private static final String DECISION_MAKER = "dm";
 
 	private static final String DECISION_WRITER = "decision-writer";
+
+	private static final String OPTION_PROPERTY = "D";
+
+	private static final String OPTION_FILE = "f";
+
+	private static final String OPTION_MODE = "m";
+
+	private static final Object OPTION_MODE_REMOTE = "remote";
+	
+	private static final Object OPTION_MODE_LOCAL = "local";
 
 	private static Logger logger = LoggerFactory
 			.getLogger(SpeeddTopology.class);
@@ -142,27 +160,60 @@ public class SpeeddTopology {
 
 	}
 
+	/*
+	 * Arguments:
+	 * 		-f <config-file> - (optional*) configuration file path (must be available on the supervisor node)
+	 * 	    -m remote|local - (optional) mode (remote or local), default=local
+	 *      -Dproperty=value - (optional*) configuration properties; override values in the config file (if specified)
+	 *      * - either config file or property values must be specified
+	 */
 	public static void main(String[] args) {
-		if (args.length == 0) {
-			System.err.println("Missing config file path");
-			System.exit(1);
-		}
-
-		String confPath = args[0];
-
-		boolean localMode = true;
-
-		if (args.length == 2 && args[1].equals("remote")) {
-			localMode = false;
-		}
-
 		Properties properties = new Properties();
+		boolean localMode = true;
+		
 		try {
-			properties.load(new FileInputStream(confPath));
-			logger.info("Configuration loaded: " + properties.toString());
-		} catch (Exception e) {
-			System.err.println("Cannot load configuration: " + e.getMessage());
-			logger.error("Cannot load configuration", e);
+			Options options = new Options();
+			
+			options.addOption(Option.builder(OPTION_FILE).hasArg().build());
+			options.addOption(Option.builder(OPTION_MODE).hasArg().build());
+			options.addOption(Option.builder(OPTION_PROPERTY).hasArgs().valueSeparator('=').build());
+	
+			CommandLineParser clParser = new DefaultParser();
+			CommandLine cmd = clParser.parse(options, args);
+
+			if(cmd.hasOption(OPTION_MODE) && cmd.getOptionValue(OPTION_MODE).equals(OPTION_MODE_REMOTE)){
+				localMode = false;
+			}
+
+			
+			if(cmd.hasOption(OPTION_FILE)){
+				String confPath = cmd.getOptionValue(OPTION_FILE);
+			
+				logger.info("Loading configuration from file: " + confPath);
+				
+				properties.load(new FileInputStream(confPath));
+			}
+			
+			if(cmd.hasOption(OPTION_PROPERTY)){
+				String[] propertyArgs = cmd.getOptionValues(OPTION_PROPERTY);
+				
+				for(int i=0,n=propertyArgs.length-1; i < n;){
+					String propertyName = propertyArgs[i++];
+					String propertyValue = propertyArgs[i++];
+					
+					logger.info(String.format("Set %s=%s", propertyName, propertyValue));
+					
+					properties.put(propertyName, propertyValue);
+				}
+			}
+		
+		} catch(ParseException e){
+			System.err.println("Invalid arguments: " + e.getMessage());
+			logger.error("Invalid arguments: " + e.getMessage());
+			System.exit(1);
+		} catch (IOException e1){
+			System.err.println("Cannot load configuration: " + e1.getMessage());
+			logger.error("Cannot load configuration", e1);
 			System.exit(1);
 		}
 

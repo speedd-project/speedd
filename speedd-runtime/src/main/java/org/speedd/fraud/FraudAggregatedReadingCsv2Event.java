@@ -130,6 +130,8 @@ public class FraudAggregatedReadingCsv2Event implements EventParser, Constants {
             attrMap.put(ATTR_CARD_BRAND,           getIntegerValue(tuple[ATTR_CARD_BRAND_INDEX], ATTR_CARD_BRAND));
             attrMap.put(ATTR_CVV_VALIDATION,       getIntegerValue(tuple[ATTR_CVV_VALIDATION_INDEX], ATTR_CVV_VALIDATION));
             attrMap.put(ATTR_TMP_CARD_PAN,         tuple[ATTR_TMP_CARD_PAN_INDEX]);
+            
+            //FIXME should the ATTR_TMP_CARD_EXP_DATE be of Date type similar to CARD_EXP_DATE?
             attrMap.put(ATTR_TMP_CARD_EXP_DATE,    tuple[ATTR_TMP_CARD_EXP_DATE_INDEX]);
             attrMap.put(ATTR_TRANSACTION_TYPE,     getIntegerValue(tuple[ATTR_TRANSACTION_TYPE_INDEX], ATTR_TRANSACTION_TYPE));
             attrMap.put(ATTR_AUTH_TYPE,            getIntegerValue(tuple[ATTR_AUTH_TYPE_INDEX], ATTR_AUTH_TYPE));
