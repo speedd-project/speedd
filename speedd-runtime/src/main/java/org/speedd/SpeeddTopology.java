@@ -249,12 +249,20 @@ public class SpeeddTopology {
 		}
 
 		conf.setMaxTaskParallelism(1);
-
+		
 		StormTopology topology = speeddTopology.buildTopology();
 
 		if (localMode) {
 			runLocally(conf, topology);
 		} else {
+			if(properties.containsKey(Config.NIMBUS_HOST)){
+				conf.put(Config.NIMBUS_HOST, properties.getProperty(Config.NIMBUS_HOST));
+			}
+			
+			if(properties.containsKey(Config.NIMBUS_THRIFT_PORT)){
+				conf.put(Config.NIMBUS_THRIFT_PORT, Integer.parseInt(properties.getProperty(Config.NIMBUS_THRIFT_PORT)));
+			}
+			
 			runRemotely(conf, topology);
 		}
 	}

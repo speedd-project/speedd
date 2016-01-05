@@ -80,7 +80,7 @@ function setKafka(){
 	console.log("Setting up Kafka clients");
 	
 	Consumer = kafka.Consumer;
-	client = new kafka.Client('localhost:2181/');
+	client = new kafka.Client('zk:2181/');
 	consumer = new Consumer(
 		client, 
 		// payloads
