@@ -6,7 +6,7 @@ import java.lang.reflect.Constructor;
 import java.util.List;
 import java.util.Properties;
 
-import org.apache.commons.cli.BasicParser;
+import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.HelpFormatter;
@@ -108,7 +108,7 @@ public class EventPlayer {
 		options.addOption("s", "stress", false, "run in stress test mode - no pauses between events");
 		options.addOption("r", "repeat", true, "repeat (n times), 0 = endless loop");
 
-		CommandLineParser clParser = new BasicParser();
+		CommandLineParser clParser = new DefaultParser();
 
 		String eventFile = null;
 

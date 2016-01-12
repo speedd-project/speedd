@@ -14,6 +14,7 @@ import java.util.HashMap;
 
 public class FraudAggregatedReadingCsv2Event implements EventParser, Constants {
     private static final String ATTR_TIMESTAMP            = "OccurrenceTime";
+    private static final String ATTR_DETECTION_TIME       = "DetectionTime";
     private static final String ATTR_TRANSACTION_ID       = "transaction_id";
     private static final String ATTR_IS_CNP               = "is_cnp";
     private static final String ATTR_AMOUNT_EUR           = "amount_eur";
@@ -85,7 +86,10 @@ public class FraudAggregatedReadingCsv2Event implements EventParser, Constants {
 		SimpleDateFormat dateTimeFormat = new SimpleDateFormat("yyyyMM");
 
 		try {
-
+			//register the detected time to serve as the timestamp of the received event.
+			//it can differ from the occurrence time that is in the event
+			long detectionTime = System.currentTimeMillis();
+			
 			String[] tuple = new String(bytes).split(",");
 			
 			int tupleLength = tuple.length;
@@ -108,6 +112,7 @@ public class FraudAggregatedReadingCsv2Event implements EventParser, Constants {
 			HashMap<String, Object> attrMap = new HashMap<String, Object>();
 
             attrMap.put(ATTR_TIMESTAMP,            new Date(timestamp));
+            attrMap.put(ATTR_DETECTION_TIME, 	   Long.valueOf(detectionTime));
             attrMap.put(ATTR_TRANSACTION_ID,       tuple[ATTR_TRANSACTION_ID_INDEX]);
             attrMap.put(ATTR_IS_CNP,               getBooleanValue(tuple[ATTR_IS_CNP_INDEX], ATTR_IS_CNP));
             attrMap.put(ATTR_AMOUNT_EUR,           getDoubleValue(tuple[ATTR_AMOUNT_EUR_INDEX], ATTR_AMOUNT_EUR));
@@ -137,7 +142,7 @@ public class FraudAggregatedReadingCsv2Event implements EventParser, Constants {
             attrMap.put(ATTR_AUTH_TYPE,            getIntegerValue(tuple[ATTR_AUTH_TYPE_INDEX], ATTR_AUTH_TYPE));
             attrMap.put(ATTR_IS_FRAUD,             getBooleanValue(tuple[ATTR_IS_FRAUD_INDEX], ATTR_IS_FRAUD));
 
-			return eventFactory.createEvent(name, timestamp, attrMap);
+			return eventFactory.createEvent(name, detectionTime, attrMap);
 		} catch (Exception e) {
 			throw new ParsingError(
 					"Error parsing transaction CSV.", e);
