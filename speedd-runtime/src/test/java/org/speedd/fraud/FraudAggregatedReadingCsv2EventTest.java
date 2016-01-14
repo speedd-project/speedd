@@ -16,8 +16,8 @@ public class FraudAggregatedReadingCsv2EventTest {
 	private static final FraudAggregatedReadingCsv2Event parser = new FraudAggregatedReadingCsv2Event(SpeeddEventFactory.getInstance());
 
 	@Test
-	public void testCsv2Event() throws Exception {
-		String eventCsv = "1423150200000,TXN_ID,1,250,567745453,201702,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,1532322,201801,17,18,0";
+	public void testFromBytes() throws Exception {
+		String eventCsv = "1423150200000,TXN_ID,1,250.0,567745453,201702,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,1532322,201801,17,18,0";
 
 		SimpleDateFormat dateTimeFormat = new SimpleDateFormat("yyyyMM");
 		
@@ -57,5 +57,14 @@ public class FraudAggregatedReadingCsv2EventTest {
         assertEquals(17, attrs.get("transaction_type"));
         assertEquals(18, attrs.get("auth_type"));
         assertEquals(false, attrs.get("is_fraud"));
+	}
+
+	@Test
+	public void testToBytes() throws Exception {
+		String inEventCsv = "1423150200000,TXN_ID,1,250.0,567745453,201702,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,1532322,201801,17,18,0";
+		Event event = parser.fromBytes(inEventCsv.getBytes());
+		
+		String outEventCsv = new String(parser.toBytes(event));
+		assertEquals(inEventCsv, outEventCsv);
 	}
 }

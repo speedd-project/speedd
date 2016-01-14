@@ -1,5 +1,11 @@
 package org.speedd.fraud;
 
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.HashMap;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.speedd.EventParser;
@@ -7,42 +13,7 @@ import org.speedd.ParsingError;
 import org.speedd.data.Event;
 import org.speedd.data.EventFactory;
 
-import java.text.SimpleDateFormat;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.HashMap;
-
 public class FraudAggregatedReadingCsv2Event implements EventParser, Constants {
-    private static final String ATTR_TIMESTAMP            = "OccurrenceTime";
-    private static final String ATTR_DETECTION_TIME       = "DetectionTime";
-    private static final String ATTR_TRANSACTION_ID       = "transaction_id";
-    private static final String ATTR_IS_CNP               = "is_cnp";
-    private static final String ATTR_AMOUNT_EUR           = "amount_eur";
-    private static final String ATTR_CARD_PAN             = "card_pan";
-    private static final String ATTR_CARD_EXP_DATE        = "card_exp_date";
-    private static final String ATTR_CARD_COUNTRY         = "card_country";
-    private static final String ATTR_CARD_FAMILY          = "card_family";
-    private static final String ATTR_CARD_TYPE            = "card_type";
-    private static final String ATTR_CARD_TECH            = "card_tech";
-    private static final String ATTR_ACQUIRER_COUNTRY     = "acquirer_country";
-    private static final String ATTR_MERCHANT_MCC         = "merchant_mcc";
-    private static final String ATTR_TERMINAL_BRAND       = "terminal_brand";
-    private static final String ATTR_TERMINAL_ID          = "terminal_id";
-    private static final String ATTR_TERMINAL_TYPE        = "terminal_type";
-    private static final String ATTR_TERMINAL_EMV         = "terminal_emv";
-    private static final String ATTR_TRANSACTION_RESPONSE = "transaction_response";
-    private static final String ATTR_CARD_AUTH            = "card_auth";
-    private static final String ATTR_TERMINAL_AUTH        = "terminal_auth";
-    private static final String ATTR_CLIENT_AUTH          = "client_auth";
-    private static final String ATTR_CARD_BRAND           = "card_brand";
-    private static final String ATTR_CVV_VALIDATION       = "cvv_validation";
-    private static final String ATTR_TMP_CARD_PAN         = "tmp_card_pan";
-    private static final String ATTR_TMP_CARD_EXP_DATE    = "tmp_card_exp_date";
-    private static final String ATTR_TRANSACTION_TYPE     = "transaction_type";
-    private static final String ATTR_AUTH_TYPE            = "auth_type";
-    private static final String ATTR_IS_FRAUD             = "is_fraud";
-
-
 	private static final int ATTR_TIMESTAMP_INDEX            = 0;
 	private static final int ATTR_TRANSACTION_ID_INDEX       = 1;
 	private static final int ATTR_IS_CNP_INDEX               = 2;
@@ -73,6 +44,9 @@ public class FraudAggregatedReadingCsv2Event implements EventParser, Constants {
 
 	private static final int NUM_FIELDS = 27;
 
+	private static final SimpleDateFormat dateTimeFormat = new SimpleDateFormat("yyyyMM");
+
+
 	private EventFactory eventFactory;
 
 	public FraudAggregatedReadingCsv2Event(EventFactory eventFactory) {
@@ -83,7 +57,6 @@ public class FraudAggregatedReadingCsv2Event implements EventParser, Constants {
 
 	public Event fromBytes(byte[] bytes) throws ParsingError {
 		String name = TRANSACTION;
-		SimpleDateFormat dateTimeFormat = new SimpleDateFormat("yyyyMM");
 
 		try {
 			//register the detected time to serve as the timestamp of the received event.
@@ -190,4 +163,46 @@ public class FraudAggregatedReadingCsv2Event implements EventParser, Constants {
         return strVal.equals("1");
     }
 
+    public byte[] toBytes(Event event){
+    	ArrayList<String> values = new ArrayList<String>(NUM_FIELDS);
+    	for(int i=0; i<NUM_FIELDS; ++i){
+    		values.add("");
+    	}
+    	values.set(ATTR_TIMESTAMP_INDEX, Long.toString(((Date)event.getAttributes().get(ATTR_TIMESTAMP)).getTime()));
+    	values.set(ATTR_TRANSACTION_ID_INDEX, (String)event.getAttributes().get(ATTR_TRANSACTION_ID));
+    	values.set(ATTR_IS_CNP_INDEX, (Boolean)(event.getAttributes().get(ATTR_IS_CNP))? "1" : "0");
+    	values.set(ATTR_AMOUNT_EUR_INDEX, event.getAttributes().get(ATTR_AMOUNT_EUR).toString());
+    	values.set(ATTR_CARD_PAN_INDEX, (String)event.getAttributes().get(ATTR_CARD_PAN));
+    	values.set(ATTR_CARD_EXP_DATE_INDEX, dateTimeFormat.format(event.getAttributes().get(ATTR_CARD_EXP_DATE)));
+    	values.set(ATTR_CARD_COUNTRY_INDEX, event.getAttributes().get(ATTR_CARD_COUNTRY).toString());
+    	values.set(ATTR_CARD_FAMILY_INDEX, event.getAttributes().get(ATTR_CARD_FAMILY).toString());
+    	values.set(ATTR_CARD_TYPE_INDEX, event.getAttributes().get(ATTR_CARD_TYPE).toString());
+        values.set(ATTR_CARD_TECH_INDEX, event.getAttributes().get(ATTR_CARD_TECH).toString());
+        values.set(ATTR_ACQUIRER_COUNTRY_INDEX, event.getAttributes().get(ATTR_ACQUIRER_COUNTRY).toString());
+        values.set(ATTR_MERCHANT_MCC_INDEX, event.getAttributes().get(ATTR_MERCHANT_MCC).toString());
+        values.set(ATTR_TERMINAL_BRAND_INDEX, event.getAttributes().get(ATTR_TERMINAL_BRAND).toString());
+        values.set(ATTR_TERMINAL_ID_INDEX, event.getAttributes().get(ATTR_TERMINAL_ID).toString());
+        values.set(ATTR_TERMINAL_TYPE_INDEX, event.getAttributes().get(ATTR_TERMINAL_TYPE).toString());
+        values.set(ATTR_TERMINAL_EMV_INDEX, event.getAttributes().get(ATTR_TERMINAL_EMV).toString());
+        values.set(ATTR_TRANSACTION_RESPONSE_INDEX, event.getAttributes().get(ATTR_TRANSACTION_RESPONSE).toString());
+        values.set(ATTR_CARD_AUTH_INDEX, event.getAttributes().get(ATTR_CARD_AUTH).toString());
+        values.set(ATTR_TERMINAL_AUTH_INDEX, event.getAttributes().get(ATTR_TERMINAL_AUTH).toString());
+        values.set(ATTR_CLIENT_AUTH_INDEX, event.getAttributes().get(ATTR_CLIENT_AUTH).toString());
+        values.set(ATTR_CARD_BRAND_INDEX, event.getAttributes().get(ATTR_CARD_BRAND).toString());
+        values.set(ATTR_CVV_VALIDATION_INDEX, event.getAttributes().get(ATTR_CVV_VALIDATION).toString());
+        values.set(ATTR_TMP_CARD_PAN_INDEX, event.getAttributes().get(ATTR_TMP_CARD_PAN).toString());
+        values.set(ATTR_TMP_CARD_EXP_DATE_INDEX, event.getAttributes().get(ATTR_TMP_CARD_EXP_DATE).toString());
+        values.set(ATTR_TRANSACTION_TYPE_INDEX, event.getAttributes().get(ATTR_TRANSACTION_TYPE).toString());
+        values.set(ATTR_AUTH_TYPE_INDEX, event.getAttributes().get(ATTR_AUTH_TYPE).toString());
+        values.set(ATTR_IS_FRAUD_INDEX, (Boolean)event.getAttributes().get(ATTR_IS_FRAUD)? "1" : "0");
+
+        
+        StringBuffer buf = new StringBuffer();
+    	for (String value: values) {
+			buf.append(value).append(',');
+		}
+    	buf.deleteCharAt(buf.length()-1);//delete trailing ','
+    	
+    	return buf.toString().getBytes();
+    }
 }

@@ -317,7 +317,7 @@
               "TransactionsCount": "Count",
               "is_cnp": "0",
               "transaction_ids": "ArrayConvert(Transaction.transaction_id)",
-              "timestamps":"ArrayConvert(Transaction.OccurrenceTime)",
+              "timestamps":"ArrayConvert(Transaction.DetectionTime)",
               "acquirer_country":"ArrayConvert(Transaction.acquirer_country)",
               "card_country":"ArrayGet(Transaction.card_country,ArraySize(Transaction.card_country)-1)"
             }
@@ -360,7 +360,7 @@
               "card_pan": "context.CardNumberSegmentation",
               "card_country":"T1.card_country",
               "acquirer_country":"ArrayConvert(Split(Concat(Concat(T1.acquirer_country,\",\"),T2.acquirer_country),\",\"))",
-              "timestamps":"ArrayConvert(Split(Concat(Concat(T1.OccurrenceTime,\",\"),T2.OccurrenceTime),\",\"))",
+              "timestamps":"ArrayConvert(Split(Concat(Concat(T1.DetectionTime,\",\"),T2.DetectionTime),\",\"))",
               "transaction_ids":"ArrayConvert(Split(Concat(Concat(T1.transaction_id,\",\"),T2.transaction_id),\",\"))"
             }
           }
@@ -579,9 +579,6 @@
           }
         ],
         "events": [
-          {
-            "name": "Transaction"
-          },
           {
             "name": "SuddenCardUseNearExpirationDate"
           },
