@@ -32,18 +32,18 @@ public class TimedEventFileReader extends EventFileReader {
 					.forName("UTF-8")));
 			long timestamp = event.getTimestamp();
 
-			long delayMillis = prevTimestamp > 0 ? timestamp - prevTimestamp : 0;
+			long delayMicroseconds = prevTimestamp > 0 ? 1000 * (timestamp - prevTimestamp) : 0;
 
-			if (delayMillis >= 0) {
+			if (delayMicroseconds >= 0) {
 				prevTimestamp = timestamp;
 			} else {
-				delayMillis = 0;
+				delayMicroseconds = 0;
 				// leave prevTimestamp as its last value - either this
 				// is the 1st event, or the current event has earlier
 				// timestamp than the previous one
 			}
 
-			return new EventMessageRecord(line, delayMillis);
+			return new EventMessageRecord(line, delayMicroseconds);
 		} else {
 			return null;
 		}

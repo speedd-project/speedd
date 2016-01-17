@@ -41,12 +41,24 @@ public class EventPlayer {
 	
 	private int reps;
 	
+	private int rate;
+	
 	private static final Logger log = LoggerFactory.getLogger(EventPlayer.class);
 
 	public void playEventsFromFile(String path) throws Exception {
-		EventFileReader eventFileReader = stressModeOn? 
-				new BufferedEventFileReader(path, topic, kafkaProducerProperties, 0, reps) : 
-				new TimedEventFileReader(path, topic, kafkaProducerProperties, eventParser);
+		EventFileReader eventFileReader = null;
+	
+		if(stressModeOn){
+			long delayMicroseconds = 0;
+			
+			if(rate > 0){
+				delayMicroseconds = 1000000 / rate;
+			}
+			
+			eventFileReader = new BufferedEventFileReader(path, topic, kafkaProducerProperties, delayMicroseconds, reps);
+		} else { 
+			eventFileReader = new TimedEventFileReader(path, topic, kafkaProducerProperties, eventParser);
+		}
 
 		eventFileReader.streamEvents();
 
@@ -55,29 +67,10 @@ public class EventPlayer {
 		log.info(String.format("Event playback complete: total events = %d, sent = %d, failed = %d", stats.getNumOfAttempts(), stats.getNumOfSent(), stats.getNumOfFailed()));
 		log.info(String.format("Elapsed time: %d ms", stats.getElapsedTimeMilliseconds()));
 
-//		boolean done = false;
-//		int repsToGo = repModeOn? reps : 0;
-//		
-//		while(!done){
-//			eventFileReader.streamEvents();
-//
-//			Statistics stats = eventFileReader.getStatistics();
-//			
-//			log.info(String.format("Event playback complete: total events = %d, sent = %d, failed = %d", stats.getNumOfAttempts(), stats.getNumOfSent(), stats.getNumOfFailed()));
-//			log.info(String.format("Elapsed time: %d ms", stats.getElapsedTimeMilliseconds()));
-//
-//			if(!repModeOn){
-//				done = true;
-//			} else if (!endless){
-//				repsToGo--;
-//				done = repsToGo == 0;
-//			}
-//		}
-		
 	}
 
 	
-	public EventPlayer(String configPath, String topic, EventParser eventParser, boolean isStressMode, boolean isRepMode, int reps)
+	public EventPlayer(String configPath, String topic, EventParser eventParser, boolean isStressMode, boolean isRepMode, int reps, int rate)
 			throws IOException {
 		kafkaProducerProperties = new Properties();
 		kafkaProducerProperties.load(new FileReader(configPath));
@@ -97,6 +90,8 @@ public class EventPlayer {
 			this.endless = reps == 0;
 		}
 		
+		this.rate = rate;
+		
 	}
 	
 	public static void main(String[] args) throws Exception {
@@ -107,6 +102,7 @@ public class EventPlayer {
 		options.addOption("p", "parser", true, "event parser class name (FQN)");
 		options.addOption("s", "stress", false, "run in stress test mode - no pauses between events");
 		options.addOption("r", "repeat", true, "repeat (n times), 0 = endless loop");
+		options.addOption("a", "rate", true, "rate (events/sec");
 
 		CommandLineParser clParser = new DefaultParser();
 
@@ -123,6 +119,8 @@ public class EventPlayer {
 		int reps = 0;
 		
 		boolean repModeOn = false;
+		
+		int eventRate = 0;
 
 		try {
 			CommandLine cmd = clParser.parse(options, args);
@@ -148,6 +146,10 @@ public class EventPlayer {
 				} else {
 					throw new ParseException("Event parser class name missing");
 				}
+			}
+			
+			if(cmd.hasOption("a")){
+				eventRate = Integer.parseInt(cmd.getOptionValue("a"));
 			}
 
 			@SuppressWarnings("unchecked")
@@ -176,10 +178,10 @@ public class EventPlayer {
 		if(eventParserClassName != null){
 			Constructor<? extends EventParser> constructor = (Constructor<? extends EventParser>) Class.forName(eventParserClassName).getDeclaredConstructor(EventFactory.class);
 			player = new EventPlayer(configPath, topic,
-				(EventParser) constructor.newInstance(SpeeddEventFactory.getInstance()), stressModeOn, repModeOn, reps);
+				(EventParser) constructor.newInstance(SpeeddEventFactory.getInstance()), stressModeOn, repModeOn, reps, eventRate);
 		} else {
 			player = new EventPlayer(configPath, topic,
-					null, stressModeOn, repModeOn, reps);
+					null, stressModeOn, repModeOn, reps, eventRate);
 		}
 		player.playEventsFromFile(eventFile);
 		

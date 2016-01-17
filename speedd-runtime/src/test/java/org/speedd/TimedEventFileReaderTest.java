@@ -79,7 +79,7 @@ public class TimedEventFileReaderTest {
 		
 		@Override
 		public void onEvent(EventMessageRecord eventMessageRecord) {
-			actualDelays[i++] = eventMessageRecord.sendDelayMillis;
+			actualDelays[i++] = eventMessageRecord.sendDelayMicroseconds;
 		}
 		
 		public void verifyDelays(){
@@ -118,7 +118,7 @@ public class TimedEventFileReaderTest {
 		
 		TimedEventListener eventListener = new TimedEventListener();
 		
-		eventListener.setExpectedDelays(new long[] {0,2000,0,1000,2000,5000,2000,1000,0,0});
+		eventListener.setExpectedDelays(new long[] {0,2000000,0,1000000,2000000,5000000,2000000,1000000,0,0});
 		
 		eventFileReader.addListener(eventListener);
 

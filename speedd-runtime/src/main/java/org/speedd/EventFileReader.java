@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
 import org.apache.kafka.clients.producer.Callback;
@@ -20,11 +21,11 @@ public class EventFileReader {
 	
 	protected static class EventMessageRecord {
 		public final String messageText;
-		public final long sendDelayMillis;
+		public final long sendDelayMicroseconds;
 
 		public EventMessageRecord(String msg, long delay) {
 			messageText = msg;
-			sendDelayMillis = delay;
+			sendDelayMicroseconds = delay;
 		}
 	}
 
@@ -113,7 +114,7 @@ public class EventFileReader {
 	protected String topic;
 	protected Logger logger;
 
-	protected long delayMillis;
+	protected long delayMicroseconds;
 	
 	protected List<EventListener> listeners;
 	
@@ -131,7 +132,7 @@ public class EventFileReader {
 	}
 
 	public EventFileReader(String filePath, String topic,
-			Properties kafkaProducerProperties, long sendDelayMillis) {
+			Properties kafkaProducerProperties, long sendDelayMicroseconds) {
 		
 		logger = LoggerFactory.getLogger(this.getClass());
 		
@@ -141,7 +142,7 @@ public class EventFileReader {
 		
 		this.topic = topic;
 		
-		delayMillis = sendDelayMillis;
+		delayMicroseconds = sendDelayMicroseconds;
 		
 		listeners = new ArrayList<EventListener>();
 		
@@ -183,7 +184,7 @@ public class EventFileReader {
 
 	protected EventMessageRecord nextEventMessageRecord() throws IOException {
 		String line = reader.readLine();
-		return line != null ? new EventMessageRecord(line, delayMillis) : null;
+		return line != null ? new EventMessageRecord(line, delayMicroseconds) : null;
 	}
 
 	private void doStreamEvents(){
@@ -193,7 +194,7 @@ public class EventFileReader {
 			try {
 				EventMessageRecord eventMessageRecord = nextEventMessageRecord();
 				if (eventMessageRecord != null) {
-					Thread.sleep(eventMessageRecord.sendDelayMillis);
+					TimeUnit.MICROSECONDS.sleep(eventMessageRecord.sendDelayMicroseconds);
 
 					logger.debug(String.format("Line to send to topic %s: %s",
 							topic, eventMessageRecord.messageText));

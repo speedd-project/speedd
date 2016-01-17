@@ -580,6 +580,10 @@
         ],
         "events": [
           {
+            "name": "Transaction"
+          },
+        
+          {
             "name": "SuddenCardUseNearExpirationDate"
           },
           {

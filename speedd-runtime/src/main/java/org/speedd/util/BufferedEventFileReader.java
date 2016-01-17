@@ -92,7 +92,7 @@ public class BufferedEventFileReader extends EventFileReader {
 			repCount++;
 		}
 		
-		return repCount < reps? new EventMessageRecord(buffer.get(cursor), delayMillis) : null;
+		return repCount < reps? new EventMessageRecord(buffer.get(cursor), delayMicroseconds) : null;
 	}
 
 }
