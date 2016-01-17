@@ -1,0 +1,8 @@
+#!/bin/bash
+source ../setup-env-mesos
+
+PROPS=speedd-fraud-mesos.properties
+
+MODE=remote
+
+$STORM_CMD jar $SPEEDD_RUNTIME_LIB/speedd-runtime-0.0.1-SNAPSHOT-jar-with-dependencies.jar org.speedd.SpeeddTopology -f $PROPS -m $MODE &
