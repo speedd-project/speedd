@@ -66,7 +66,7 @@ public class EventPlayer {
 		
 		log.info(String.format("Event playback complete: total events = %d, sent = %d, failed = %d", stats.getNumOfAttempts(), stats.getNumOfSent(), stats.getNumOfFailed()));
 		log.info(String.format("Elapsed time: %d ms", stats.getElapsedTimeMilliseconds()));
-		log.info(String.format("Start timestamp: %d\nEnd timestamp: %d\n"));
+		log.info(String.format("Start timestamp: %d\nEnd timestamp: %d\n", stats.getStartTimestamp(), stats.getEndTimestamp()));
 
 	}
 
