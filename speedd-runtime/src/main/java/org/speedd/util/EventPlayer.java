@@ -6,9 +6,9 @@ import java.lang.reflect.Constructor;
 import java.util.List;
 import java.util.Properties;
 
-import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
+import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
@@ -61,11 +61,12 @@ public class EventPlayer {
 		}
 
 		eventFileReader.streamEvents();
-
+		
 		Statistics stats = eventFileReader.getStatistics();
 		
 		log.info(String.format("Event playback complete: total events = %d, sent = %d, failed = %d", stats.getNumOfAttempts(), stats.getNumOfSent(), stats.getNumOfFailed()));
 		log.info(String.format("Elapsed time: %d ms", stats.getElapsedTimeMilliseconds()));
+		log.info(String.format("Start timestamp: %d\nEnd timestamp: %d\n"));
 
 	}
 
