@@ -4,8 +4,13 @@ var Converter=require("csvtojson").core.Converter;
 var http = require('http');
 var path = require('path');
 var kafka = require('kafka-node');
+var argv = require('minimist')(process.argv.slice(2));
 var io;
 var Consumer, client, consumer, Producer, producer;
+
+var zk = argv.zk? argv.zk.toString() : 'localhost:2181/';
+
+console.log("\nzookeeper url is set to: "+zk+"\n\n");
 
 var outputFile;
 
@@ -76,7 +81,7 @@ function setKafka(){
 	console.log("Setting up Kafka clients");
 	
 	Consumer = kafka.Consumer;
-	client = new kafka.Client('localhost:2181/');
+	client = new kafka.Client(zk);
 	consumer = new Consumer(
 		client, 
 		// payloads
