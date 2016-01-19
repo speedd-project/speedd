@@ -8,9 +8,12 @@ var argv = require('minimist')(process.argv.slice(2));
 var io;
 var Consumer, client, consumer, Producer, producer;
 
-var zk = argv.zk? argv.zk.toString() : 'localhost:2181/';
+var zk = argv.zk? "localhost:"+argv.zk.toString()+"/" : 'localhost:2181/';
+var uiport = argv.ui? argv.ui : 3000;
 
-console.log("\nzookeeper url is set to: "+zk+"\n\n");
+console.log("\nzookeeper url is set to: "+zk);
+console.log("ui port is set to: "+uiport+"\n\n");
+
 
 var outputFile;
 
@@ -29,7 +32,7 @@ fileStream.pipe(csvConverter);
 
 
 var app = express();
-app.set('port', 3000);
+app.set('port', uiport);
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.json());
 
