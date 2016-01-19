@@ -1,5 +1,5 @@
 #!/bin/bash
-source ../setup-env
+source ../setup-env-mesos
 
 # A POSIX variable
 OPTIND=1         # Reset in case getopts has been used previously in the shell.
@@ -32,5 +32,5 @@ CLASSPATH=$SPEEDD_RUNTIME_LIB/speedd-runtime-0.0.1-SNAPSHOT-jar-with-dependencie
 
 echo "Running stress test with target rate $rate events/sec using events from $in_event_file"
 
-java -cp $CLASSPATH org.speedd.util.EventPlayer -c ../producer-docker.properties -t speedd-fraud-in-events -p org.speedd.fraud.FraudAggregatedReadingCsv2Event -s -r 1 -a $rate $in_event_file
+java -cp $CLASSPATH org.speedd.util.EventPlayer -c ../producer-mesos.properties -t speedd-fraud-in-events -p org.speedd.fraud.FraudAggregatedReadingCsv2Event -s -r 1 -a $rate $in_event_file
 
