@@ -5,9 +5,10 @@
     "start": "node app.js"
   },
   "dependencies": {
+    "csvtojson": "0.3.18",
     "express": "3.4.8",
     "kafka-node": "0.2.7",
-    "socket.io" : "1.2.1",
-	"csvtojson": "0.3.18"
+    "minimist": "^1.2.0",
+    "socket.io": "1.2.1"
   }
 }
