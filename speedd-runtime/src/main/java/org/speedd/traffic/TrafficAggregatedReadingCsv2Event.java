@@ -11,33 +11,33 @@ import org.speedd.data.Event;
 import org.speedd.data.EventFactory;
 
 public class TrafficAggregatedReadingCsv2Event implements EventParser, Constants {
-	private static final String ATTR_LOCATION = "location";
-	private static final String ATTR_LANE = "lane";
-	private static final String ATTR_SPEED_HISTOGRAM = "speed_histogram";
-	private static final String ATTR_OCCUPANCY = "occupancy";
-	private static final String ATTR_VEHICLES = "vehicles";
-	private static final String ATTR_LENGTH_HISTOGRAM = "length_histogram";
-	private static final String ATTR_TIMESTAMP = "timestamp";
-	private static final String ATTR_AVG_SPEED = "average_speed";
-	private static final String ATTR_MEDIAN_SPEED = "median_speed";
+	public static final String ATTR_LOCATION = "location";
+	public static final String ATTR_LANE = "lane";
+	public static final String ATTR_SPEED_HISTOGRAM = "speed_histogram";
+	public static final String ATTR_OCCUPANCY = "occupancy";
+	public static final String ATTR_VEHICLES = "vehicles";
+	public static final String ATTR_LENGTH_HISTOGRAM = "length_histogram";
+	public static final String ATTR_TIMESTAMP = "timestamp";
+	public static final String ATTR_AVG_SPEED = "average_speed";
+	public static final String ATTR_MEDIAN_SPEED = "median_speed";
 
 	
-	private static final int ATTR_DATE_INDEX = 0;
-	private static final int ATTR_TIME_INDEX = 1;
-	private static final int ATTR_LOCATION_INDEX = 2;
-	private static final int ATTR_LANE_INDEX = 3;
-	private static final int ATTR_OCCUPANCY_INDEX = 4;
-	private static final int ATTR_VEHICLES_INDEX = 5;
-	private static final int ATTR_MEDIAN_SPEED_INDEX = 6;
-	private static final int ATTR_AVG_SPEED_INDEX = 7;
-	private static final int ATTR_SPEED_INDEX = 8;
-	private static final int ATTR_LENGTH_INDEX = 28;
+	public static final int ATTR_DATE_INDEX = 0;
+	public static final int ATTR_TIME_INDEX = 1;
+	public static final int ATTR_LOCATION_INDEX = 2;
+	public static final int ATTR_LANE_INDEX = 3;
+	public static final int ATTR_OCCUPANCY_INDEX = 4;
+	public static final int ATTR_VEHICLES_INDEX = 5;
+	public static final int ATTR_MEDIAN_SPEED_INDEX = 6;
+	public static final int ATTR_AVG_SPEED_INDEX = 7;
+	public static final int ATTR_SPEED_INDEX = 8;
+	public static final int ATTR_LENGTH_INDEX = 28;
 	
-	private static final int SPEED_HISTOGRAM_BINCOUNT = 20;
-	private static final int LENGTH_HISTOGRAM_BINCOUNT = 100;
+	public static final int SPEED_HISTOGRAM_BINCOUNT = 20;
+	public static final int LENGTH_HISTOGRAM_BINCOUNT = 100;
 	
 	//total expected number of fields in a csv line. Assuming here that the length histogram is the ending part of csv
-	private static final int NUM_FIELDS = ATTR_LENGTH_INDEX + SPEED_HISTOGRAM_BINCOUNT + LENGTH_HISTOGRAM_BINCOUNT;
+	public static final int NUM_FIELDS = ATTR_LENGTH_INDEX + SPEED_HISTOGRAM_BINCOUNT + LENGTH_HISTOGRAM_BINCOUNT;
 	
 	private EventFactory eventFactory;
 
