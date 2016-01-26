@@ -15,7 +15,7 @@ public class TestCreditCardFraudManagement extends BaseSpeeddIntegrationTest {
 						SpeeddEventFactory.getInstance()));
 
 		streamEventsAndVerifyResults("speedd-fraud.properties", "CC Fraud",
-				eventReader, new String[] { "FraudAtATM" });
+				eventReader, new String[] { "Transaction", "SuddenCardUseNearExpirationDate" });
 	}
 	
 	@Override

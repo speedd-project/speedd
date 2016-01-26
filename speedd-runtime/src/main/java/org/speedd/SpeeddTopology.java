@@ -30,7 +30,7 @@ import backtype.storm.StormSubmitter;
 import backtype.storm.generated.StormTopology;
 import backtype.storm.spout.Scheme;
 import backtype.storm.spout.SchemeAsMultiScheme;
-import backtype.storm.topology.IRichBolt;
+import backtype.storm.topology.IBasicBolt;
 import backtype.storm.topology.TopologyBuilder;
 import backtype.storm.topology.base.BaseRichSpout;
 
@@ -130,7 +130,7 @@ public class SpeeddTopology {
 		builder.setSpout(ADMIN_COMMAND_READER, adminSpout)
 				.setMaxTaskParallelism(1);
 
-		IRichBolt dmBolt = createDecisionMakerBolt(speeddConfig.dmClass);
+		IBasicBolt dmBolt = createDecisionMakerBolt(speeddConfig.dmClass);
 		// @FIXME distribute output events according to the use-case specific
 		// grouping strategy
 		builder.setBolt(DECISION_MAKER, dmBolt)
@@ -147,10 +147,10 @@ public class SpeeddTopology {
 		return builder.createTopology();
 	}
 
-	public IRichBolt createDecisionMakerBolt(String dmBoltClassName) {
+	public IBasicBolt createDecisionMakerBolt(String dmBoltClassName) {
 		try {
 			@SuppressWarnings("unchecked")
-			Class<? extends IRichBolt> clazz = (Class<IRichBolt>) SpeeddTopology.class
+			Class<? extends IBasicBolt> clazz = (Class<IBasicBolt>) SpeeddTopology.class
 					.getClassLoader().loadClass(dmBoltClassName);
 			return clazz.newInstance();
 		} catch (Exception e) {
