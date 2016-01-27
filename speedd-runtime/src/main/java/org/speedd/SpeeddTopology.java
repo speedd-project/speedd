@@ -32,6 +32,7 @@ import backtype.storm.spout.Scheme;
 import backtype.storm.spout.SchemeAsMultiScheme;
 import backtype.storm.topology.IRichBolt;
 import backtype.storm.topology.TopologyBuilder;
+import backtype.storm.topology.base.BaseRichBolt;
 import backtype.storm.topology.base.BaseRichSpout;
 
 import com.ibm.hrl.proton.ProtonTopologyBuilder;
@@ -58,6 +59,8 @@ public class SpeeddTopology {
 	private static final String CEP_EVENT_CONSUMER = "cep-event-consumer";
 
 	private static final String DECISION_MAKER = "dm";
+	
+	private static final String ENRICHER = "enricher";
 
 	private static final String DECISION_WRITER = "decision-writer";
 
@@ -106,18 +109,27 @@ public class SpeeddTopology {
 		BaseRichSpout adminSpout = createKafkaReaderSpout(
 				AdminCommandScheme.class.getName(), speeddConfig.topicAdmin,
 				ADMIN_COMMAND_READER);
+		
+		builder.setSpout(IN_EVENT_READER, trafficReaderSpout);
 
 		KafkaBolt<String, Event> eventWriterBolt = new KafkaBolt<String, Event>().withTopicSelector(
 				new DefaultTopicSelector(speeddConfig.topicOutEvents))
 				.withTupleToKafkaMapper(
 						new FieldNameBasedTupleToKafkaMapper());
+		
+		BaseRichBolt enricherBolt = createEnrichmentBolt(speeddConfig.enricherClass, speeddConfig.enricherPath);
+		// @FIXME distribute output events according to the use-case specific
+		// grouping strategy
+		builder.setBolt(ENRICHER, enricherBolt)
+				.shuffleGrouping(IN_EVENT_READER);
 
 		ProtonOutputConsumerBolt protonOutputConsumerBolt = new ProtonOutputConsumerBolt();
 
 		ProtonTopologyBuilder protonTopologyBuilder = new ProtonTopologyBuilder();
 
 		try {
-			protonTopologyBuilder.buildProtonTopology(builder, trafficReaderSpout,
+			
+			protonTopologyBuilder.buildProtonTopology(builder, ENRICHER,
 					protonOutputConsumerBolt, CEP_EVENT_CONSUMER,
 					speeddConfig.epnPath);
 		} catch (ParsingException e) {
@@ -155,6 +167,21 @@ public class SpeeddTopology {
 			return clazz.newInstance();
 		} catch (Exception e) {
 			throw new RuntimeException("Creating a decision maker bolt failed", e);
+		}
+
+	}
+	
+	public BaseRichBolt createEnrichmentBolt(String enrichmentBoltClassName, String enrichmentTablePath) {		
+		
+		try {
+			@SuppressWarnings("unchecked")						
+			Class<? extends BaseRichBolt> clazz = (Class<BaseRichBolt>) SpeeddTopology.class
+					.getClassLoader().loadClass(enrichmentBoltClassName);			
+			
+			return clazz.getDeclaredConstructor(String.class).newInstance(enrichmentTablePath);
+			
+		} catch (Exception e) {
+			throw new RuntimeException("Creating an enrichment bolt failed: "+e.getMessage(), e);
 		}
 
 	}
@@ -221,6 +248,10 @@ public class SpeeddTopology {
 				.getProperty("zookeeper.connect");
 		configuration.epnPath = (String) properties
 				.getProperty("proton.epnPath");
+		configuration.enricherPath = (String) properties
+				.getProperty("speedd.enricherPath");
+		configuration.enricherClass = (String) properties
+				.getProperty("speedd.enricherClass");
 		configuration.inEventScheme = (String) properties
 				.getProperty("speedd.inEventScheme");
 

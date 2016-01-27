@@ -1,6 +1,7 @@
 package org.speedd.cep;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -11,7 +12,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.fest.util.Files;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.speedd.data.Event;
 import org.speedd.kafka.JsonEventDecoder;
@@ -40,6 +40,8 @@ public class TrafficCEPTopologyTest implements Serializable {
 		Scheme eventScheme = new TrafficAggregatedReadingScheme();
 		
 		FileReaderSpout fileReaderSpout = new FileReaderSpout(inEventsFile, eventScheme);
+		builder.setSpout("inputSpout",fileReaderSpout);
+		
 
 		ProtonTopologyBuilder protonTopologyBuilder = new ProtonTopologyBuilder();
 
@@ -47,7 +49,7 @@ public class TrafficCEPTopologyTest implements Serializable {
 				.getResource("cnrsUnitTest.json").getPath();
 
 		try {
-			protonTopologyBuilder.buildProtonTopology(builder, fileReaderSpout,
+			protonTopologyBuilder.buildProtonTopology(builder, "inputSpout",
 					eventConsumer, "event-consumer", epnPath);
 		} catch (ParsingException e) {
 			// TODO Auto-generated catch block
