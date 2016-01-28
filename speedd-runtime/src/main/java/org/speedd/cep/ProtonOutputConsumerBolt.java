@@ -1,6 +1,5 @@
 package org.speedd.cep;
 
-import java.util.HashMap;
 import java.util.Map;
 
 import org.slf4j.Logger;
@@ -9,11 +8,6 @@ import org.speedd.data.Event;
 import org.speedd.data.EventFactory;
 import org.speedd.data.impl.SpeeddEventFactory;
 
-import com.ibm.hrl.proton.metadata.event.EventHeader;
-
-
-import com.ibm.hrl.proton.routing.STORMMetadataFacade;
-
 import backtype.storm.task.OutputCollector;
 import backtype.storm.task.TopologyContext;
 import backtype.storm.topology.OutputFieldsDeclarer;
@@ -21,6 +15,9 @@ import backtype.storm.topology.base.BaseRichBolt;
 import backtype.storm.tuple.Fields;
 import backtype.storm.tuple.Tuple;
 import backtype.storm.tuple.Values;
+
+import com.ibm.hrl.proton.metadata.event.EventHeader;
+import com.ibm.hrl.proton.routing.STORMMetadataFacade;
 
 public class ProtonOutputConsumerBolt extends BaseRichBolt implements org.speedd.Fields {
 	private static final long serialVersionUID = 1L;
@@ -55,6 +52,7 @@ public class ProtonOutputConsumerBolt extends BaseRichBolt implements org.speedd
 		
 		//FIXME use meaningful value for the 'key' field. It'll be used by kafka for partitioning
 		collector.emit(new Values("1", outEvent));
+		collector.ack(input);
 	}
 
 	@Override

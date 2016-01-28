@@ -1,6 +1,8 @@
 package org.speedd.dm;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -13,20 +15,19 @@ import org.junit.Test;
 import org.speedd.data.Event;
 import org.speedd.data.impl.SpeeddEventFactory;
 
-import backtype.storm.event__init;
-import backtype.storm.task.IOutputCollector;
 import backtype.storm.task.OutputCollector;
+import backtype.storm.topology.BasicOutputCollector;
 import backtype.storm.tuple.Tuple;
 import backtype.storm.tuple.Values;
 
 public class TestTrafficDecisionMakerBolt {
 	
-	public class TestCollector extends OutputCollector {
+	public class TestCollector extends BasicOutputCollector {
 
 		public List<Object> tuple;
 		
-		public TestCollector(IOutputCollector delegate) {
-			super(delegate);
+		public TestCollector(OutputCollector collector) {
+			super(collector);
 		}
 		
 		@Override
@@ -51,7 +52,6 @@ public class TestTrafficDecisionMakerBolt {
 		
 		TestCollector collector = new TestCollector(null);
 		
-		dmBolt.prepare(null, null, collector);
 		
 		// Play events
 		Random rand = new Random(); 
@@ -60,9 +60,9 @@ public class TestTrafficDecisionMakerBolt {
 		double flow = 400;
 		double density = 44 + 40*rand.nextDouble(); // random density 44<=density<=84, critical_density = 64
 		density = 64;
-		dmBolt.execute(mockTuple(new Values("1", createCongestion("0024a4dc00003354")))); // activate ramp metering
-		dmBolt.execute(mockTuple(new Values("1", createOnRampFlow("0024a4dc00003354",flow))));
-		dmBolt.execute(mockTuple(new Values("1", createDensity("0024a4dc00003354",density))));
+		dmBolt.execute(mockTuple(new Values("1", createCongestion("0024a4dc00003354"))), collector); // activate ramp metering
+		dmBolt.execute(mockTuple(new Values("1", createOnRampFlow("0024a4dc00003354",flow))), collector);
+		dmBolt.execute(mockTuple(new Values("1", createDensity("0024a4dc00003354",density))), collector);
 		List<Object> outTuple = collector.tuple;
 		assertNotNull(outTuple);
 		Event actionEvent = (Event)outTuple.get(1);
@@ -74,9 +74,9 @@ public class TestTrafficDecisionMakerBolt {
 		// (b) upper limit
 		density = 50*rand.nextDouble(); // random density < critical density
 		double upperLimit = 380 - 100*rand.nextDouble(); // random flow < onramp flow
-		dmBolt.execute(mockTuple(new Values("1", createOnRampFlow("0024a4dc00003354",400))));
-		dmBolt.execute(mockTuple(new Values("1", createLimits("0024a4dc00003354", -1, upperLimit))));
-		dmBolt.execute(mockTuple(new Values("1", createDensity("0024a4dc00003354",(int) density)))); // low density, upper limit will be active
+		dmBolt.execute(mockTuple(new Values("1", createOnRampFlow("0024a4dc00003354",400))), collector);
+		dmBolt.execute(mockTuple(new Values("1", createLimits("0024a4dc00003354", -1, upperLimit))), collector);
+		dmBolt.execute(mockTuple(new Values("1", createDensity("0024a4dc00003354",(int) density))), collector); // low density, upper limit will be active
 		outTuple = collector.tuple;
 		assertNotNull(outTuple);
 		actionEvent = (Event)outTuple.get(1);
@@ -84,15 +84,15 @@ public class TestTrafficDecisionMakerBolt {
 		
 		// (c) nonsensical identifier "location"
 		collector.tuple = null;
-		dmBolt.execute(mockTuple(new Values("1", createOnRampFlow("abcde",300) )));
-		dmBolt.execute(mockTuple(new Values("1", createCongestion("abcde") )));
+		dmBolt.execute(mockTuple(new Values("1", createOnRampFlow("abcde",300) )), collector);
+		dmBolt.execute(mockTuple(new Values("1", createCongestion("abcde") )), collector);
 		outTuple = collector.tuple;
 		assertNull(outTuple);
 		
 		// (d) lower limit
-		dmBolt.execute(mockTuple(new Values("1", createOnRampFlow("0024a4dc00003354",400))));
-		dmBolt.execute(mockTuple(new Values("1", createLimits("0024a4dc00003354", 200, -1))));
-		dmBolt.execute(mockTuple(new Values("1", createDensity("0024a4dc00003354",200)))); // high density, lower limit will be ative
+		dmBolt.execute(mockTuple(new Values("1", createOnRampFlow("0024a4dc00003354",400))), collector);
+		dmBolt.execute(mockTuple(new Values("1", createLimits("0024a4dc00003354", 200, -1))), collector);
+		dmBolt.execute(mockTuple(new Values("1", createDensity("0024a4dc00003354",200))), collector); // high density, lower limit will be ative
 		outTuple = collector.tuple;
 		assertNotNull(outTuple);
 		actionEvent = (Event)outTuple.get(1);
@@ -100,8 +100,8 @@ public class TestTrafficDecisionMakerBolt {
 		
 		// (e) exact critical density
 		flow = (int) (200 + 80 * rand.nextDouble()); // onramp flow within limits: 200 <= flow <= 280
-		dmBolt.execute(mockTuple(new Values("1", createOnRampFlow("0024a4dc00003354",flow))));
-		dmBolt.execute(mockTuple(new Values("1", createDensity("0024a4dc00003354", 64))));
+		dmBolt.execute(mockTuple(new Values("1", createOnRampFlow("0024a4dc00003354",flow))), collector);
+		dmBolt.execute(mockTuple(new Values("1", createDensity("0024a4dc00003354", 64))), collector);
 		outTuple = collector.tuple;
 		assertNotNull(outTuple);
 		actionEvent = (Event)outTuple.get(1);
@@ -109,14 +109,14 @@ public class TestTrafficDecisionMakerBolt {
 		
 		// (f) missing flow measurement
 		collector.tuple = null;
-		dmBolt.execute(mockTuple(new Values("1", createDensity("0024a4dc00003354", 0)))); // low density, but no recent flow measurement
+		dmBolt.execute(mockTuple(new Values("1", createDensity("0024a4dc00003354", 0))), collector); // low density, but no recent flow measurement
 		outTuple = collector.tuple;
 		assertNull(outTuple);
 		
 		// (g) remove lower limit
-		dmBolt.execute(mockTuple(new Values("1", createLimits("0024a4dc00003354", -1, -1) )));
-		dmBolt.execute(mockTuple(new Values("1", createOnRampFlow("0024a4dc00003354",300) )));
-		dmBolt.execute(mockTuple(new Values("1", createDensity("0024a4dc00003354",188))));
+		dmBolt.execute(mockTuple(new Values("1", createLimits("0024a4dc00003354", -1, -1) )), collector);
+		dmBolt.execute(mockTuple(new Values("1", createOnRampFlow("0024a4dc00003354",300) )), collector);
+		dmBolt.execute(mockTuple(new Values("1", createDensity("0024a4dc00003354",188))), collector);
 		outTuple = collector.tuple;
 		assertNotNull(outTuple);
 		actionEvent = (Event)outTuple.get(1);
@@ -124,16 +124,16 @@ public class TestTrafficDecisionMakerBolt {
 		
 		// (h) disable ramp metering
 		collector.tuple = null;
-		dmBolt.execute(mockTuple(new Values("1", clearCongestion("0024a4dc00003354"))));
-		dmBolt.execute(mockTuple(new Values("1", createOnRampFlow("0024a4dc00003354",300) )));
-		dmBolt.execute(mockTuple(new Values("1", createDensity("0024a4dc00003354",77))));
+		dmBolt.execute(mockTuple(new Values("1", clearCongestion("0024a4dc00003354"))), collector);
+		dmBolt.execute(mockTuple(new Values("1", createOnRampFlow("0024a4dc00003354",300) )), collector);
+		dmBolt.execute(mockTuple(new Values("1", createDensity("0024a4dc00003354",77))), collector);
 		outTuple = collector.tuple;
 		assertNull(outTuple);
 		
 		// (i) Reactivate ramp metering: old limits should still be in place
-		dmBolt.execute(mockTuple(new Values("1", createCongestion("0024a4dc00003354"))));
-		dmBolt.execute(mockTuple(new Values("1", createOnRampFlow("0024a4dc00003354",300) )));
-		dmBolt.execute(mockTuple(new Values("1", createDensity("0024a4dc00003354",188))));
+		dmBolt.execute(mockTuple(new Values("1", createCongestion("0024a4dc00003354"))), collector);
+		dmBolt.execute(mockTuple(new Values("1", createOnRampFlow("0024a4dc00003354",300) )), collector);
+		dmBolt.execute(mockTuple(new Values("1", createDensity("0024a4dc00003354",188))), collector);
 		outTuple = collector.tuple;
 		assertNotNull(outTuple);
 		actionEvent = (Event)outTuple.get(1);

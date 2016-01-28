@@ -9,10 +9,9 @@ import org.speedd.data.Event;
 import org.speedd.data.EventFactory;
 import org.speedd.data.impl.SpeeddEventFactory;
 
-import backtype.storm.task.OutputCollector;
-import backtype.storm.task.TopologyContext;
+import backtype.storm.topology.BasicOutputCollector;
 import backtype.storm.topology.OutputFieldsDeclarer;
-import backtype.storm.topology.base.BaseRichBolt;
+import backtype.storm.topology.base.BaseBasicBolt;
 import backtype.storm.tuple.Fields;
 import backtype.storm.tuple.Tuple;
 import backtype.storm.tuple.Values;
@@ -45,24 +44,16 @@ class onrampStruct {
  * @author mschmitt, kofman
  *
  */
-public class TrafficDecisionMakerBolt extends BaseRichBolt {
+public class TrafficDecisionMakerBolt extends BaseBasicBolt {
 	private static final long serialVersionUID = 1L;
 	
-	private OutputCollector collector;
 	private static final EventFactory eventFactory = SpeeddEventFactory.getInstance();
 	Logger logger = LoggerFactory.getLogger(TrafficDecisionMakerBolt.class);
 	
 	Map<String, onrampStruct> onrampData = new HashMap<String, onrampStruct>();
 
-	@SuppressWarnings("rawtypes")
 	@Override
-	public void prepare(Map stormConf, TopologyContext context,
-			OutputCollector collector) {
-		this.collector = collector;
-	}
-
-	@Override
-	public void execute(Tuple input) {
+	public void execute(Tuple input, BasicOutputCollector collector) {
 		Event event = (Event)input.getValueByField("message");
 		
 		// read event
@@ -146,7 +137,6 @@ public class TrafficDecisionMakerBolt extends BaseRichBolt {
 			logger.warn("location is null for tuple " + input);
 			// Discard event and do nothing. Could throw an exception, report an error etc.
 		}
-				
 	}
 
 	private Double computeNewRate(onrampStruct data, double density, String location) {	
