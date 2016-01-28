@@ -36,3 +36,9 @@ then
 else
 	JAVA_CMD=$JAVA_HOME/bin/java;
 fi
+
+if [ -z ${KAFKA_MESOS_HOME+x} ];
+then
+	KAFKA_MESOS_HOME=~/kafka;
+fi
+

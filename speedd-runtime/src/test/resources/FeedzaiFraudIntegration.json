@@ -44,7 +44,13 @@
           },
           {
             "name": "terminal_id",
-            "type": "Double",
+            "type": "String",
+            "dimension": 0
+          },
+           
+            {
+            "name": "transaction_id",
+            "type": "String",
             "dimension": 0
           },
           {
@@ -63,14 +69,97 @@
             "dimension": 0
           },
           {
+            "name": "card_country",
+            "type": "Integer",
+            "dimension": 0
+          },
+          {
             "name": "is_cnp",
+            "type": "Integer",
+            "dimension": 0
+          },
+          {
+            "name": "card_exp_date",
+            "type": "Date",
+            "dimension": 0
+          }
+        ]
+      },
+      {
+        "name": "SuddenCardUseNearExpirationDate",
+        "createdDate": "Tue Aug 05 2014",
+        "attributes": [
+          {
+            "name": "Certainty",
+            "type": "Double",
+            "defaultValue": "1",
+            "dimension": 0,
+            "description": "The certainty that this event happen (value between 0 to 1)"
+          },
+          {
+            "name": "OccurrenceTime",
+            "type": "Date",
+            "dimension": 0,
+            "description": "No value means it equals the event detection time, other option is to use one of the defined distribution functions with parameters"
+          },
+          {
+            "name": "ExpirationTime",
+            "type": "Date",
+            "dimension": 0,
+            "description": "Only till this time the cost and certainty parameters of the event are valid, and only till this time a proactive action is considered"
+          },
+          {
+            "name": "Cost",
+            "type": "Double",
+            "dimension": 0,
+            "description": "The cost of this event occurrence. Negative if this is an opportunity"
+          },
+          {
+            "name": "Duration",
+            "type": "Double",
+            "defaultValue": "0",
+            "dimension": 0,
+            "description": "Used in case the this event occur within an interval"
+          },
+          {
+            "name": "card_pan",
+            "type": "String",
+            "dimension": 0
+          },
+          {
+            "name": "TransactionsCount",
+            "type": "Integer",
+            "dimension": 0
+          },
+          {
+            "name": "is_cnp",
+            "type": "Integer",
+            "dimension": 0
+          },
+           {
+            "name": "transaction_ids",
+            "type": "String",
+            "dimension": 1
+          },
+          {
+            "name": "timestamps",
+            "type": "Long",
+            "dimension": 1
+          },
+           {
+            "name": "acquirer_country",
+            "type": "Integer",
+            "dimension": 1
+          },
+           {
+            "name": "card_country",
             "type": "Integer",
             "dimension": 0
           }
         ]
       },
       {
-        "name": "IncreasingAmounts",
+        "name": "TransactionsInFarAwayPlaces",
         "createdDate": "Tue Aug 05 2014",
         "attributes": [
           {
@@ -110,115 +199,29 @@
             "type": "String",
             "dimension": 0
           },
-          {
-            "name": "terminal_id",
-            "type": "Double",
-            "dimension": 0
-          },
-          {
-            "name": "TrendCount",
-            "type": "Double",
-            "dimension": 0
-          }
-        ]
-      },
-      {
-        "name": "IncreasingAmountsCardIndication",
-        "createdDate": "Tue Aug 05 2014",
-        "attributes": [
-          {
-            "name": "Certainty",
-            "type": "Double",
-            "defaultValue": "1",
-            "dimension": 0,
-            "description": "The certainty that this event happen (value between 0 to 1)"
-          },
-          {
-            "name": "OccurrenceTime",
-            "type": "Date",
-            "dimension": 0,
-            "description": "No value means it equals the event detection time, other option is to use one of the defined distribution functions with parameters"
-          },
-          {
-            "name": "ExpirationTime",
-            "type": "Date",
-            "dimension": 0,
-            "description": "Only till this time the cost and certainty parameters of the event are valid, and only till this time a proactive action is considered"
-          },
-          {
-            "name": "Cost",
-            "type": "Double",
-            "dimension": 0,
-            "description": "The cost of this event occurrence. Negative if this is an opportunity"
-          },
-          {
-            "name": "Duration",
-            "type": "Double",
-            "defaultValue": "0",
-            "dimension": 0,
-            "description": "Used in case the this event occur within an interval"
-          },
-          {
-            "name": "card_pan",
+           {
+            "name": "transaction_ids",
             "type": "String",
-            "dimension": 0
+            "dimension": 1
           },
-          {
-            "name": "terminal_id",
-            "type": "Double",
-            "dimension": 0
+           {
+            "name": "timestamps",
+            "type": "Long",
+            "dimension": 1
           },
-          {
-            "name": "TrendCount",
-            "type": "Double",
-            "dimension": 0
-          }
-        ]
-      },
-      {
-        "name": "FraudAtATM",
-        "createdDate": "Tue Aug 05 2014",
-        "attributes": [
-          {
-            "name": "Certainty",
-            "type": "Double",
-            "defaultValue": "1",
-            "dimension": 0,
-            "description": "The certainty that this event happen (value between 0 to 1)"
+           {
+            "name": "acquirer_country",
+            "type": "Integer",
+            "dimension": 1
           },
-          {
-            "name": "OccurrenceTime",
-            "type": "Date",
-            "dimension": 0,
-            "description": "No value means it equals the event detection time, other option is to use one of the defined distribution functions with parameters"
-          },
-          {
-            "name": "ExpirationTime",
-            "type": "Date",
-            "dimension": 0,
-            "description": "Only till this time the cost and certainty parameters of the event are valid, and only till this time a proactive action is considered"
-          },
-          {
-            "name": "Cost",
-            "type": "Double",
-            "dimension": 0,
-            "description": "The cost of this event occurrence. Negative if this is an opportunity"
-          },
-          {
-            "name": "Duration",
-            "type": "Double",
-            "defaultValue": "0",
-            "dimension": 0,
-            "description": "Used in case the this event occur within an interval"
-          },          
-          {
-            "name": "terminal_id",
-            "type": "Double",
+           {
+            "name": "card_country",
+            "type": "Integer",
             "dimension": 0
           }
         ]
       },
-      {
+       {
         "name": "TransactionStats",
         "createdDate": "Mon Dec 15 2014",
         "attributes": [
@@ -268,87 +271,27 @@
             "name": "transaction_volume",
             "type": "Double",
             "dimension": 0
+          },
+          {
+            "name": "transaction_count",
+            "type": "Double",
+            "dimension": 0
           }
         ]
       }
     ],
     "epas": [
-     
-       {
-        "name": "IncreasingAmountsEPA",
-        "createdDate": "Tue Aug 05 2014",
-        "epaType": "Trend",
-        "context": "CompositeIncreasingAmounts",
-        "inputEvents": [
-          {
-            "name": "Transaction",
-            "expression": "Transaction.amount_eur",
-            "consumptionPolicy": "Reuse",
-            "instanceSelectionPolicy": "First"
-          }
-        ],
-        "computedVariables": [],
-        "evaluationPolicy": "Immediate",
-        "cardinalityPolicy": "Unrestricted",
-        "trendN": "2",
-        "trendRelation": "Increase",
-        "internalSegmentation": [],
-        "derivedEvents": [
-          {
-            "name": "IncreasingAmounts",
-            "reportParticipants": false,
-            "expressions": {
-              "Certainty": "Sigmoid(1,6,trend.count)",
-              "Duration": "0",
-              "card_pan": "context.CardNumberSegmentation",
-              "terminal_id": "context.ATMSegmentation",
-              "TrendCount": "trend.count"
-            }
-          }
-        ]
-      },
+    
       {
-        "name": "IncreasingAmountsCardIndicationEPA",
-        "createdDate": "Tue Aug 05 2014",
-        "epaType": "Trend",
-        "context": "CompositeIncreasingAmounts",
-        "inputEvents": [
-          {
-            "name": "Transaction",
-            "expression": "Transaction.amount_eur",
-            "consumptionPolicy": "Reuse",
-            "instanceSelectionPolicy": "First"
-          }
-        ],
-        "computedVariables": [],
-        "evaluationPolicy": "Deferred",
-        "cardinalityPolicy": "Unrestricted",
-        "trendN": "2",
-        "trendRelation": "Increase",
-        "internalSegmentation": [],
-        "derivedEvents": [
-          {
-            "name": "IncreasingAmountsCardIndication",
-            "reportParticipants": false,
-            "expressions": {              
-              "Duration": "0",
-              "Certainty": "Sigmoid(1,5,trend.count)",
-              "card_pan": "context.CardNumberSegmentation",
-              "terminal_id": "context.ATMSegmentation",
-              "TrendCount": "trend.count"
-            }
-          }
-        ]
-      },
-      {
-        "name": "FraudAtATMEPA",
+        "name": "CP_SuddenCardUseNearExpirationDateEPA",
         "createdDate": "Tue Aug 05 2014",
         "epaType": "Aggregate",
-        "context": "CompositeFraudAtATM",
+        "context": "CompositeInitiatedFirstTransaction20mins",
         "inputEvents": [
           {
-            "name": "IncreasingAmountsCardIndication",                       
-            "consumptionPolicy": "Reuse",
+            "name": "Transaction",
+            "filterExpression": "Transaction.cvv_validation == 16 && Transaction.is_cnp == 0 && (Transaction.card_exp_date != null && DayDiff(Transaction.card_exp_date,Transaction.OccurrenceTime)<=1 && CompareDates(Transaction.OccurrenceTime,Transaction.card_exp_date) != 1)",
+            "consumptionPolicy": "Consume",
             "instanceSelectionPolicy": "First"
           }
         ],
@@ -356,25 +299,74 @@
           {
             "name": "Count",
             "aggregationType": "Count",
-            "IncreasingAmountsCardIndication": "1"
+            "Transaction": "1"
           }
         ],
-        "assertion": "(1.0-CDF(Count,2.0)) > 0.8",
+        "assertion": "Count >= 3",
         "evaluationPolicy": "Immediate",
         "cardinalityPolicy": "Unrestricted",
         "internalSegmentation": [],
         "derivedEvents": [
           {
-            "name": "FraudAtATM",
+            "name": "SuddenCardUseNearExpirationDate",
             "reportParticipants": false,
             "expressions": {
-              "Certainty": "1.0 - CDF(Count,2.0)",
+              "Certainty": "Sigmoid(-1.674, 0.693,Count)",
               "Duration": "0",
-              "terminal_id": "context.ATMSegmentation"
+              "card_pan": "context.CardNumberSegmentation",
+              "TransactionsCount": "Count",
+              "is_cnp": "0",
+              "transaction_ids": "ArrayConvert(Transaction.transaction_id)",
+              "timestamps":"ArrayConvert(Transaction.DetectionTime)",
+              "acquirer_country":"ArrayConvert(Transaction.acquirer_country)",
+              "card_country":"ArrayGet(Transaction.card_country,ArraySize(Transaction.card_country)-1)"
             }
           }
         ]
       },
+      {
+        "name": "CP_TransactionsInFarAwayPlacesEPA",
+        "createdDate": "Wed Aug 06 2014",
+        "epaType": "Sequence",
+        "context": "CompositeInitiatedFirstTransaction15mins",
+        "inputEvents": [
+          {
+            "name": "Transaction",
+            "alias": "T1",
+            "filterExpression": "T1.is_cnp == 0",
+            "consumptionPolicy": "Consume",
+            "instanceSelectionPolicy": "First"
+          },
+          {
+            "name": "Transaction",
+            "alias": "T2",
+            "filterExpression": "T2.is_cnp == 0",
+            "consumptionPolicy": "Consume",
+            "instanceSelectionPolicy": "Override"
+          }
+        ],
+        "computedVariables": [],
+        "assertion": "T1.acquirer_country != T2.acquirer_country",
+        "evaluationPolicy": "Immediate",
+        "cardinalityPolicy": "Unrestricted",
+        "internalSegmentation": [],
+        "derivedEvents": [
+          {
+            "name": "TransactionsInFarAwayPlaces",
+            "reportParticipants": false,
+            "expressions": {
+              "Certainty": "1.0",
+              "Duration": "0",
+              "card_pan": "context.CardNumberSegmentation",
+              "card_country":"T1.card_country",
+              "acquirer_country":"ArrayConvert(Split(Concat(Concat(T1.acquirer_country,\",\"),T2.acquirer_country),\",\"))",
+              "timestamps":"ArrayConvert(Split(Concat(Concat(T1.DetectionTime,\",\"),T2.DetectionTime),\",\"))",
+              "transaction_ids":"ArrayConvert(Split(Concat(Concat(T1.transaction_id,\",\"),T2.transaction_id),\",\"))"
+            }
+          }
+        ]
+      }
+      ,
       {
         "name": "AggregateStatsEPA",
         "createdDate": "Mon Dec 15 2014",
@@ -397,6 +389,11 @@
             "name": "Volume",
             "aggregationType": "Sum",
             "Transaction": "Transaction.amount_eur"
+          },
+          {
+            "name": "Count",
+            "aggregationType": "Count",
+            "Transaction": "1"
           }
         ],
         "evaluationPolicy": "Deferred",
@@ -408,19 +405,18 @@
             "reportParticipants": false,
             "expressions": {
               "Duration": "0",
-              "country": "context.CountrySegmentation",
+              "country": "context.CntrySegmentation",
               "average_transaction_amount_eur": "AverageAmountEur",
-              "transaction_volume": "Volume"
+              "transaction_volume": "Volume",
+              "transaction_count": "Count"
             }
           }
         ]
       }
-      
-      
     ],
     "contexts": {
       "temporal": [
-        {
+      {
           "name": "TemporalInitiatedFirstTransaction",
           "createdDate": "Mon Aug 18 2014",
           "type": "TemporalInterval",
@@ -442,8 +438,8 @@
           ]
         },
         {
-          "name": "TemporalInitiatedIncreasingAmountsFirst",
-          "createdDate": "Tue Aug 05 2014",
+          "name": "TemporalInitiatedFirstTransaction15mins",
+          "createdDate": "Thu Oct 29 2015",
           "type": "TemporalInterval",
           "atStartup": false,
           "neverEnding": false,
@@ -451,14 +447,35 @@
             {
               "initiatorType": "Event",
               "initiatorPolicy": "Ignore",
-              "name": "IncreasingAmountsCardIndication"
+              "name": "Transaction"
             }
           ],
           "terminators": [
             {
               "terminatorType": "RelativeTime",
               "terminationType": "Terminate",
-              "relativeTime": "30000"
+              "relativeTime": "900000"
+            }
+          ]
+        },
+        {
+          "name": "TemporalInitiatedFirstTransaction20mins",
+          "createdDate": "Thu Oct 29 2015",
+          "type": "TemporalInterval",
+          "atStartup": false,
+          "neverEnding": false,
+          "initiators": [
+            {
+              "initiatorType": "Event",
+              "initiatorPolicy": "Ignore",
+              "name": "Transaction"
+            }
+          ],
+          "terminators": [
+            {
+              "terminatorType": "RelativeTime",
+              "terminationType": "Terminate",
+              "relativeTime": "1200000"
             }
           ]
         }
@@ -475,25 +492,7 @@
           ]
         },
         {
-          "name": "ATMSegmentation",
-          "createdDate": "Tue Aug 05 2014",
-          "participantEvents": [
-            {
-              "name": "Transaction",
-              "expression": "Transaction.terminal_id"
-            },
-            {
-              "name": "IncreasingAmounts",
-              "expression": "IncreasingAmounts.terminal_id"
-            },
-            {
-              "name": "IncreasingAmountsCardIndication",
-              "expression": "IncreasingAmountsCardIndication.terminal_id"
-            }
-          ]
-        },        
-        {
-          "name": "CountrySegmentation",
+          "name": "CntrySegmentation",
           "createdDate": "Mon Dec 15 2014",
           "participantEvents": [
             {
@@ -504,37 +503,34 @@
         }
       ],
       "composite": [
-        {
-          "name": "CompositeIncreasingAmounts",
+       {
+          "name": "CompositeInitiatedFirstTransaction15mins",
           "createdDate": "Wed Aug 06 2014",
           "temporalContexts": [
             {
-              "name": "TemporalInitiatedFirstTransaction"
+              "name": "TemporalInitiatedFirstTransaction15mins"
             }
           ],
           "segmentationContexts": [
             {
               "name": "CardNumberSegmentation"
-            },
-            {
-              "name": "ATMSegmentation"
             }
           ]
         },
         {
-          "name": "CompositeFraudAtATM",
+          "name": "CompositeInitiatedFirstTransaction20mins",
           "createdDate": "Wed Aug 06 2014",
           "temporalContexts": [
             {
-              "name": "TemporalInitiatedIncreasingAmountsFirst"
+              "name": "TemporalInitiatedFirstTransaction20mins"
             }
           ],
-          "segmentationContexts": [           
+          "segmentationContexts": [
             {
-              "name": "ATMSegmentation"
+              "name": "CardNumberSegmentation"
             }
           ]
-        },        
+        },
         {
           "name": "CompositeCountry",
           "createdDate": "Mon Dec 15 2014",
@@ -545,7 +541,7 @@
           ],
           "segmentationContexts": [
             {
-              "name": "CountrySegmentation"
+              "name": "CntrySegmentation"
             }
           ]
         }
@@ -559,11 +555,11 @@
         "properties": [
           {
             "name": "filename",
-            "value": "D:\\EP\\Projects\\EU\\SPEEDD\\usecases\\Feedzai\\exampleOutput.txt"
+            "value": "D:\\EP\\Projects\\EU\\SPEEDD\\usecases\\Feedzai\\sampleOutputUncertainty.txt"
           },
           {
             "name": "formatter",
-            "value": "tag"
+            "value": "json"
           },
           {
             "name": "delimiter",
@@ -585,18 +581,13 @@
         "events": [
           {
             "name": "Transaction"
-          },          
-           {
-            "name": "IncreasingAmounts"
           },
-           {
-            "name": "IncreasingAmountsCardIndication"
+        
+          {
+            "name": "SuddenCardUseNearExpirationDate"
           },
           {
-            "name": "FraudAtATM"
-          },
-          {
-            "name": "TransactionStats"
+            "name": "TransactionsInFarAwayPlaces"
           }
         ]
       }
@@ -609,7 +600,7 @@
         "properties": [
           {
             "name": "filename",
-            "value": "D:\\EP\\Projects\\EU\\SPEEDD\\usecases\\Feedzai\\exampleInputUncertain.txt"
+            "value": "D:\\EP\\Projects\\Proton\\MergeOpenSourceUncertaintyWorkspace\\ProtonEU\\SPEEDD\\Feedzai\\for integration (prototype demo)\\2015\\FeedzaiIntegrationData.csv"
           },
           {
             "name": "pollingInterval",
@@ -621,24 +612,32 @@
           },
           {
             "name": "formatter",
-            "value": "tag"
+            "value": "csv"
           },
           {
             "name": "delimiter",
-            "value": ";"
+            "value": ","
           },
           {
             "name": "tagDataSeparator",
             "value": "="
           },
           {
+            "name": "csvEventType",
+            "value": "Transaction"
+          },
+          {
+            "name": "csvAttributeNames",
+            "value": "OccurrenceTime,transaction_id,is_cnp,amount_eur,card_pan,card_exp_date,card_country,card_family,card_type,card_tech,acquirer_country,merchant_mcc,terminal_brand,terminal_id,terminal_type,terminal_emv,transaction_response,card_auth,terminal_auth,client_auth,card_band,cvv_validation,tmp_card_pan,tmp_card_exp_date,transaction_type,auth_type,is_fraud"
+          },
+          {
             "name": "dateFormat",
-            "value": "dd/MM/yyyy-HH:mm:ss"
+            "value": "yyyyMM"
           }
         ],
         "events": []
       }
     ],
-    "name": "FeedzaiFraud"
+    "name": "FeedzaiFraud_CP_Uncertain_Ivo"
   }
 }
