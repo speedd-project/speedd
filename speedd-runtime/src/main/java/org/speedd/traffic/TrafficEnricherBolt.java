@@ -18,15 +18,17 @@ import org.speedd.Fields;
 
 import backtype.storm.task.OutputCollector;
 import backtype.storm.task.TopologyContext;
+import backtype.storm.topology.BasicOutputCollector;
 import backtype.storm.topology.OutputFieldsDeclarer;
+import backtype.storm.topology.base.BaseBasicBolt;
 import backtype.storm.topology.base.BaseRichBolt;
 import backtype.storm.tuple.Tuple;
 
-public class TrafficEnricherBolt extends BaseRichBolt {
+public class TrafficEnricherBolt extends BaseBasicBolt {
 
 	public static final Logger LOG = LoggerFactory.getLogger(TrafficEnricherBolt.class);
 	 
-	private OutputCollector _collector;	
+		
 	private HashMap<String,EnrichmentInformation> mappingTable = new HashMap<String,EnrichmentInformation>(); 
 	
 	private class EnrichmentInformation implements Serializable
@@ -59,7 +61,7 @@ public class TrafficEnricherBolt extends BaseRichBolt {
 	
 
 	@Override
-	public void execute(Tuple input) {
+	public void execute(Tuple input,BasicOutputCollector collector) {
 		//read the attributes from the tuple
 		Map<String,Object> attributes = (Map<String,Object>)input.getValueByField(Fields.FIELD_ATTRIBUTES);
 		Map<String,Object> updatedAttributes = new HashMap<String,Object>(attributes);
@@ -81,16 +83,11 @@ public class TrafficEnricherBolt extends BaseRichBolt {
 		 tuple.add(input.getValueByField(Fields.FIELD_TIMESTAMP));
 		 tuple.add(updatedAttributes);
 		
-		_collector.emit(tuple);
+		 collector.emit(tuple);
 
 	}
 
-	@Override
-	public void prepare(Map stormConf, TopologyContext context, OutputCollector collector) {
-		_collector = collector;							
-		
-
-	}
+	
 
 	@Override
 	public void declareOutputFields(OutputFieldsDeclarer declarer) {

@@ -32,6 +32,7 @@ import backtype.storm.spout.Scheme;
 import backtype.storm.spout.SchemeAsMultiScheme;
 import backtype.storm.topology.IBasicBolt;
 import backtype.storm.topology.TopologyBuilder;
+import backtype.storm.topology.base.BaseBasicBolt;
 import backtype.storm.topology.base.BaseRichBolt;
 import backtype.storm.topology.base.BaseRichSpout;
 
@@ -117,7 +118,7 @@ public class SpeeddTopology {
 				.withTupleToKafkaMapper(
 						new FieldNameBasedTupleToKafkaMapper());
 		
-		BaseRichBolt enricherBolt = createEnrichmentBolt(speeddConfig.enricherClass, speeddConfig.enricherPath);
+		BaseBasicBolt enricherBolt = createEnrichmentBolt(speeddConfig.enricherClass, speeddConfig.enricherPath);
 		// @FIXME distribute output events according to the use-case specific
 		// grouping strategy
 		builder.setBolt(ENRICHER, enricherBolt)
@@ -171,11 +172,11 @@ public class SpeeddTopology {
 
 	}
 	
-	public BaseRichBolt createEnrichmentBolt(String enrichmentBoltClassName, String enrichmentTablePath) {		
+	public BaseBasicBolt createEnrichmentBolt(String enrichmentBoltClassName, String enrichmentTablePath) {		
 		
 		try {
 			@SuppressWarnings("unchecked")						
-			Class<? extends BaseRichBolt> clazz = (Class<BaseRichBolt>) SpeeddTopology.class
+			Class<? extends BaseBasicBolt> clazz = (Class<BaseBasicBolt>) SpeeddTopology.class
 					.getClassLoader().loadClass(enrichmentBoltClassName);			
 			
 			return clazz.getDeclaredConstructor(String.class).newInstance(enrichmentTablePath);
