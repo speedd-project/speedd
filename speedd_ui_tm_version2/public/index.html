@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title>Traffic Management</title>
+	
+    <link rel="stylesheet" href="bower_components/bootstrap/dist/css/bootstrap.min.css">
+    <script src="bower_components/angular/angular.min.js"></script>
+	<script src="bower_components/d3/d3.min.js" charset="utf-8"></script>
+    
+	<link rel="stylesheet" href="bower_components/jquery-ui/themes/smoothness/jquery-ui.min.css">
+	<script src="bower_components/jquery/dist/jquery.min.js"></script>
+	<script src="bower_components/jquery-ui/jquery-ui.min.js"></script>
+	
+	<script src="bower_components/angular-bootstrap/ui-bootstrap-tpls.min.js"></script>
+	
+	<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyA84Vw89JOaSp_SC7HflJeQ2D4a_uIGUnw&sensor=true"></script>
+	<script src='bower_components/lodash/dist/lodash.min.js'></script>
+	<script src='bower_components/angular-google-maps/dist/angular-google-maps.min.js'></script>
+	
+	<script src='bower_components/ng-grid/ng-grid-2.0.14.min.js'></script>
+	<link rel="stylesheet" type="text/css" href="bower_components/ng-grid/ng-grid.css" />
+    <script src="js/libs/markerwithlabel.js" type="text/javascript"></script>	
+    <script type="text/javascript" src="bower_components/socket.io-client/socket.io.js"></script>
+	
+	<script src="bower_components/vis/dist/vis.js"></script>
+	<link href="bower_components/vis/dist/vis.css" rel="stylesheet" type="text/css" />
+<!--	
+	<script src="bower_components/gridster/dist/jquery.gridster.min.js"></script>
+	<link href="bower_components/gridster/dist/jquery.gridster.css" rel="stylesheet" type="text/css" />
+-->	
+	<script src="bower_components/gridstack/dist/gridstack.min.js"></script>
+	<link href="bower_components/gridstack/dist/gridstack.min.css" rel="stylesheet" type="text/css" />
+	
+	<script src="js/angapp.js"></script>
+	<script src="js/libs/gauge.js"></script>
+	<script src="js/services/socketService.js"></script>
+	<script src="js/services/dataService.js"></script>
+	<script src="js/services/rampDataService.js"></script>
+	<script src="js/directives/rampListDirective.js"></script>
+	<script src="js/directives/rampList2Directive.js"></script>
+	<script src="js/directives/barChartDirective.js"></script>
+	<script src="js/directives/driverComplianceDirective.js"></script>
+	<script src="js/directives/liveGraph.js"></script>		
+	<script src="js/controllers/RampListController.js"></script>
+	<script src="js/controllers/MainController.js"></script>
+	<script src="js/controllers/GmapController.js"></script>
+	<script src="js/controllers/BarChartController.js"></script>
+	<script src="js/controllers/DriverComplianceController.js"></script>
+	<script src="js/controllers/ModalPopController.js"></script>
+	<script src="js/controllers/EventListController.js"></script>		
+	<script src="js/controllers/ListModalController.js"></script>
+	<script src="js/controllers/LiveGraphController.js"></script>		
+	<script src="js/controllers/ChallengeModalController.js"></script>			
+	<script src="js/controllers/DriverComplianceModalController.js"></script>			
+	<script src="js/controllers/CircularMapController.js"></script>						
+	<script src="js/controllers/CamController.js"></script>			
+
+	<style> 
+	
+	#map {
+    height:450px;
+	}
+	
+	.infoWindowContent {
+		font-size:  14px !important;
+		border-top: 1px solid #ccc;
+		padding-top: 10px;
+	}
+	h2 {
+		margin-bottom:0;
+		margin-top: 0;
+	}
+
+	.markerlabel {
+            color: white;
+            background-color: black;
+            font-size: 18px;
+            text-align: center;
+            width: 22px;
+            white-space: nowrap;
+        }
+
+
+		.chart {
+			background: #eee;
+			padding: 3px;
+			height: 300px;
+		}
+
+		.chart div {
+		  width: 0;
+		  transition: all 1s ease-out;
+		  -moz-transition: all 1s ease-out;
+		  -webkit-transition: all 1s ease-out;
+		}
+
+		.chart div {
+		  font: 10px sans-serif;
+		  background-color: steelblue;
+		  text-align: right;
+		  padding: 3px;
+		  margin: 5px;
+		  color: white;
+		  box-shadow: 2px 2px 2px #666;
+		}
+		
+		.chart2 {
+			font: 18px sans-serif;
+			font-weight: bold;
+			text-align: left;
+			padding: 3px;
+			height: 75px;
+		}
+
+		.chart2 div {
+		  width: 0;
+		  transition: all 1s ease-out;
+		  -moz-transition: all 1s ease-out;
+		  -webkit-transition: all 1s ease-out;
+		}
+
+		.chart2 div {
+		  font: 10px sans-serif;
+		  text-align: right;
+		  padding: 3px;
+		  margin: 5px;
+		  color: white;
+		  box-shadow: 2px 2px 2px #D5D8DB;
+		}		
+		
+		
+		.panel-body{
+			<!--background-color:black;-->
+			height: 480px;
+		}
+		.panel{
+			border-radius: 0px;
+<!--			border-width: 5px;	-->
+			margin: 100px 50px;
+			
+		}
+		.panel-heading{
+			border-radius: 0px;
+		}
+		.navbar{
+			border-radius: 0px;
+		}
+		
+		.glyphicon-collapse-down{
+			cursor: pointer;
+		}
+		.glyphicon-eye-open{
+			cursor: pointer;
+		}
+		
+		.panel-title{
+			font-size: 24px;
+			font-weight: bold;
+		}
+		
+		.gridStyle {
+			width: 100%; 
+			height: 415px;
+		}
+		
+		.ngGrid {
+			background-color: #4FC1E9;
+		}
+		
+		.ngHeaderCell {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  background-color: #4D97B1;
+}
+.ngHeaderContainer {
+  position: relative;
+  overflow: hidden;
+  font-weight: bold;
+  font-color: white;
+  background-color: #4D97B1;
+}
+		
+		.btn {
+			border-radius: 0px;
+		}
+		
+		.angular-google-map-container { height: 400px; }
+		
+		
+		#draggablePanelList .panel-heading {
+			cursor: move;
+			list-style-type: none; width: 100%;
+		}
+		#draggablePanelList li { margin-bottom:25px; float: left; height: 535px; font-size: 4em; text-align: center; list-style-type: none;}
+		#draggablePanelList li-map {margin-bottom:25px; float: left; height: 520px; font-size: 4em; text-align: center; list-style-type: none;}
+		.ui-state-highlight {width: 33%; height: 1.5em; line-height: 1.2em; }
+		
+		
+		#widget { list-style-type: none; margin: 0; padding: 0; width: 100%; }
+		#widget li { margin: 3px 3px 3px 0; padding: 1px; float: left; width: 300px; height: 280px; font-size: 4em; text-align: center; }
+		
+		.gridster ul {
+			list-style: none;
+			background-color: gray;
+			width: 100%;
+		}
+.gridster ul li {
+    background-color: red;
+}
+
+	.rate {
+		fill: #1C9CA7;
+		fill-opacity:0;
+		stroke-width:2px;
+		stroke: #1C9CA7;
+    }
+	
+	.density {
+		fill: #F68275;
+		fill-opacity:0;
+		stroke-width:2px;
+		stroke: #F68275;
+    }
+
+	@panel-primary-border : #d9534f;
+	
+	.ngRow .selected{ 
+		background-color:#4FC1E9!important;
+	}
+	
+    .camBorders {
+        border-radius: 0px 0px 0px 0px;
+        -moz-border-radius: 0px 0px 0px 0px;
+        -webkit-border-radius: 0px 0px 0px 0px;
+        border: 5px solid #eee;
+    }
+    
+	</style>
+	
+	<script>////this sorts out dragging for every DOMelement with id "widget"
+/*		
+		var gridster;
+
+      $(function(){
+
+        gridster = $(".gridster ul").gridster({
+          widget_base_dimensions: [100, 55],
+          widget_margins: [5, 5],
+          helper: 'clone',
+          resize: {
+            enabled: true,
+            max_size: [4, 4],
+            min_size: [1, 1]
+          }
+        }).data('gridster');
+
+
+      });
+	*/
+	$(function () {
+    var options = {
+        cell_height: 80,
+        vertical_margin: 10
+    };
+    $('.grid-stack').gridstack(options);
+});
+/*			
+		$(function() {
+			$( "#widget" ).sortable({
+				placeholder: "ui-state-highlight"
+			});
+			$( "#widget" ).disableSelection();
+		});
+*/		
+		jQuery(function($) {
+			var panelList = $('#draggablePanelList');
+
+			panelList.sortable({
+				// Only make the .panel-heading child elements support dragging.
+				// Omit this to make then entire <li>...</li> draggable.
+				handle: '.panel-heading', 
+				update: function() {
+					$('.panel', panelList).each(function(index, elem) {
+						 var $listItem = $(elem),
+							 newIndex = $listItem.index();
+
+						 // Persist the new indices.
+					});
+				},
+				placeholder: "ui-state-highlight"
+			});
+			panelList.disableSelection();
+		});
+		
+		
+
+	</script>
+</head>
+<body style="background-color:#EAEAEA" >		
+	<div ng-app="TrafficManagementApp" ng-controller="MainController as main">
+
+	<nav class="navbar navbar-inverse" style="background-color:#444C57">
+		<div class="container-fluid">
+			<!-- Brand and toggle get grouped for better mobile display -->
+			<div class="navbar-header">
+			  <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+				<span class="sr-only">Toggle navigation</span>
+				<span class="icon-bar"></span>
+				<span class="icon-bar"></span>
+				<span class="icon-bar"></span>
+			  </button>
+			  <a class="navbar-brand" href="#"><img alt="Brand" src="img/nav-icon-white2.png" width="40px"></a>
+			  <h4 style="color:#eee"> Traffic Management Dashboard </h4>
+			</div>
+			<div id="navbar" class="navbar-collapse collapse">
+				<div class="nav navbar-nav navbar-right">
+					<img src="img/speedd_logo.png" style="height: 60px">
+				</div>
+			</div>
+		</div>
+	</nav>
+	
+	
+		<ul id="draggablePanelList">
+				
+			<li-map class="col-lg-7 col-md-7 col-xs-12">			
+				<div class="panel panel-default" ng-controller="GmapController">
+					<div class="panel-heading">
+						<h4 class="panel-title">
+							<span class="glyphicon glyphicon-road" aria-hidden="true"></span>
+							<a href="#" ng-click="isCollapsed = !isCollapsed">
+								Map
+							</a>
+						</h4>
+					</div>
+					<div collapse="isCollapsed">
+					  <div class="panel-body" ng-controller="CircularMapController">	<!--<div id="map"></div>-->
+					  		<object id="circularMap" type="image/svg+xml" data="img/last.svg" onload="serveSvg()">Your browser does not support SVG</object>
+                              
+					  </div>
+					</div>
+				</div>
+			</li-map>
+		
+<!--			
+			<li class="col-lg-4 col-md-6 col-xs-12">			
+				<div class="panel panel-default " ng-controller="RampListController" style="border-color:#4ECDC4;background-color:#4ECDC4" >
+					<div class="panel-heading" style="border-color:#4ECDC4;background-color:#43B1A9">
+						<h4 class="panel-title" style="color:white">
+							<img src="img/traffic_light_stop.png" height="28px">
+							<a href="#" ng-click="isCollapsed = !isCollapsed">
+								Ramps
+							</a>
+						</h4>
+					</div>
+					<div collapse="isCollapsed">
+					  <div class="panel-body">
+							<div style="height:316px" ng-click="onClick()" ramp-list ramp-list-data="dataRamps"></div>
+							<p></p>
+							<div style="border-color:#4ECDC4;background-color:#43B1A9">
+								<h4 class="text-left" style="font-weight:bold">Ramp selected: {{rampSelected}}
+									<span class="glyphicon glyphicon-eye-open" style="color:#FFF7E8" aria-hidden="true" popover="see ramp on map" popover-trigger="mouseenter" ng-click="goToMapLocation()"></span>
+								</h4>
+								<p></p>
+								<h4 class="text-left" style="color:#FFF7E8">Maximum Rate: {{rampSelectedLimits.upperLimit}}</h4>
+								<p></p>
+								<h4 class="text-left" style="color:#FFF7E8">Minimum Rate: {{rampSelectedLimits.lowerLimit}}</h4>
+								<div ng-controller="ModalPopController" >
+									<button popover="Override metering thresholds" popover-trigger="mouseenter" class="btn btn-primary col-xs-4" ng-click="open('','views/challengeModal.html','ChallengeModalController')" style="background-color:#3598DB; border-color:#3598DB;">Challenge</button>
+									<button popover="Ask for an explanation" popover-trigger="mouseenter" class="btn btn-warning col-xs-4 col-xs-4 col-xs-offset-4" ng-click="open('lg','views/explainModal.html','LiveGraphController')" style="background-color:#F1C40F; border-color:#F1C40F;">Explain Situation</button>
+								</div>
+							</div>
+					  </div>
+					</div>
+				</div>
+			</li>
+			
+			
+			<li class="col-lg-6 col-md-6 col-xs-12">			
+				<div class="panel panel-default" ng-controller="RampListController" style="border-color:#444C57;background-color:#444C57">
+					<div class="panel-heading" style="border-color:#444C57;background-color:#444C57">
+						<h3 class="panel-title" style="color:white">
+							<img src="img/traffic_light_stop.png" height="28px">
+							<a href="#" ng-click="isCollapsed = !isCollapsed">
+								Ramps - Quickview
+							</a>
+						</h3>
+					</div>
+					<div collapse="isCollapsed">
+					  <div class="panel-body"><ramp-list2-directive chart-data="dataRamps"></ramp-list2-directive>
+					  </div>
+					</div>
+				</div>
+			</li>
+			
+			<li class="col-lg-4 col-md-6 col-xs-12">			
+				<div class="panel panel-default" ng-controller="DriverComplianceController" style="border-color:#CCD1D9;background-color:#DFDFE1">
+					<div class="panel-heading" style="background-color:#CCD1D9;border-color:#CCD1D9">
+						<h3 class="panel-title" style="color:#95979A">
+							<img src="img/car_icon.png" height="28px">
+							<a href="#" ng-click="isCollapsed = !isCollapsed">
+								Driver Compliance
+							</a>
+						</h3>
+						
+					</div>
+					<div collapse="isCollapsed">
+					  <div class="panel-body" style="height:480px"><div style="height:60%"  driver-compliance distance-data="data"> </div>
+						<span id="sspeedGaugeContainer"></span>
+						<span id="nspeedGaugeContainer"></span>
+					  </div>
+					</div>
+				</div>
+			</li>
+						
+-->		
+
+
+			<li class="col-lg-5 col-md-5 col-xs-12">			
+				<div class="panel panel-default" ng-controller="EventListController" style="border-color:#4FC1E9;background-color:#4FC1E9">
+					<div class="panel-heading" style="border-color:#4FC1E9;background-color:#4FC1E9">
+						<h4 class="panel-title">
+							<span class="glyphicon glyphicon-list" aria-hidden="true"></span>							
+							<a href="#" ng-click="isCollapsed = !isCollapsed">
+								Event List
+							</a>
+						</h4>
+						
+					</div>
+					<div collapse="isCollapsed">
+					  <div class="panel-body" >
+							<div class="gridStyle" style="font-size:15px" ng-grid="gridOptions"></div>
+							<div>
+								<button popover="inspect details" popover-trigger="mouseenter" class="btn btn-warning col-xs-4 col-xs-4 col-xs-offset-8" ng-click="onInspect()" style="background-color:#F1C40F; border-color:#F1C40F;">Explain</button>
+							</div>
+					  </div>
+					</div>
+				</div>
+			</li>
+			
+<!--					
+			<li class="col-lg-5 col-md-5 col-xs-12 col-lg-offset-7 col-md-offset-7">			
+				<div class="panel panel-default" ng-controller="EventListController" style="border-color:#444C57;background-color:#444C57">
+					<div class="panel-heading" style="border-color:#444C57;background-color:#444C57">
+						<h4 class="panel-title" style="color:white">
+							<span class="glyphicon glyphicon-book" aria-hidden="true"></span>							
+							<a href="#" ng-click="isCollapsed = !isCollapsed">
+								Reporter
+							</a>
+						</h4>
+						
+					</div>
+					<div collapse="isCollapsed">
+					  <div class="panel-body" >
+							<div class="gridStyle" style="font-size:15px" ng-grid="gridOptions"></div>
+							<div>
+								<button popover="inspect details" popover-trigger="mouseenter" class="btn btn-warning col-xs-4 col-xs-4 col-xs-offset-8" ng-click="onInspect()" style="background-color:#F1C40F; border-color:#F1C40F;">Submit</button>
+							</div>
+					  </div>
+					</div>
+				</div>
+			</li>
+-->			
+			
+			<li class="col-lg-5 col-md-5 col-xs-12 col-lg-offset-7 col-md-offset-7">			
+				<div class="panel panel-default"  ng-controller="CamController" style="border-color:#444C57;background-color:#444C57">
+					<div class="panel-heading" style="border-color:#444C57;background-color:#444C57">
+						<h4 class="panel-title" style="color:white">
+							<span class="glyphicon glyphicon-camera" aria-hidden="true"></span>							
+							<a href="#" ng-click="isCollapsed = !isCollapsed">
+								Live Feed
+							</a>
+                            
+						</h4>
+						
+					</div>
+					<div collapse="isCollapsed">
+					  <div class="panel-body" >
+                          <!--
+							<img src="img/congestion.jpg" alt="img/cam2.jpg" style="height:469px;">
+							<div>
+								<button popover="captures image" popover-trigger="mouseenter" class="btn btn-warning col-xs-4 col-xs-4 col-xs-offset-8" ng-click="onInspect()" style="background-color:#F68275; border-color:#F68275;">Attach to Report</button>
+							</div>
+                            -->
+                            <div class="container-fluid" style = "height:500px">
+                                <div class="row">
+                                    <div class="col-md-3">
+                                        <div class="row">
+                                            <div id="cam1" class="col-md-12 camBorders" style = "height:125px; width:244" ng-click="onClick()">
+                                                <img src="img/traffic1.jpg" alt="img/cam2.jpg" style="witdth:100%; height:100%;" align="middle">
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div id="cam2" class="col-md-12 camBorders" style = "height:125px; width:244">
+                                                <img src="img/traffic2.jpg" alt="img/cam2.jpg" style="witdth:100%; height:100%;" align="middle">
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div id="cam3" class="col-md-12 camBorders" style = "height:125px; width:244">
+                                                <img src="img/traffic3.jpg" alt="img/cam2.jpg" style="witdth:100%; height:100%;" align="middle">
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div id="cam4" class="col-md-12 camBorders" style = "height:125px; width:244">
+                                                <img src="img/traffic4.jpg" alt="img/cam2.jpg" style="witdth:100%; height:100%;" align="middle">
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-9">
+                                        <div class="row">
+                                            
+                                            <div id="cam8" class="col-md-12 camBorders" style = "height:375px; width:735">
+                                                <img src="img/traffic8.jpg" alt="img/cam2.jpg" style="witdth:100%; height:100%;" id = "asd" align="middle">
+                                                <div style="position:absolute; bottom:10px; width:100%; right: 10px">
+                                                    <button popover="captures image" popover-trigger="mouseenter" class="btn btn-warning col-xs-4 col-xs-4 col-xs-offset-8" ng-click="onInspect()" style="background-color:#F68275; border-color:#F68275; ">Attach to Report</button>
+                                                </div>
+                                                
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div id="cam5" class="col-md-4 camBorders" style = "height:125px; width:244">
+                                                <img src="img/traffic5.jpg" alt="img/cam2.jpg" style="witdth:100%; height:100%;" align="middle">
+                                            </div>
+                                            <div id="cam6" class="col-md-4 camBorders" style = "height:125px; width:244">
+                                                <img src="img/traffic6.jpg" alt="img/cam2.jpg" style="witdth:100%; height:100%;" align="middle">
+                                            </div>
+                                            <div id="cam7" class="col-md-4 camBorders" style = "height:125px; width:244">
+                                                <img src="img/traffic7.jpg" alt="img/cam2.jpg" style="witdth:100%; height:100%;" align="middle">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+					  </div>
+					</div>
+				</div>
+			</li>
+		
+		</ul>
+
+		
+	</div>
+</body>
+</html>

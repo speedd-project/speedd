@@ -1,0 +1,17 @@
+{
+  "name": "TrafficManagement",
+  "version": "0.0.1",
+  "main": "public/index.html",
+  
+  "dependencies": {
+    "bootstrap": "~3.3.1",
+    "d3": "",
+	"jquery-ui":"~1.11.2",
+	"jquery":"~1.10.2",
+	"angular-bootstrap":"",
+	"lodash":"",
+	"ng-grid":"~2.0.14",
+	"socket.io-client":"",
+	"vis":""
+  }
+}
