@@ -11,11 +11,9 @@ import backtype.storm.spout.Scheme;
 import backtype.storm.tuple.Fields;
 import backtype.storm.tuple.Values;
 
-public class AdminCommandScheme implements Scheme, org.speedd.Fields {
+public class EventJsonScheme implements Scheme, org.speedd.Fields {
 	private static final long serialVersionUID = 1L;
 	
-//	private static final TrafficAggregatedReadingCsv2Event parser = new TrafficAggregatedReadingCsv2Event(SpeeddEventFactory.getInstance());
-
 	JsonEventDecoder jsonEventDecoder = new JsonEventDecoder();
 	
 	@Override

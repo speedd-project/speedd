@@ -387,11 +387,15 @@ public abstract class BaseSpeeddIntegrationTest {
 		speeddConfiguration.dmClass = (String) properties
 				.getProperty("speedd.dmClass");
 		
+		speeddConfiguration.enricherClass = (String) properties
+				.getProperty("speedd.enricherClass");
+		
 		speeddConfiguration.topicInEvents = getTopicName(SpeeddTopology.CONFIG_KEY_IN_EVENTS_TOPIC);
 		speeddConfiguration.topicOutEvents = getTopicName(SpeeddTopology.CONFIG_KEY_OUT_EVENTS_TOPIC);
 		speeddConfiguration.topicActions = getTopicName(SpeeddTopology.CONFIG_KEY_ACTIONS_TOPIC);
 		speeddConfiguration.topicActionsConfirmed = getTopicName(SpeeddTopology.CONFIG_KEY_ACTIONS_CONFIRMED_TOPIC);
 		speeddConfiguration.topicAdmin = getTopicName(SpeeddTopology.CONFIG_KEY_ADMIN_TOPIC);
+		
 
 		SpeeddTopology speeddTopology = new SpeeddTopology(speeddConfiguration);
 

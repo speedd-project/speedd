@@ -54,6 +54,8 @@ public class SpeeddTopology {
 	public static final String ADMIN_COMMAND_READER = "admin-command-reader";
 
 	public static final String IN_EVENT_READER = "in-event-reader";
+	
+	public static final String ACTION_READER = "action-reader";
 
 	private static final String OUT_EVENT_WRITER = "out-event-writer";
 
@@ -74,6 +76,8 @@ public class SpeeddTopology {
 	private static final Object OPTION_MODE_REMOTE = "remote";
 	
 	private static final Object OPTION_MODE_LOCAL = "local";
+
+	private static final String CEP_INPUT = "cep-input";
 
 	private static Logger logger = LoggerFactory
 			.getLogger(SpeeddTopology.class);
@@ -108,11 +112,16 @@ public class SpeeddTopology {
 				speeddConfig.inEventScheme, speeddConfig.topicInEvents, IN_EVENT_READER);
 
 		BaseRichSpout adminSpout = createKafkaReaderSpout(
-				AdminCommandScheme.class.getName(), speeddConfig.topicAdmin,
+				EventJsonScheme.class.getName(), speeddConfig.topicAdmin,
 				ADMIN_COMMAND_READER);
 		
 		builder.setSpout(IN_EVENT_READER, trafficReaderSpout);
 
+
+		BaseRichSpout actionsSpout = createKafkaReaderSpout(
+				EventJsonScheme.class.getName(), speeddConfig.topicActions,
+				ACTION_READER);
+		
 		KafkaBolt<String, Event> eventWriterBolt = new KafkaBolt<String, Event>().withTopicSelector(
 				new DefaultTopicSelector(speeddConfig.topicOutEvents))
 				.withTupleToKafkaMapper(
@@ -124,13 +133,19 @@ public class SpeeddTopology {
 		builder.setBolt(ENRICHER, enricherBolt)
 				.shuffleGrouping(IN_EVENT_READER);
 
+		JoinBolt joinBolt = new JoinBolt();
+		
+		builder.setSpout(ACTION_READER, actionsSpout);
+		
+		builder.setBolt(CEP_INPUT, joinBolt).shuffleGrouping(ENRICHER).shuffleGrouping(ACTION_READER);
+
 		ProtonOutputConsumerBolt protonOutputConsumerBolt = new ProtonOutputConsumerBolt();
 
 		ProtonTopologyBuilder protonTopologyBuilder = new ProtonTopologyBuilder();
 
 		try {
 			
-			protonTopologyBuilder.buildProtonTopology(builder, ENRICHER,
+			protonTopologyBuilder.buildProtonTopology(builder, CEP_INPUT,
 					protonOutputConsumerBolt, CEP_EVENT_CONSUMER,
 					speeddConfig.epnPath);
 		} catch (ParsingException e) {
