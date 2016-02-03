@@ -1,0 +1,8 @@
+{
+	"name": "SetSpeedLimit",
+	"timestamp": 1234567,
+	"attributes": {
+		"section_id": integer
+		"speed_limit": integer
+	}
+}
