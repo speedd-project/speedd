@@ -127,7 +127,7 @@ function setConsumerEvents(){
 		
 		// checks if event is one that should be displayed in the ui
 		var ev = JSON.parse(message.value);
-		if (ev.name == "PredictedCongestion" || ev.name == "ClearCongestion" || ev.name == "Congestion" || ev.name == "UpdateMeteringRateAction")
+		if (ev.name == "PredictedCongestion" || ev.name == "ClearCongestion" || ev.name == "Congestion" || ev.name == "UpdateMeteringRateAction" || ev.name =="AverageDensityAndSpeedPerLocation")
 			eventList.push(JSON.parse(message.value));
 	});
 }
