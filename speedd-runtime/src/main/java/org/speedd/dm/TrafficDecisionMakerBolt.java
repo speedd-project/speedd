@@ -9,184 +9,187 @@ import org.speedd.data.Event;
 import org.speedd.data.EventFactory;
 import org.speedd.data.impl.SpeeddEventFactory;
 
-import backtype.storm.topology.BasicOutputCollector;
+import backtype.storm.task.OutputCollector;
+import backtype.storm.task.TopologyContext;
 import backtype.storm.topology.OutputFieldsDeclarer;
-import backtype.storm.topology.base.BaseBasicBolt;
+import backtype.storm.topology.base.BaseRichBolt;
 import backtype.storm.tuple.Fields;
 import backtype.storm.tuple.Tuple;
 import backtype.storm.tuple.Values;
 
-class onrampStruct {
-	public Boolean active; // option to turn off ramp metering completely
-	public Double maxFlow; // user-defined upper limit for ramp metering rate
-	public Double minFlow; // user-defined lower limit for ramp metering rate
-	public Double flow; // mainline flow estimate
-	public long flowTimestamp; // timestamp of the latest mainline flow measurement
-	public Double density; // mainline density estimate
-	public long actionTimestamp; // timestamp of the latest mainline density estimate
-	
-	public onrampStruct() {
-		// initialize data
-		this.active = false;
-		this.flow = Double.NaN;
-		this.flowTimestamp = -1;
-		this.density = Double.NaN;
-		this.actionTimestamp = -1;
-		this.maxFlow = 100.0;
-		this.minFlow = .0;
-	}
-}
-
 /**
- * DM traffic use case V1.1:
- * Implementation of distributed ramp metering strategy ALINEA
+ * DM traffic use case V2.0
+ * TBD
  * 
- * @author mschmitt, kofman
+ * @author mschmitt, cramesh, akofman
  *
  */
-public class TrafficDecisionMakerBolt extends BaseBasicBolt {
+public class TrafficDecisionMakerBolt extends BaseRichBolt {
 	private static final long serialVersionUID = 1L;
 	
+	private OutputCollector collector;
 	private static final EventFactory eventFactory = SpeeddEventFactory.getInstance();
 	Logger logger = LoggerFactory.getLogger(TrafficDecisionMakerBolt.class);
 	
-	Map<String, onrampStruct> onrampData = new HashMap<String, onrampStruct>();
+	Map<String, network> networkMap = new HashMap<String, network>();
+	Map<String, DistributedRM> distRMmap = new HashMap<String, DistributedRM>();
+    Map<String, subnetData> subnetDataMap = new HashMap<String, subnetData>();
+    
+    public final double dt = 15/3600;
+    public final double tperiod = 120/3600;
+
+
+	@SuppressWarnings("rawtypes")
+	@Override
+	public void prepare(Map stormConf, TopologyContext context,
+			OutputCollector collector) {
+		this.collector = collector;
+	}
 
 	@Override
-	public void execute(Tuple input, BasicOutputCollector collector) {
+	public void execute(Tuple input) {
 		Event event = (Event)input.getValueByField("message");
 		
 		// read event
 		String eventName = event.getEventName();
 		long timestamp = event.getTimestamp();
 		Map<String, Object> attributes = event.getAttributes();
-		// attribute "location" needs to be present, since partitioning is done according to it
-		String location = (String) attributes.get("location");
+		// attribute "dm_location" needs to be present, since partitioning is done according to it
+		String DMlocation = (String) attributes.get("dm_location");
+		// attribute "location" needs to be present, since that is also required
+		Integer location = (Integer) attributes.get("location"); // FIXME: there should be a check.
 		
-		if (location != null)
+		
+		if (DMlocation != null)
 		{
-			onrampStruct data = onrampData.get(location); // read onramp data
-			// create variables for onramp if not yet created
-			if (data == null) data = new onrampStruct();
+            
+			network freeway = networkMap.get(DMlocation); // read sub-network data
+            if (freeway == null) {
+                // create instance of subnetwork if not yet created
+                freeway = new network(DMlocation);
+                // save instance
+                networkMap.put(DMlocation,freeway);
+
+            }
+            DistributedRM distController = distRMmap.get(DMlocation);
+            if (distController == null) {
+                // create instance of controller if not yet created
+                distController = new DistributedRM(freeway);
+                // save instance
+                distRMmap.put(DMlocation,distController);
+            }
+            subnetData localData = subnetDataMap.get(DMlocation);
+            if (localData == null) {
+                // create instance of data if not yet created
+                localData = new subnetData();
+                // save instance
+                subnetDataMap.put(DMlocation,localData);
+            }  
+            // now everything is present ...
+            
+            if (eventName.equals("mainlineAverages") || eventName.equals("onrampAverages"))
+            {
+            	// check if external inflow
+            	int roadId = distController.findRoadId(location);
+	            	if (roadId != -1) {
+	            	// FIXME: Some implicit assumptions about a sensor being on the road entering a subnetwork here...
+	            	if (freeway.Roads.get(roadId).intersection_begin == -1) {
+	            		// external inflow
+	            		// just save value
+	            		Double inflow = (Double) attributes.get("average_flow");
+	                    localData.externalDemand.put(location, inflow);
+	            	} else {
+	            		// internal measurement
+	            		// potentially simulate for one step
+	            		Double density = (Double) attributes.get("average_density");
+	                    localData.densityMeasurements.put(location, density);
+	                    Double flow = (Double) attributes.get("average_flow");
+	                    localData.flowMeasurements.put(location,  flow);
+	                    
+	                    // Update system state
+	                    if ((timestamp - localData.tUpdate) > dt) {
+	                    	double T = timestamp - localData.tUpdate;
+	                        // predict flows
+	                    	Map<Integer,Double> flows = freeway.predictFlows(localData.iTLPmap, T);
+	                    	// Flow correction step
+	                    	flows = this.updateData(flows, localData.flowMeasurements, 1.); // FIXME: Magic number --> estimate variance instead?
+	                    	// predict densities
+	                    	Map<Integer,Double> densities = freeway.predictDensity(flows, localData.externalDemand);  	
+	                    	// Density correction step
+	                    	densities = this.updateData(densities, localData.densityMeasurements, 1.); // FIXME: Magic number --> estimate variance instead?
+	                    	// saveback
+	                    	freeway.initDensitites(densities);
+	                    	
+	                    	// clear measurement structs
+	                    	localData.densityMeasurements.clear();
+	                    	localData.flowMeasurements.clear();
+	                    	localData.externalDemand.clear();
+	                    	// reset time of last measurement
+	                    	localData.tUpdate = timestamp;
+	                    }
+	            	}
+            	}
+            }
+ 
 			
-			if (eventName.equals("PredictedCongestion") || eventName.equals("Congestion"))
-			{
-				// turn on ramp metering
-				data.active = true;
-				// TODO: Use certainty attribute to activate adjacent ramps as well, if necessary (coordinated ramp metering)
-			}
-			else if (eventName.equals("ClearCongestion"))
-			{
-				// turn off ramp metering
-				data.active = false;
-				// reset data (except for the limits)
-				data.flow = Double.NaN;
-				data.flowTimestamp = -1;
-				data.density = Double.NaN;
-				data.actionTimestamp = -1;
-			}
-			else if (eventName.equals("setMeteringRateLimits"))
-			{
-				// set limits
-				Double minFlow = (Double)attributes.get("lowerLimit");
-				if (minFlow != null) 
-					{
-					if (minFlow >= 0) data.minFlow = minFlow;
-					else data.minFlow = .0; // disable lower limit
+			if (eventName.equals("PredictedCongestion") || eventName.equals("Congestion") || eventName.equals("ClearCongestion") ||
+					eventName.equals("setMeteringRateLimits") || eventName.equals("RampCooperation") || eventName.equals("rampOverFlow") ||
+					eventName.equals("clearRampOverFlow") || eventName.equals("onrampAverages")) {	
+				// Call ProcessEvent to deal with the event
+				Event outEvent = distController.processEvent2(event);
+				
+				if (outEvent != null) {
+	                // Use sensor labels for partitioning by kafka
+	                collector.emit(new Values(location, outEvent));
+	                // Save decision also locally - FIXME: Move this functionality to other function
+					if (outEvent.getEventName().equals("newMeteringRate")) {
+						// FIXME: move functionality
 					}
-				Double maxFlow = (Double)attributes.get("upperLimit");
-				if (maxFlow != null) 
-					{
-					if (maxFlow >= 0) data.maxFlow = maxFlow;
-					else data.maxFlow = Double.POSITIVE_INFINITY; // disable upper limit
-					}
-			}
-			else if (eventName.equals("OnRampFlow"))
-			{
-				Double inflow = (Double) attributes.get("average_flow"); //dummy;
-				data.flowTimestamp = timestamp;
-				data.flow = inflow; // TODO: filter data
-			}
-			else if (eventName.equals("2minsAverageDensityAndSpeedPerLocation"))
-			{
-				if (data.active && (data.flowTimestamp >= 0) && (data.flowTimestamp > data.actionTimestamp))
-				{
-					// need estimate of the onramp flow. Also estimate must be more recent than the last action.
-					Double density = (Double)attributes.get("average_density");
 					
-					// create action event
-					Map<String, Object> outAttrs = new HashMap<String, Object>();
-					outAttrs.put("newMeteringRate", computeNewRate(data,density,location)); // compute action
-					outAttrs.put("location", location);
-					outAttrs.put("density", density); // may serve as a justification for the decision
-					outAttrs.put("lane", "onramp"); // to distinguish from variable speed limits on the mainline?
-					
-					Event outEvent = eventFactory.createEvent("UpdateMeteringRateAction", timestamp, outAttrs);
-					
-					// Use sensor labels for partitioning by kafka
-					collector.emit(new Values(location, outEvent));
-					data.actionTimestamp = timestamp;
 				}
+
+
 			}
-			// Events "AverageDensityAndSpeedPerLocation" are not used, we use the 2minsAverage... instead.
 			
-			onrampData.put(location, data); // saveback onramp data
-		}
-		else
-		{
+			// Events "AverageDensityAndSpeedPerLocation" are not used, we use the 2minsAverage... instead.
+			networkMap.put(DMlocation, freeway); // saveback local network state
+		} else {
 			logger.warn("location is null for tuple " + input);
 			// Discard event and do nothing. Could throw an exception, report an error etc.
 		}
+				
 	}
 
-	private Double computeNewRate(onrampStruct data, double density, String location) {	
-		double criticalDensity = get_criticalDensity(location); // Recognize cell ID:
-		double KI = 3.6*70/criticalDensity; // Integral gain
-		Double new_rate = data.flow + KI * (criticalDensity-density); // Update ramp metering rate: ALINEA
-		return Math.min(data.maxFlow, Math.max(data.minFlow, new_rate)); // saturate/ anti-wind-up
-	}
-	
+
 	@Override
 	public void declareOutputFields(OutputFieldsDeclarer declarer) {
 		declarer.declare(new Fields("key", "message"));
 	}
-	
-	// A set of private function that essentially just implement hardcoded lookup tables.
-	// Those could be replaced by database queries or ...
-	
-	private int get_cellId(String location) {
-		Map<String,Integer> cellId = new HashMap<String,Integer>();
-		// Hardcoded for now.
-		cellId.put("0024a4dc00003356", -1);
-		cellId.put("0024a4dc00003354", 2);
-		cellId.put("0024a4dc0000343c", -1);
-		cellId.put("0024a4dc0000343b", 4);
-		cellId.put("0024a4dc00003445", 5);
-		cellId.put("0024a4dc00001b67", 6);
-		cellId.put("0024a4dc00003357", -1);
-		cellId.put("0024a4dc00000ddd", -1);
-		cellId.put("0024a4dc00003355", 9);
-		cellId.put("0024a4dc000021d1", -1);
-		cellId.put("0024a4dc0000343f", 11);
-		cellId.put("0024a4dc00001b5c", -1);
-		cellId.put("0024a4dc000025eb", 13);
-		cellId.put("0024a4dc000025ea", -1);
-		cellId.put("0024a4dc00001c99", -1);
-		cellId.put("0024a4dc000013c6", 16);
-		cellId.put("0024a4dc00003444", -1);
-		cellId.put("0024a4dc000025ec", 18);
-		cellId.put("0024a4dc0000343e", -1);
-		Integer id = cellId.get(location);
-		if (id != null) return id;
-		else return -1;
-	}
-
-	private double get_criticalDensity(String location) {
-		// need to save onramp flow if it is does not come in matched pairs with the density.
-		final double[] criticalDensities = {62, 64, 65, 47, 41, 60, 61, 57, 60, 62,
-				59, 50, 54, 60, 0, 63, 65, 73, Double.POSITIVE_INFINITY}; // nineteen cells according to sensor locations
-		return criticalDensities[get_cellId(location)-1];
-		}
-	
+    
+    private class subnetData {
+    	public Map<Integer,Double[]> iTLPmap = new HashMap<Integer,Double[]>();
+    	public Map<Integer,Double> externalDemand = new HashMap<Integer,Double>();
+        public Map<Integer,Double> flowMeasurements = new HashMap<Integer,Double>();
+        public Map<Integer,Double> densityMeasurements = new HashMap<Integer,Double>();
+        public long tUpdate = 0;
+    }
+    
+    private Map<Integer,Double> updateData(Map<Integer,Double> estimate, Map<Integer,Double> measurement, double lambda) {
+    	if ((lambda > 1) || (lambda < 0)) {
+    		throw(new IllegalArgumentException("Expect 0 <= lambda <= 1, but lambda = "+lambda));
+    	}
+    	// iterate over entries
+    	Map<Integer,Double> update = new HashMap<Integer,Double>();
+    	for (Map.Entry<Integer,Double> entry : estimate.entrySet()) {
+    		Integer key = entry.getKey();
+    		if (measurement.get(key) != null) {
+    			// corresponding measurement exists
+    			update.put(key, (1-lambda)*entry.getValue() + lambda*measurement.get(key));
+    		} else {
+    			update.put(key, entry.getValue());
+    		}
+    	}
+    	return update;
+    }
 
 }
