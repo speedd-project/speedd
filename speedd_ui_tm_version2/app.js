@@ -8,7 +8,7 @@ var argv = require('minimist')(process.argv.slice(2));
 var io;
 var Consumer, client, consumer, Producer, producer;
 
-var zk = argv.zk? "localhost:"+argv.zk.toString()+"/" : 'localhost:2181/';
+var zk = argv.zk? argv.zk : 'localhost:2181';
 var uiport = argv.ui? argv.ui : 3000;
 
 console.log("\nzookeeper url is set to: "+zk);
