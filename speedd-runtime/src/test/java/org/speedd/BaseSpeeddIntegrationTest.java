@@ -102,7 +102,7 @@ public abstract class BaseSpeeddIntegrationTest {
 		
 		if(storm != null){
 			logger.info("Shutting down speedd storm");
-			storm.killTopology("speedd");
+			storm.killTopology(getTopologyName());
 			storm.shutdown();
 		}
 		
@@ -169,16 +169,16 @@ public abstract class BaseSpeeddIntegrationTest {
 		kafkaServer = TestUtils.createServer(config, mock);
 
 		// create topics
-		createTopic(zkClient, getTopicName(SpeeddTopology.CONFIG_KEY_OUT_EVENTS_TOPIC));
-		createTopic(zkClient, getTopicName(SpeeddTopology.CONFIG_KEY_IN_EVENTS_TOPIC));
-		createTopic(zkClient, getTopicName(SpeeddTopology.CONFIG_KEY_ACTIONS_TOPIC));
-		createTopic(zkClient, getTopicName(SpeeddTopology.CONFIG_KEY_ADMIN_TOPIC));
+		createTopic(zkClient, getTopicName(SpeeddRunner.CONFIG_KEY_OUT_EVENTS_TOPIC));
+		createTopic(zkClient, getTopicName(SpeeddRunner.CONFIG_KEY_IN_EVENTS_TOPIC));
+		createTopic(zkClient, getTopicName(SpeeddRunner.CONFIG_KEY_ACTIONS_TOPIC));
+		createTopic(zkClient, getTopicName(SpeeddRunner.CONFIG_KEY_ADMIN_TOPIC));
 
 		List<KafkaServer> servers = new ArrayList<KafkaServer>();
 		servers.add(kafkaServer);
 		TestUtils.waitUntilMetadataIsPropagated(
 				scala.collection.JavaConversions.asScalaBuffer(servers),
-				getTopicName(SpeeddTopology.CONFIG_KEY_ACTIONS_TOPIC), 0, 5000);
+				getTopicName(SpeeddRunner.CONFIG_KEY_ACTIONS_TOPIC), 0, 5000);
 
 		logger.info("Kafka server started and initialized");
 	}
@@ -212,7 +212,7 @@ public abstract class BaseSpeeddIntegrationTest {
 		BrokerHosts brokerHosts = new StaticHosts(globalPartitionInformation);
 
 		outEventsKafkaConfig = new KafkaConfig(brokerHosts,
-				getTopicName(SpeeddTopology.CONFIG_KEY_OUT_EVENTS_TOPIC));
+				getTopicName(SpeeddRunner.CONFIG_KEY_OUT_EVENTS_TOPIC));
 
 		outEventConsumer = new SimpleConsumer("localhost", brokerPort, 60000,
 				1024, "outEventConsumer");
@@ -223,7 +223,7 @@ public abstract class BaseSpeeddIntegrationTest {
 						outEventConsumer.clientId()));
 
 		actionsKafkaConfig = new KafkaConfig(brokerHosts,
-				getTopicName(SpeeddTopology.CONFIG_KEY_ACTIONS_TOPIC));
+				getTopicName(SpeeddRunner.CONFIG_KEY_ACTIONS_TOPIC));
 
 		actionConsumer = new SimpleConsumer("localhost", brokerPort, 60000,
 				1024, "actionConsumer");
@@ -384,20 +384,15 @@ public abstract class BaseSpeeddIntegrationTest {
 		speeddConfiguration.inEventScheme = (String) properties
 				.getProperty("speedd.inEventScheme");
 		
-		speeddConfiguration.dmClass = (String) properties
-				.getProperty("speedd.dmClass");
-		
-		speeddConfiguration.enricherClass = (String) properties
-				.getProperty("speedd.enricherClass");
-		
-		speeddConfiguration.topicInEvents = getTopicName(SpeeddTopology.CONFIG_KEY_IN_EVENTS_TOPIC);
-		speeddConfiguration.topicOutEvents = getTopicName(SpeeddTopology.CONFIG_KEY_OUT_EVENTS_TOPIC);
-		speeddConfiguration.topicActions = getTopicName(SpeeddTopology.CONFIG_KEY_ACTIONS_TOPIC);
-		speeddConfiguration.topicActionsConfirmed = getTopicName(SpeeddTopology.CONFIG_KEY_ACTIONS_CONFIRMED_TOPIC);
-		speeddConfiguration.topicAdmin = getTopicName(SpeeddTopology.CONFIG_KEY_ADMIN_TOPIC);
-		
+		speeddConfiguration.topicInEvents = getTopicName(SpeeddRunner.CONFIG_KEY_IN_EVENTS_TOPIC);
+		speeddConfiguration.topicOutEvents = getTopicName(SpeeddRunner.CONFIG_KEY_OUT_EVENTS_TOPIC);
+		speeddConfiguration.topicActions = getTopicName(SpeeddRunner.CONFIG_KEY_ACTIONS_TOPIC);
+		speeddConfiguration.topicActionsConfirmed = getTopicName(SpeeddRunner.CONFIG_KEY_ACTIONS_CONFIRMED_TOPIC);
+		speeddConfiguration.topicAdmin = getTopicName(SpeeddRunner.CONFIG_KEY_ADMIN_TOPIC);
 
-		SpeeddTopology speeddTopology = new SpeeddTopology(speeddConfiguration);
+		ISpeeddTopology speeddTopology = getTopology();
+		
+		speeddTopology.configure(speeddConfiguration);
 
 		Config stormConfig = new Config();
 		stormConfig.setDebug(true);
@@ -413,12 +408,16 @@ public abstract class BaseSpeeddIntegrationTest {
 
 		stormConfig.setMaxTaskParallelism(1);
 
-		storm.submitTopology("speedd", stormConfig,
+		storm.submitTopology(getTopologyName(), stormConfig,
 				speeddTopology.buildTopology());
 
 		logger.info("Submitted topology - should start listening on incoming events");
 	}
 
+	protected abstract String getTopologyName();
+
+	abstract protected ISpeeddTopology getTopology();
+	
 	public void streamEventsAndVerifyResults(String configPath, String topologyName,EventFileReader eventReader, String[] expectedEvents) throws Exception {
 		streamEventsAndVerifyResults(configPath, topologyName, eventReader, expectedEvents, null);
 	}
