@@ -140,7 +140,9 @@ public class SpeeddRunner {
 			}
 		}
 
-		conf.setMaxTaskParallelism(Integer.parseInt(properties.getProperty(Config.TOPOLOGY_WORKERS)));
+		conf.setMaxTaskParallelism(Integer.parseInt(properties.getProperty(Config.TOPOLOGY_MAX_TASK_PARALLELISM)));
+		conf.setNumAckers(Integer.parseInt(properties.getProperty(Config.TOPOLOGY_ACKER_EXECUTORS)));
+		conf.setNumWorkers(Integer.parseInt(properties.getProperty(Config.TOPOLOGY_WORKERS)));
 		
 		StormTopology topology = speeddTopology.buildTopology();
 
