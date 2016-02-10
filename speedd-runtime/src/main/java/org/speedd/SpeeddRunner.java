@@ -121,6 +121,7 @@ public class SpeeddRunner {
 		
 		try {
 			speeddTopology = createTopology((String) properties.getProperty(CONFIG_KEY_TOPOLOGY_CLASS));
+			speeddTopology.configure(configuration);
 		} catch (SpeeddRunnerException e){
 			logger.error("Cannot create a topology. Aborting.", e);
 			System.exit(1);
