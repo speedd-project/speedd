@@ -15,6 +15,7 @@ import org.apache.commons.cli.ParseException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import scala.xml.persistent.SetStorage;
 import storm.kafka.bolt.KafkaBolt;
 import backtype.storm.Config;
 import backtype.storm.LocalCluster;
@@ -140,9 +141,10 @@ public class SpeeddRunner {
 			}
 		}
 
-		conf.setMaxTaskParallelism(Integer.parseInt(properties.getProperty(Config.TOPOLOGY_MAX_TASK_PARALLELISM)));
-		conf.setNumAckers(Integer.parseInt(properties.getProperty(Config.TOPOLOGY_ACKER_EXECUTORS)));
-		conf.setNumWorkers(Integer.parseInt(properties.getProperty(Config.TOPOLOGY_WORKERS)));
+		
+		setStormConfigPropertyInteger(conf, properties, Config.TOPOLOGY_MAX_TASK_PARALLELISM, null);
+		setStormConfigPropertyInteger(conf, properties, Config.TOPOLOGY_ACKER_EXECUTORS, null);
+		setStormConfigPropertyInteger(conf, properties, Config.TOPOLOGY_WORKERS, 1);
 		
 		StormTopology topology = speeddTopology.buildTopology();
 
@@ -161,6 +163,14 @@ public class SpeeddRunner {
 		}
 	}
 
+	private static void setStormConfigPropertyInteger(Config config, Properties properties, String name, Object defaultValue){
+		if(properties.containsKey(name)){
+			config.put(name, Integer.parseInt(properties.getProperty(name)));
+		} else {
+			config.put(name, defaultValue);
+		}
+	}
+	
 	private static ISpeeddTopology createTopology(String topologyClassName) throws SpeeddRunnerException {
 		try {
 			return (ISpeeddTopology)Class.forName(topologyClassName).newInstance();
