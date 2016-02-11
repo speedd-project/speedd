@@ -39,11 +39,11 @@ public class TrafficEnricherBolt extends BaseBasicBolt {
 		private static final long serialVersionUID = 1L;
 		private String dm_partition;
 		private String lane;
-		private int queueLength;
+		private double queueLength;
 		private String location;
 		
 		private EnrichmentInformation(String dm_partition, String lane,
-				int queueLength, String location) {			
+				double queueLength, String location) {			
 			this.dm_partition = dm_partition;
 			this.lane = lane;
 			this.queueLength = queueLength;
@@ -114,7 +114,7 @@ public class TrafficEnricherBolt extends BaseBasicBolt {
 				String lane = tuple[3];
 				String dm_partition = tuple[2];
 				String location = tuple[0];
-				Integer queueLength = Integer.valueOf(tuple[8]);
+				Double queueLength = Double.valueOf(tuple[8]);
 				
 				if (!aimsunId.equals("????")){
 										

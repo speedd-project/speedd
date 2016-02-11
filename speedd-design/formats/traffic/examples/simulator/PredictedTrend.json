@@ -1,0 +1,17 @@
+{
+  "problem_id": "4381",
+  "count": "7",
+  "location": "0024a4dc00003355",
+  "EventId": "f0694c85-9f31-4654-83c4-90babd14b147",
+  "dmPartition": "section3",
+  "DetectionTime": "11/02/2016 15:43:14",
+  "Name": "PredictedTrend",
+  "Cost": "0.0",
+  "Certainty": "0.9999957575099044",
+  "EventSource": "",
+  "OccurrenceTime": "11/02/2016 15:43:14",
+  "Duration": "0",
+  "Annotation": "",
+  "sensorId": "4381",
+  "average_density": "21.173888545227275"
+}

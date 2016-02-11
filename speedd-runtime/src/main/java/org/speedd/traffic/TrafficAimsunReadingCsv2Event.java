@@ -44,7 +44,7 @@ public class TrafficAimsunReadingCsv2Event implements EventParser, Constants {
 		String name = TRAFFIC_SENSOR_READING_AVERAGE;
 
 		try {
-			SimpleDateFormat dateTimeFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
+			SimpleDateFormat dateTimeFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 			
 			String[] tuple = new String(bytes, Charset.forName("UTF-8")).split(",");
 			
