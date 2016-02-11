@@ -1,7 +1,6 @@
 package org.speedd.fraud;
 
 import org.speedd.BaseSpeeddTopology;
-import org.speedd.EventJsonScheme;
 import org.speedd.cep.ProtonOutputConsumerBolt;
 import org.speedd.data.Event;
 
@@ -21,27 +20,14 @@ public class CCFTopology extends BaseSpeeddTopology {
 	public StormTopology buildTopology() {
 		TopologyBuilder builder = new TopologyBuilder();
 
-		BaseRichSpout trafficReaderSpout = createKafkaReaderSpout(
+		BaseRichSpout inEventReaderSpout = createKafkaReaderSpout(
 				brokerHosts,
 				speeddConfig.inEventScheme,
 				speeddConfig.topicInEvents,
 				IN_EVENT_READER);
 
-		BaseRichSpout adminSpout = createKafkaReaderSpout(
-				brokerHosts,
-				EventJsonScheme.class.getName(),
-				speeddConfig.topicAdmin,
-				ADMIN_COMMAND_READER);
-		
-		builder.setSpout(IN_EVENT_READER, trafficReaderSpout);
+		builder.setSpout(IN_EVENT_READER, inEventReaderSpout, 2).setNumTasks(2);
 
-
-		BaseRichSpout actionsSpout = createKafkaReaderSpout(
-				brokerHosts,
-				EventJsonScheme.class.getName(),
-				speeddConfig.topicActions,
-				ACTION_READER);
-		
 		KafkaBolt<String, Event> eventWriterBolt = new KafkaBolt<String, Event>().withTopicSelector(
 				new DefaultTopicSelector(speeddConfig.topicOutEvents))
 				.withTupleToKafkaMapper(
@@ -52,16 +38,17 @@ public class CCFTopology extends BaseSpeeddTopology {
 		ProtonTopologyBuilder protonTopologyBuilder = new ProtonTopologyBuilder();
 
 		try {
-			
-			protonTopologyBuilder.buildProtonTopology(builder, IN_EVENT_READER,
-					protonOutputConsumerBolt, CEP_EVENT_CONSUMER,
+			protonTopologyBuilder.buildProtonTopology(
+					builder, 
+					IN_EVENT_READER,
+					protonOutputConsumerBolt,
+					CEP_EVENT_CONSUMER,
 					speeddConfig.epnPath);
 		} catch (ParsingException e) {
 			throw new RuntimeException("Building Proton topology failed, reason: ", e);
 		}
 
-		builder.setBolt(OUT_EVENT_WRITER, eventWriterBolt).shuffleGrouping(
-				CEP_EVENT_CONSUMER);
+		builder.setBolt(OUT_EVENT_WRITER, eventWriterBolt, 2).shuffleGrouping(CEP_EVENT_CONSUMER).setNumTasks(2);
 
 		return builder.createTopology();	
 	}
