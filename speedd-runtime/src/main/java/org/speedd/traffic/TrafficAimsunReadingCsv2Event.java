@@ -14,7 +14,8 @@ public class TrafficAimsunReadingCsv2Event implements EventParser, Constants {
 	protected static final String ATTR_LOCATION = "location";
 	protected static final String ATTR_DETECTOR_ID = "detector_id";
 	protected static final String ATTR_LANE = "lane";
-	protected static final String ATTR_VEHICLES = "average_flow";	
+	protected static final String ATTR_VEHICLES = "average_flow";
+	protected static final String ATTR_OCCUPANCY = "average_occupancy";	
 	protected static final String ATTR_TIMESTAMP = "timestamp";
 	protected static final String ATTR_AVG_SPEED = "average_speed";	
 	protected static final String ATTR_NORMALIZED_DENSITY = "average_density";	
@@ -23,6 +24,7 @@ public class TrafficAimsunReadingCsv2Event implements EventParser, Constants {
 	
 	
 	private static final int ATTR_TIME_INDEX = 0;
+	private static final int ATTR_OCCUPANCY_INDEX = 8;
 	private static final int ATTR_DETECTOR_ID_INDEX = 1;
 	private static final int ATTR_NUMBER_OF_CARS_INDEX = 3;
 	private static final int ATTR_NUMBER_OF_TRUCKS_INDEX = 4;
@@ -42,7 +44,7 @@ public class TrafficAimsunReadingCsv2Event implements EventParser, Constants {
 		String name = TRAFFIC_SENSOR_READING_AVERAGE;
 
 		try {
-			SimpleDateFormat dateTimeFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
+			SimpleDateFormat dateTimeFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 			
 			String[] tuple = new String(bytes, Charset.forName("UTF-8")).split(",");
 			
@@ -68,7 +70,8 @@ public class TrafficAimsunReadingCsv2Event implements EventParser, Constants {
 			}
 									
 			attrMap.put(ATTR_TIMESTAMP, timestamp);
-			attrMap.put(ATTR_DETECTOR_ID, tuple[ATTR_DETECTOR_ID_INDEX]);						
+			attrMap.put(ATTR_DETECTOR_ID, tuple[ATTR_DETECTOR_ID_INDEX]);
+			attrMap.put(ATTR_OCCUPANCY, getNumericValue(tuple[ATTR_OCCUPANCY_INDEX])/100);	
 			attrMap.put(ATTR_VEHICLES, carsNumber+trucksNumber);			
 			attrMap.put(ATTR_AVG_SPEED, getNumericValue(tuple[ATTR_AVG_SPEED_INDEX]));
 			attrMap.put(ATTR_NORMALIZED_DENSITY, calculatedDensity);

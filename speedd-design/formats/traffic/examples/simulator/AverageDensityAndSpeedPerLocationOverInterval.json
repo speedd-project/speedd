@@ -1,0 +1,17 @@
+{
+  "location": "0024a4dc000025ec",
+  "average_flow": "24.0",
+  "EventId": "d42a4d9c-8bb5-4b68-9048-3cbdf5211d3b",
+  "dmPartition": "section5",
+  "DetectionTime": "11/02/2016 15:13:52",
+  "Name": "AverageDensityAndSpeedPerLocationOverInterval",
+  "Cost": "0.0",
+  "Certainty": "1",
+  "EventSource": "",
+  "OccurrenceTime": "11/02/2016 15:13:52",
+  "average_occupancy": "7.9988",
+  "Duration": "0",
+  "Annotation": "",
+  "sensorId": "4052",
+  "average_speed": "73.65587200000002"
+}
