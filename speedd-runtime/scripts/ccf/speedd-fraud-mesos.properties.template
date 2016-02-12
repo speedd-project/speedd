@@ -81,5 +81,14 @@ speedd.inEventScheme=org.speedd.fraud.FraudAggregatedReadingScheme
 speedd.dmClass=org.speedd.dm.EchoBolt
 
 # Storm topology settings
-topology.workers=2
+
+topology.workers=6
  
+speedd.topology.class=org.speedd.fraud.CCFTopology
+
+topology.debug=false
+
+topology.acker.executors=0
+#topology.max.task.parallelism=10
+
+

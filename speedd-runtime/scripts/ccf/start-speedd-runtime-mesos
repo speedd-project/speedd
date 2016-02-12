@@ -13,4 +13,4 @@ MODE=remote
 
 cd $SPEEDD_RUNTIME_HOME/scripts/ccf
 
-$STORM_CMD jar $SPEEDD_RUNTIME_LIB/speedd-runtime-0.0.1-SNAPSHOT-jar-with-dependencies.jar org.speedd.SpeeddTopology -f $PROPS -m $MODE &
+$STORM_CMD jar $SPEEDD_RUNTIME_LIB/speedd-runtime-0.0.1-SNAPSHOT-jar-with-dependencies.jar org.speedd.SpeeddRunner -f $PROPS -m $MODE &
