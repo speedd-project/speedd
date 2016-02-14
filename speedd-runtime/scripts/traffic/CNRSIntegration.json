@@ -1,68 +1,7 @@
 {
   "epn": {
     "events": [
-      {
-        "name": "AggregatedSensorRead",
-        "createdDate": "Tue Aug 19 2014",
-        "attributes": [
-          {
-            "name": "Certainty",
-            "type": "Double",
-            "defaultValue": "1",
-            "dimension": 0,
-            "description": "The certainty that this event happen (value between 0 to 1)"
-          },
-          {
-            "name": "OccurrenceTime",
-            "type": "Date",
-            "dimension": 0,
-            "description": "No value means it equals the event detection time, other option is to use one of the defined distribution functions with parameters"
-          },
-          {
-            "name": "ExpirationTime",
-            "type": "Date",
-            "dimension": 0
-          },
-          {
-            "name": "Cost",
-            "type": "Double",
-            "dimension": 0,
-            "description": "The cost of this event occurrence. Negative if this is an opportunity"
-          },
-          {
-            "name": "Duration",
-            "type": "Double",
-            "defaultValue": "0",
-            "dimension": 0,
-            "description": "Used in case the this event occur within an interval"
-          },
-          {
-            "name": "location",
-            "type": "String",
-            "dimension": 0
-          },
-          {
-            "name": "lane",
-            "type": "String",
-            "dimension": 0
-          },
-          {
-            "name": "occupancy",
-            "type": "Double",
-            "dimension": 0
-          },
-          {
-            "name": "vehicles",
-            "type": "Integer",
-            "dimension": 0
-          },
-          {
-            "name": "average_speed",
-            "type": "Double",
-            "dimension": 0
-          }
-        ]
-      },
+     
       {
         "name": "Congestion",
         "createdDate": "Sun Aug 31 2014",
@@ -105,6 +44,11 @@
             "dimension": 0
           },
           {
+            "name": "sensorId",
+            "type": "String",
+            "dimension": 0
+          },
+          {
             "name": "average_density",
             "type": "Double",
             "dimension": 0
@@ -113,11 +57,175 @@
             "name": "problem_id",
             "type": "String",
             "dimension": 0
+          },
+           {
+            "name": "dmPartition",
+            "type": "String",
+            "dimension": 0
+          }
+        ]
+      },
+        {
+        "name": "AggregatedQueueLength",
+        "createdDate": "Sun Aug 31 2014",
+        "attributes": [
+          {
+            "name": "Certainty",
+            "type": "Double",
+            "defaultValue": "1",
+            "dimension": 0,
+            "description": "The certainty that this event happen (value between 0 to 1)"
+          },
+          {
+            "name": "OccurrenceTime",
+            "type": "Date",
+            "dimension": 0,
+            "description": "No value means it equals the event detection time, other option is to use one of the defined distribution functions with parameters"
+          },
+          {
+            "name": "ExpirationTime",
+            "type": "Date",
+            "dimension": 0,
+            "description": "Only till this time the cost and certainty parameters of the event are valid, and only till this time a proactive action is considered"
+          },
+          {
+            "name": "Cost",
+            "type": "Double",
+            "dimension": 0,
+            "description": "The cost of this event occurrence. Negative if this is an opportunity"
+          },
+          {
+            "name": "Duration",
+            "type": "Double",
+            "defaultValue": "0",
+            "dimension": 0,
+            "description": "Used in case the this event occur within an interval"
+          },
+          
+          {
+            "name": "sensorId",
+            "type": "String",
+            "dimension": 0
+          },                  
+           {
+            "name": "dmPartition",
+            "type": "String",
+            "dimension": 0
+          },
+          {
+            "name": "queueLength",
+            "type": "Double",
+            "dimension": 0
+          },
+                    {
+            "name": "maxQueueLength",
+            "type": "Double",
+            "dimension": 0
+          }
+          
+          
+        ]
+      },
+              {
+        "name": "PredictedRampOverflow",
+        "createdDate": "Sun Aug 31 2014",
+        "attributes": [
+          {
+            "name": "Certainty",
+            "type": "Double",
+            "defaultValue": "1",
+            "dimension": 0,
+            "description": "The certainty that this event happen (value between 0 to 1)"
+          },
+          {
+            "name": "OccurrenceTime",
+            "type": "Date",
+            "dimension": 0,
+            "description": "No value means it equals the event detection time, other option is to use one of the defined distribution functions with parameters"
+          },
+          {
+            "name": "ExpirationTime",
+            "type": "Date",
+            "dimension": 0,
+            "description": "Only till this time the cost and certainty parameters of the event are valid, and only till this time a proactive action is considered"
+          },
+          {
+            "name": "Cost",
+            "type": "Double",
+            "dimension": 0,
+            "description": "The cost of this event occurrence. Negative if this is an opportunity"
+          },
+          {
+            "name": "Duration",
+            "type": "Double",
+            "defaultValue": "0",
+            "dimension": 0,
+            "description": "Used in case the this event occur within an interval"
+          },
+         
+          {
+            "name": "sensorId",
+            "type": "String",
+            "dimension": 0
+          },                  
+           {
+            "name": "dmPartition",
+            "type": "String",
+            "dimension": 0
+          }
+        ]
+      },
+            {
+        "name": "ClearRampOverflow",
+        "createdDate": "Sun Aug 31 2014",
+        "attributes": [
+          {
+            "name": "Certainty",
+            "type": "Double",
+            "defaultValue": "1",
+            "dimension": 0,
+            "description": "The certainty that this event happen (value between 0 to 1)"
+          },
+          {
+            "name": "OccurrenceTime",
+            "type": "Date",
+            "dimension": 0,
+            "description": "No value means it equals the event detection time, other option is to use one of the defined distribution functions with parameters"
+          },
+          {
+            "name": "ExpirationTime",
+            "type": "Date",
+            "dimension": 0,
+            "description": "Only till this time the cost and certainty parameters of the event are valid, and only till this time a proactive action is considered"
+          },
+          {
+            "name": "Cost",
+            "type": "Double",
+            "dimension": 0,
+            "description": "The cost of this event occurrence. Negative if this is an opportunity"
+          },
+          {
+            "name": "Duration",
+            "type": "Double",
+            "defaultValue": "0",
+            "dimension": 0,
+            "description": "Used in case the this event occur within an interval"
+          },
+          
+          {
+            "name": "sensorId",
+            "type": "String",
+            "dimension": 0
+          },                  
+           {
+            "name": "dmPartition",
+            "type": "String",
+            "dimension": 0
           }
         ]
       },
       {
-        "name": "PredictedCongestion",
+        "name": "PredictedTrend",
         "createdDate": "Sun Aug 31 2014",
         "attributes": [
           {
@@ -157,6 +265,17 @@
             "type": "String",
             "dimension": 0
           },
+		  {
+            "name": "sensorId",
+            "type": "String",
+            "dimension": 0
+          },
+          {
+            "name": "dmPartition",
+            "type": "String",
+            "dimension": 0
+          },
+				  		            		            
           {
             "name": "average_density",
             "type": "Double",
@@ -166,6 +285,11 @@
             "name": "problem_id",
             "type": "String",
             "dimension": 0
+          },
+           {
+            "dimension": 0,
+            "name": "count",
+            "type": "Integer"
           }
         ]
       },
@@ -211,14 +335,24 @@
             "dimension": 0
           },
           {
+            "name": "sensorId",
+            "type": "String",
+            "dimension": 0
+          },
+          {
             "name": "problem_id",
+            "type": "String",
+            "dimension": 0
+          },
+           {
+            "name": "dmPartition",
             "type": "String",
             "dimension": 0
           }
         ]
       },
       {
-        "name": "OnRampFlow",
+        "name": "AverageOnRampValuesOverInterval",
         "createdDate": "Sun Aug 31 2014",
         "attributes": [
           {
@@ -259,6 +393,11 @@
             "dimension": 0
           },
           {
+            "name": "sensorId",
+            "type": "String",
+            "dimension": 0
+          },
+          {
             "name": "average_flow",
             "type": "Double",
             "dimension": 0
@@ -269,10 +408,85 @@
             "dimension": 0
           },
           {
-            "name": "average_density",
+            "name": "average_occupancy",
             "type": "Double",
             "dimension": 0
-          }
+          },
+          {
+            "name": "dmPartition",
+            "type": "String",
+            "dimension": 0
+          }        
+          
+        ]
+      },
+      {
+        "name": "AverageOffRampValuesOverInterval",
+        "createdDate": "Sun Aug 31 2014",
+        "attributes": [
+          {
+            "name": "Certainty",
+            "type": "Double",
+            "defaultValue": "1",
+            "dimension": 0,
+            "description": "The certainty that this event happen (value between 0 to 1)"
+          },
+          {
+            "name": "OccurrenceTime",
+            "type": "Date",
+            "dimension": 0,
+            "description": "No value means it equals the event detection time, other option is to use one of the defined distribution functions with parameters"
+          },
+          {
+            "name": "ExpirationTime",
+            "type": "Date",
+            "dimension": 0,
+            "description": "Only till this time the cost and certainty parameters of the event are valid, and only till this time a proactive action is considered"
+          },
+          {
+            "name": "Cost",
+            "type": "Double",
+            "dimension": 0,
+            "description": "The cost of this event occurrence. Negative if this is an opportunity"
+          },
+          {
+            "name": "Duration",
+            "type": "Double",
+            "defaultValue": "0",
+            "dimension": 0,
+            "description": "Used in case the this event occur within an interval"
+          },
+          {
+            "name": "location",
+            "type": "String",
+            "dimension": 0
+          },
+          {
+            "name": "sensorId",
+            "type": "String",
+            "dimension": 0
+          },
+          {
+            "name": "average_flow",
+            "type": "Double",
+            "dimension": 0
+          },
+          {
+            "name": "average_speed",
+            "type": "Double",
+            "dimension": 0
+          },
+          {
+            "name": "average_occupancy",
+            "type": "Double",
+            "dimension": 0
+          },
+          {
+            "name": "dmPartition",
+            "type": "String",
+            "dimension": 0
+          }        
+          
         ]
       },
       {
@@ -330,12 +544,43 @@
             "name": "average_speed",
             "type": "Double",
             "dimension": 0
-          }
+          },
+          {
+            "name": "average_occupancy",
+            "type": "Double",
+            "dimension": 0
+          },
+          {
+            "name": "lane",
+            "type": "String",
+            "dimension": 0
+          },
+           {
+            "name": "timestamp",
+            "type": "Date",
+            "dimension": 0
+          },
+          
+		  {
+            "name": "sensorId",
+            "type": "String",
+            "dimension": 0
+          },
+          {
+            "name": "dmPartition",
+            "type": "String",
+            "dimension": 0
+          },
+		  {
+            "name": "queueLength",
+            "type": "Integer",
+            "dimension": 0
+          }		  		            		                                
              
         ]
       },
       {
-        "name": "2minsAverageDensityAndSpeedPerLocation",
+        "name": "AverageDensityAndSpeedPerLocationOverInterval",
         "createdDate": "Sun Aug 31 2014",
         "attributes": [
           {
@@ -376,12 +621,17 @@
             "dimension": 0
           },
           {
+            "name": "sensorId",
+            "type": "String",
+            "dimension": 0
+          },
+          {
             "name": "average_flow",
             "type": "Double",
             "dimension": 0
           },
           {
-            "name": "average_density",
+            "name": "average_occupancy",
             "type": "Double",
             "dimension": 0
           },
@@ -389,117 +639,38 @@
             "name": "average_speed",
             "type": "Double",
             "dimension": 0
+          },
+           {
+            "name": "dmPartition",
+            "type": "String",
+            "dimension": 0
           }
         ]
-      },
-      {
-        "name": "PredictedTrend",
-        "createdDate": "Mon Nov 10 2014",
-        "attributes": [
-          {
-            "name": "Certainty",
-            "type": "Double",
-            "defaultValue": "1",
-            "dimension": 0,
-            "description": "The certainty that this event happen (value between 0 to 1)"
-          },
-          {
-            "name": "OccurrenceTime",
-            "type": "Date",
-            "dimension": 0,
-            "description": "No value means it equals the event detection time, other option is to use one of the defined distribution functions with parameters"
-          },
-          {
-            "name": "ExpirationTime",
-            "type": "Date",
-            "dimension": 0,
-            "description": "Only till this time the cost and certainty parameters of the event are valid, and only till this time a proactive action is considered"
-          },
-          {
-            "name": "Cost",
-            "type": "Double",
-            "dimension": 0,
-            "description": "The cost of this event occurrence. Negative if this is an opportunity"
-          },
-          {
-            "name": "Duration",
-            "type": "Double",
-            "defaultValue": "0",
-            "dimension": 0,
-            "description": "Used in case the this event occur within an interval"
-          },
-          {
-            "name": "location",
-            "type": "String",
-            "dimension": 0
-          },
-          {
-            "name": "problem_id",
-            "type": "String",
-            "dimension": 0
-          }         
-        ]
-      }
+      }   
     ],
-    "epas": [
+    
+    "epas": [      
       {
-        "name": "AvgDensityAndSpeedPerLocation",
+        "name": "CongestionEPA",
         "createdDate": "Mon Nov 10 2014",
         "epaType": "Aggregate",
-        "context": "14secsLocationCompositeContext",
+        "context": "CompositeMonitoringCongestion",
         "inputEvents": [
           {
-            "name": "AggregatedSensorRead",
-            "filterExpression": "!EqualsIgnoreCase(AggregatedSensorRead.lane,'onramp') && AggregatedSensorRead.average_speed != -1",
+            "name": "AverageDensityAndSpeedPerLocation",
+            "filterExpression": "(!EqualsIgnoreCase(AverageDensityAndSpeedPerLocation.lane,'onramp')) AND (!EqualsIgnoreCase(AverageDensityAndSpeedPerLocation.lane,'offramp')) AND (!EqualsIgnoreCase(AverageDensityAndSpeedPerLocation.lane,'queue')) AND (AverageDensityAndSpeedPerLocation.average_speed != -1) AND (AverageDensityAndSpeedPerLocation.average_density > 0.6) AND (AverageDensityAndSpeedPerLocation.average_speed < 30)",
             "consumptionPolicy": "Consume",
             "instanceSelectionPolicy": "First"
           }
         ],
         "computedVariables": [
-          {
-            "name": "AverageSpeed",
-            "aggregationType": "Average",
-            "AggregatedSensorRead": "AggregatedSensorRead.average_speed"
-          },
-          {
-            "name": "AverageFlow",
-            "aggregationType": "Average",
-            "AggregatedSensorRead": "AggregatedSensorRead.vehicles"
+         {
+            "name": "Count",
+            "aggregationType": "Count",
+            "AverageDensityAndSpeedPerLocation": "1"
           }
-        ],
-        "evaluationPolicy": "Deferred",
-        "cardinalityPolicy": "Single",
-        "internalSegmentation": [],
-        "derivedEvents": [
-          {
-            "name": "AverageDensityAndSpeedPerLocation",
-            "reportParticipants": true,
-            "expressions": {
-              "Duration": "0",
-              "location": "context.SegmentationByLocation",
-              "average_flow": "AverageFlow",
-              "average_density": "(AverageFlow*240)/AverageSpeed",
-              "average_speed": "AverageSpeed"
-              
-            }
-          }
-        ],
-        "derivedActions": []
-      },
-      {
-        "name": "CongestionEPA",
-        "createdDate": "Mon Nov 10 2014",
-        "epaType": "All",
-        "context": "CompositeMonitoringCongestion",
-        "inputEvents": [
-          {
-            "name": "AverageDensityAndSpeedPerLocation",
-            "filterExpression": "AverageDensityAndSpeedPerLocation.average_density>=50 and AverageDensityAndSpeedPerLocation.average_speed < 45",
-            "consumptionPolicy": "Consume",
-            "instanceSelectionPolicy": "First"
-          }
-        ],
-        "computedVariables": [],
+         ],
+          "assertion": "Count >14",
         "evaluationPolicy": "Immediate",
         "cardinalityPolicy": "Single",
         "internalSegmentation": [],
@@ -509,9 +680,11 @@
             "reportParticipants": false,
             "expressions": {
               "Duration": "0",
-              "location": "AverageDensityAndSpeedPerLocation.location",
-              "average_density": "AverageDensityAndSpeedPerLocation.average_density",
-              "problem_id": "AverageDensityAndSpeedPerLocation.location"
+              "location": "ArrayGet(AverageDensityAndSpeedPerLocation.location,0)",
+              "dmPartition": "ArrayGet(AverageDensityAndSpeedPerLocation.dmPartition,0)",
+              "sensorId":"context.SegmentationByProblemId",
+              "average_density": "ArrayGet(AverageDensityAndSpeedPerLocation.average_density,ArraySize(AverageDensityAndSpeedPerLocation.average_density)-1)",
+              "problem_id": "context.SegmentationByProblemId"
             }
           }
         ],
@@ -520,17 +693,24 @@
       {
         "name": "ClearCongestionEPA",
         "createdDate": "Mon Nov 10 2014",
-        "epaType": "All",
+        "epaType": "Aggregate",
         "context": "CompositeMonitoringClearCongestion",
         "inputEvents": [
           {
             "name": "AverageDensityAndSpeedPerLocation",
-            "filterExpression": "AverageDensityAndSpeedPerLocation.average_density<50 and AverageDensityAndSpeedPerLocation.average_speed>70",
+            "filterExpression": "(!EqualsIgnoreCase(AverageDensityAndSpeedPerLocation.lane,'onramp')) AND (!EqualsIgnoreCase(AverageDensityAndSpeedPerLocation.lane,'queue')) AND (!EqualsIgnoreCase(AverageDensityAndSpeedPerLocation.lane,'offramp')) AND (AverageDensityAndSpeedPerLocation.average_speed != -1) AND (AverageDensityAndSpeedPerLocation.average_density < 0.5) AND (AverageDensityAndSpeedPerLocation.average_speed>80)",
             "consumptionPolicy": "Consume",
             "instanceSelectionPolicy": "First"
           }
         ],
-        "computedVariables": [],
+       "computedVariables": [
+          {
+            "name": "Count",
+            "aggregationType": "Count",
+            "AverageDensityAndSpeedPerLocation": "1"
+          }
+         ],
+         "assertion": "Count >14",
         "evaluationPolicy": "Immediate",
         "cardinalityPolicy": "Single",
         "internalSegmentation": [],
@@ -540,8 +720,10 @@
             "reportParticipants": false,
             "expressions": {
               "Duration": "0",
-              "location": "AverageDensityAndSpeedPerLocation.location",
-              "problem_id": "AverageDensityAndSpeedPerLocation.location"
+              "location": "ArrayGet(AverageDensityAndSpeedPerLocation.location,0)",
+              "dmPartition": "ArrayGet(AverageDensityAndSpeedPerLocation.dmPartition,0)",
+              "sensorId": "context.SegmentationByProblemId",
+              "problem_id": "context.SegmentationByProblemId"
             }
           }
         ],
@@ -555,7 +737,7 @@
         "inputEvents": [
           {
             "name": "AverageDensityAndSpeedPerLocation",
-            "filterExpression": " AverageDensityAndSpeedPerLocation.average_density >=35",
+            "filterExpression": " (!EqualsIgnoreCase(AverageDensityAndSpeedPerLocation.lane,'onramp')) AND (!EqualsIgnoreCase(AverageDensityAndSpeedPerLocation.lane,'queue')) AND (!EqualsIgnoreCase(AverageDensityAndSpeedPerLocation.lane,'offramp')) AND (AverageDensityAndSpeedPerLocation.average_speed != -1) ",
             "expression": "AverageDensityAndSpeedPerLocation.average_density",
             "consumptionPolicy": "Reuse",
             "instanceSelectionPolicy": "First"
@@ -564,55 +746,91 @@
         "computedVariables": [],
         "evaluationPolicy": "Immediate",
         "cardinalityPolicy": "Unrestricted",
-        "trendN": "3",
+        "trendN": "5",
         "trendRelation": "Increase",
         "internalSegmentation": [],
         "derivedEvents": [
           {
             "name": "PredictedTrend",
+            "condition": "((GetAttribute(ArrayGet(trend.participants,ArraySize(trend.participants)-1),\"average_density\") >=0.5) AND (GetAttribute(ArrayGet(trend.participants,ArraySize(trend.participants)-1),\"average_speed\") <= 40))",
             "reportParticipants": false,
             "expressions": {
+              "Certainty": "if ((NOT IsWeekend(GetAttribute(ArrayGet(trend.participants,ArraySize(trend.participants)-1),\"timestamp\"))) AND ((GetHours(GetAttribute(ArrayGet(trend.participants,ArraySize(trend.participants)-1),\"timestamp\")) > 8 AND GetHours(GetAttribute(ArrayGet(trend.participants,ArraySize(trend.participants)-1),\"timestamp\")) < 9) OR (GetHours(GetAttribute(ArrayGet(trend.participants,ArraySize(trend.participants)-1),\"timestamp\")) > 17 AND GetHours(GetAttribute(ArrayGet(trend.participants,ArraySize(trend.participants)-1),\"timestamp\")) < 18))) then (if (Sigmoid(-6.667,70.086,0.447,1.010,(GetAttribute(ArrayGet(trend.participants,ArraySize(trend.participants)-1),\"average_density\")-GetAttribute(ArrayGet(trend.participants,0),\"average_density\"))/((GetAttribute(ArrayGet(trend.participants,ArraySize(trend.participants)-1),\"timestamp\")-GetAttribute(ArrayGet(trend.participants,0),\"timestamp\"))/1000),GetAttribute(ArrayGet(trend.participants,ArraySize(trend.participants)-1),\"average_density\"),trend.count)+0.1 <=1.0) then (Sigmoid(-6.667,70.086,0.447,1.010,(GetAttribute(ArrayGet(trend.participants,ArraySize(trend.participants)-1),\"average_density\")-GetAttribute(ArrayGet(trend.participants,0),\"average_density\"))/((GetAttribute(ArrayGet(trend.participants,ArraySize(trend.participants)-1),\"timestamp\")-GetAttribute(ArrayGet(trend.participants,0),\"timestamp\"))/1000),GetAttribute(ArrayGet(trend.participants,ArraySize(trend.participants)-1),\"average_density\"),trend.count)+0.1) else (1.0) endif) else (if (Sigmoid(-6.667,70.086,0.447,1.010,(GetAttribute(ArrayGet(trend.participants,ArraySize(trend.participants)-1),\"average_density\")-GetAttribute(ArrayGet(trend.participants,0),\"average_density\"))/((GetAttribute(ArrayGet(trend.participants,ArraySize(trend.participants)-1),\"timestamp\")-GetAttribute(ArrayGet(trend.participants,0),\"timestamp\"))/1000),GetAttribute(ArrayGet(trend.participants,ArraySize(trend.participants)-1),\"average_density\"),trend.count) <=1.0) then (Sigmoid(-6.667,70.086,0.447,1.010,(GetAttribute(ArrayGet(trend.participants,ArraySize(trend.participants)-1),\"average_density\")-GetAttribute(ArrayGet(trend.participants,0),\"average_density\"))/((GetAttribute(ArrayGet(trend.participants,ArraySize(trend.participants)-1),\"timestamp\")-GetAttribute(ArrayGet(trend.participants,0),\"timestamp\"))/1000),GetAttribute(ArrayGet(trend.participants,ArraySize(trend.participants)-1),\"average_density\"),trend.count)) else (1.0) endif) endif",
+              "problem_id": "context.SegmentationByProblemId",
+               "location": "GetAttribute(ArrayGet(trend.participants,0),\"location\")",
+              "dmPartition": "GetAttribute(ArrayGet(trend.participants,0),\"dmPartition\")",
+               "sensorId": "context.SegmentationByProblemId",
               "Duration": "0",
-              "Certainty": "Sigmoid(1,6,trend.count)",
-              "location": "context.SegmentationByProblemId",
-              "problem_id": "context.SegmentationByProblemId"
-            }
+              "average_density": "GetAttribute(ArrayGet(trend.participants,ArraySize(trend.participants)-1),\"average_density\")",
+              "count": "trend.count"
+          	}
           }
         ],
         "derivedActions": []
       },
       {
-        "name": "PredictedCongestionEPA",
+        "name": "PredictedRampOverflowEPA",
         "createdDate": "Mon Nov 10 2014",
-        "epaType": "All",
-        "context": "CompositeMonitoringTrend",
+        "epaType": "Trend",
+        "context": "CompositeRampOverflow",
         "inputEvents": [
           {
-            "name": "AverageDensityAndSpeedPerLocation",
+            "name": "AggregatedQueueLength",           
+            "expression": "AggregatedQueueLength.queueLength",
             "consumptionPolicy": "Reuse",
-            "instanceSelectionPolicy": "Override"
-          },
-          {
-            "name": "PredictedTrend",
-            "consumptionPolicy": "Consume",
-            "instanceSelectionPolicy": "Last"
+            "instanceSelectionPolicy": "First"
           }
         ],
         "computedVariables": [],
         "evaluationPolicy": "Immediate",
         "cardinalityPolicy": "Unrestricted",
+        "trendN": "4",
+        "trendRelation": "Increase",
         "internalSegmentation": [],
         "derivedEvents": [
           {
-            "name": "PredictedCongestion",
+            "name": "PredictedRampOverflow",
             "reportParticipants": false,
             "expressions": {
-              "Duration": "0",
-              "Certainty": "PredictedTrend.Certainty",
-              "location": "PredictedTrend.location",
-              "average_density": "AverageDensityAndSpeedPerLocation.average_density",
-              "problem_id": "PredictedTrend.problem_id"
-            }
+              "Certainty": "Sigmoid(-2.367,0.693,trend.count)",                      
+              "dmPartition": "GetAttribute(ArrayGet(trend.participants,0),\"dmPartition\")",
+               "sensorId": "context.SegmentationByProblemId",
+              "Duration": "0"              
+          	}
+          }
+        ],
+        "derivedActions": []
+      },
+       {
+        "name": "PredictedClearRampOverflowEPA",
+        "createdDate": "Mon Nov 10 2014",
+        "epaType": "Trend",
+        "context": "CompositeRampClearOverflow",
+        "inputEvents": [
+          {
+            "name": "AggregatedQueueLength",           
+            "expression": "AggregatedQueueLength.queueLength",
+            "consumptionPolicy": "Reuse",
+            "instanceSelectionPolicy": "First"
+          }
+        ],
+        "computedVariables": [],
+        "evaluationPolicy": "Deferred",
+        "cardinalityPolicy": "Unrestricted",
+        "trendN": "4",
+        "trendRelation": "Decrease",        
+        "internalSegmentation": [],
+        "derivedEvents": [
+          {
+            "name": "ClearRampOverflow",
+            "condition": "(GetAttribute(ArrayGet(trend.participants,ArraySize(trend.participants)-1),\"queueLength\") < (GetAttribute(ArrayGet(trend.participants,ArraySize(trend.participants)-1),\"maxQueueLength\")/2))",            
+            "reportParticipants": false,
+            "expressions": {              
+              "Certainty": "1.0",                      
+              "dmPartition": "GetAttribute(ArrayGet(trend.participants,0),\"dmPartition\")",
+               "sensorId": "context.SegmentationByProblemId",
+              "Duration": "0"              
+          	}
           }
         ],
         "derivedActions": []
@@ -621,11 +839,11 @@
         "name": "AvgOnRampEPA",
         "createdDate": "Mon Nov 10 2014",
         "epaType": "Aggregate",
-        "context": "CompositeOnRamp2minsContext",
+        "context": "CompositeTemporalWindowsForOnRampAggregation",
         "inputEvents": [
           {
-            "name": "AggregatedSensorRead",
-            "filterExpression": "EqualsIgnoreCase(AggregatedSensorRead.lane,'onramp')",
+            "name": "AverageDensityAndSpeedPerLocation",
+            "filterExpression": "EqualsIgnoreCase(AverageDensityAndSpeedPerLocation.lane,'onramp')",
             "consumptionPolicy": "Consume",
             "instanceSelectionPolicy": "First"
           }
@@ -633,13 +851,18 @@
         "computedVariables": [
           {
             "name": "AverageFlow",
-            "aggregationType": "Average",
-            "AggregatedSensorRead": "AggregatedSensorRead.vehicles"
+            "aggregationType": "Sum",
+            "AverageDensityAndSpeedPerLocation": "AverageDensityAndSpeedPerLocation.average_flow"
           },
           {
             "name": "AverageSpeed",
             "aggregationType": "Average",
-            "AggregatedSensorRead": "AggregatedSensorRead.average_speed"
+            "AverageDensityAndSpeedPerLocation": "AverageDensityAndSpeedPerLocation.average_speed"
+          },
+           {
+            "name": "AverageOccupancy",
+            "aggregationType": "Average",
+            "AverageDensityAndSpeedPerLocation": "AverageDensityAndSpeedPerLocation.average_occupancy"
           }
         ],
         "evaluationPolicy": "Deferred",
@@ -647,14 +870,66 @@
         "internalSegmentation": [],
         "derivedEvents": [
           {
-            "name": "OnRampFlow",
+            "name": "AverageOnRampValuesOverInterval",
             "reportParticipants": false,
             "expressions": {
               "Duration": "0",
-              "location": "context.SegmentationByLocation",
-              "average_flow": "AverageFlow",
-              "average_density": "(AverageFlow*240)/AverageSpeed",
-              "average_speed": "AverageSpeed"
+              "location": "ArrayGet(AverageDensityAndSpeedPerLocation.location,0)",
+              "sensorId": "context.SegmentationByProblemId",
+              "dmPartition": "ArrayGet(AverageDensityAndSpeedPerLocation.dmPartition,0)",
+              "average_flow": "AverageFlow",             
+              "average_speed": "AverageSpeed",
+              "average_occupancy":"AverageOccupancy"
+            }
+          }
+        ],
+        "derivedActions": []
+      },
+      {
+        "name": "AvgOffRampEPA",
+        "createdDate": "Mon Nov 10 2014",
+        "epaType": "Aggregate",
+        "context": "CompositeTemporalWindowsForOffRampAggregation",
+        "inputEvents": [
+          {
+            "name": "AverageDensityAndSpeedPerLocation",
+            "filterExpression": "EqualsIgnoreCase(AverageDensityAndSpeedPerLocation.lane,'offramp')",
+            "consumptionPolicy": "Consume",
+            "instanceSelectionPolicy": "First"
+          }
+        ],
+        "computedVariables": [
+          {
+            "name": "AverageFlow",
+            "aggregationType": "Sum",
+            "AverageDensityAndSpeedPerLocation": "AverageDensityAndSpeedPerLocation.average_flow"
+          },
+          {
+            "name": "AverageSpeed",
+            "aggregationType": "Average",
+            "AverageDensityAndSpeedPerLocation": "AverageDensityAndSpeedPerLocation.average_speed"
+          },
+           {
+            "name": "AverageOccupancy",
+            "aggregationType": "Average",
+            "AverageDensityAndSpeedPerLocation": "AverageDensityAndSpeedPerLocation.average_occupancy"
+          }
+        ],
+        "evaluationPolicy": "Deferred",
+        "cardinalityPolicy": "Single",
+        "internalSegmentation": [],
+        "derivedEvents": [
+          {
+            "name": "AverageOffRampValuesOverInterval",
+            "reportParticipants": false,
+            "expressions": {
+              "Duration": "0",
+              "location": "ArrayGet(AverageDensityAndSpeedPerLocation.location,0)",
+               "sensorId": "context.SegmentationByProblemId",
+              "dmPartition": "ArrayGet(AverageDensityAndSpeedPerLocation.dmPartition,0)",
+              "average_flow": "AverageFlow",             
+              "average_speed": "AverageSpeed",
+              "average_occupancy":"AverageOccupancy"
             }
           }
         ],
@@ -664,10 +939,11 @@
         "name": "AvgAggregationOverTimeEPA",
         "createdDate": "Mon Nov 10 2014",
         "epaType": "Aggregate",
-        "context": "CompositeAggregated2minsContext",
+        "context": "CompositeAggregatedIntervalContext",
         "inputEvents": [
           {
             "name": "AverageDensityAndSpeedPerLocation",
+             "filterExpression": "(!EqualsIgnoreCase(AverageDensityAndSpeedPerLocation.lane,'offramp')) AND (!EqualsIgnoreCase(AverageDensityAndSpeedPerLocation.lane,'onramp')) AND (!EqualsIgnoreCase(AverageDensityAndSpeedPerLocation.lane,'queue'))",
             "consumptionPolicy": "Consume",
             "instanceSelectionPolicy": "First"
           }
@@ -680,8 +956,13 @@
           },
           {
             "name": "AverageFlow",
-            "aggregationType": "Average",
+            "aggregationType": "Sum",
             "AverageDensityAndSpeedPerLocation": "AverageDensityAndSpeedPerLocation.average_flow"
+          },
+           {
+            "name": "AverageOccupancy",
+            "aggregationType": "Average",
+            "AverageDensityAndSpeedPerLocation": "AverageDensityAndSpeedPerLocation.average_occupancy"
           }
         ],
         "evaluationPolicy": "Deferred",
@@ -689,14 +970,16 @@
         "internalSegmentation": [],
         "derivedEvents": [
           {
-            "name": "2minsAverageDensityAndSpeedPerLocation",
+            "name": "AverageDensityAndSpeedPerLocationOverInterval",
             "reportParticipants": false,
             "expressions": {
               "Duration": "0",
-              "location": "context.SegmentationByLocation",
-              "average_flow": "AverageFlow",
-              "average_density": "(AverageFlow*240)/AverageSpeed",
-              "average_speed": "AverageSpeed"
+              "location": "ArrayGet(AverageDensityAndSpeedPerLocation.location,0)",
+               "sensorId": "context.SegmentationByProblemId",
+              "dmPartition": "ArrayGet(AverageDensityAndSpeedPerLocation.dmPartition,0)",
+              "average_flow": "AverageFlow",             
+              "average_speed": "AverageSpeed",
+              "average_occupancy":"AverageOccupancy"
             }
           }
         ],
@@ -705,27 +988,7 @@
     ],
     "contexts": {
       "temporal": [
-        {
-          "name": "14SecsNonOverlappingContext",
-          "createdDate": "Sun Nov 09 2014",
-          "type": "TemporalInterval",
-          "atStartup": false,
-          "neverEnding": false,
-          "initiators": [
-            {
-              "initiatorType": "Event",
-              "initiatorPolicy": "Ignore",
-              "name": "AggregatedSensorRead"
-            }
-          ],
-          "terminators": [
-            {
-              "terminatorType": "RelativeTime",
-              "terminationType": "Terminate",
-              "relativeTime": "14000"
-            }
-          ]
-        },
+       
         {
           "name": "TemporalMonitoringCongestion",
           "createdDate": "Sun Nov 09 2014",
@@ -745,6 +1008,11 @@
               "terminatorPolicy": "First",
               "terminationType": "Terminate",
               "name": "ClearCongestion"
+            },
+             {
+              "terminatorType": "RelativeTime",
+              "terminationType": "Terminate",
+              "relativeTime": "300000"
             }
           ]
         },
@@ -760,18 +1028,17 @@
               "initiatorPolicy": "Ignore",
               "name": "Congestion"
             },
-            {
+                       {
               "initiatorType": "Event",
               "initiatorPolicy": "Ignore",
-              "name": "PredictedCongestion"
+              "name": "PredictedTrend"
             }
           ],
           "terminators": [
-            {
-              "terminatorType": "Event",
-              "terminatorPolicy": "First",
+             {
+              "terminatorType": "RelativeTime",
               "terminationType": "Terminate",
-              "name": "ClearCongestion"
+              "relativeTime": "300000"
             }
           ]
         },
@@ -800,16 +1067,11 @@
               "terminatorPolicy": "Each",
               "terminationType": "Terminate",
               "name": "ClearCongestion"
-            },
-            {
-              "terminatorType": "RelativeTime",
-              "terminationType": "Terminate",              
-              "relativeTime": "120000"
             }
           ]
         },
-        {
-          "name": "2minsTemporalWindowsForOnRamp",
+         {
+          "name": "TemporalMonitoringRampOverflow",
           "createdDate": "Sun Nov 09 2014",
           "type": "TemporalInterval",
           "atStartup": false,
@@ -818,20 +1080,69 @@
             {
               "initiatorType": "Event",
               "initiatorPolicy": "Ignore",
-              "name": "AggregatedSensorRead",
-              "condition": "EqualsIgnoreCase(AggregatedSensorRead.lane,'onramp')"
+              "name": "AggregatedQueueLength",
+              "condition": "AggregatedQueueLength.queueLength > (AggregatedQueueLength.maxQueueLength/2)"
+            }
+          ],
+          "terminators": [
+            {
+              "terminatorType": "Event",
+              "terminatorPolicy": "Each",
+              "terminationType": "Terminate",
+              "name": "ClearRampOverflow"
+            },
+            {
+              "terminatorType": "RelativeTime",
+              "terminationType": "Terminate",
+              "relativeTime": "120000"
+            }
+          ]
+        },
+         {
+          "name": "TemporalMonitoringClearRampOverflow",
+          "createdDate": "Sun Nov 09 2014",
+          "type": "TemporalInterval",
+          "atStartup": false,
+          "neverEnding": false,
+          "initiators": [
+            {
+              "initiatorType": "Event",
+              "initiatorPolicy": "Ignore",
+              "name": "PredictedRampOverflow"
+            }
+          ],
+          "terminators": [
+           {
+              "terminatorType": "RelativeTime",
+              "terminationType": "Terminate",
+              "relativeTime": "120000"
+            }
+          ]
+        },
+        {
+          "name": "TemporalWindowsForOnRampAggregation",
+          "createdDate": "Sun Nov 09 2014",
+          "type": "TemporalInterval",
+          "atStartup": false,
+          "neverEnding": false,
+          "initiators": [
+            {
+              "initiatorType": "Event",
+              "initiatorPolicy": "Ignore",
+              "name": "AverageDensityAndSpeedPerLocation",
+              "condition": "EqualsIgnoreCase(AverageDensityAndSpeedPerLocation.lane,'onramp')"
             }
           ],
           "terminators": [
             {
               "terminatorType": "RelativeTime",
               "terminationType": "Terminate",              
-              "relativeTime": "120000"
+              "relativeTime": "65000"
             }
           ]
         },
-        {
-          "name": "2minsTemporalWindowAggregated",
+          {
+          "name": "TemporalWindowsForOffRampAggregation",
           "createdDate": "Sun Nov 09 2014",
           "type": "TemporalInterval",
           "atStartup": false,
@@ -840,43 +1151,43 @@
             {
               "initiatorType": "Event",
               "initiatorPolicy": "Ignore",
-              "name": "AverageDensityAndSpeedPerLocation"
+              "name": "AverageDensityAndSpeedPerLocation",
+              "condition": "EqualsIgnoreCase(AverageDensityAndSpeedPerLocation.lane,'offramp')"
+            }
+          ],
+          "terminators": [
+            {
+              "terminatorType": "RelativeTime",
+              "terminationType": "Terminate",              
+              "relativeTime": "65000"
+            }
+          ]
+        },
+        {
+          "name": "TemporalWindowAggregatedInterval",
+          "createdDate": "Sun Nov 09 2014",
+          "type": "TemporalInterval",
+          "atStartup": false,
+          "neverEnding": false,
+          "initiators": [
+            {
+              "initiatorType": "Event",
+              "initiatorPolicy": "Ignore",
+              "name": "AverageDensityAndSpeedPerLocation",
+              "condition": "((!EqualsIgnoreCase(AverageDensityAndSpeedPerLocation.lane,'offramp')) AND (!EqualsIgnoreCase(AverageDensityAndSpeedPerLocation.lane,'onramp')) AND (!EqualsIgnoreCase(AverageDensityAndSpeedPerLocation.lane,'queue')))"
             }
           ],
           "terminators": [
             {
               "terminatorType": "RelativeTime",
               "terminationType": "Terminate",            
-              "relativeTime": "120000"
+              "relativeTime": "65000"
             }
           ]
         }
       ],
-      "segmentation": [
-        {
-          "name": "SegmentationByLocation",
-          "createdDate": "Sun Aug 31 2014",
-          "participantEvents": [
-            {
-              "name": "AggregatedSensorRead",
-              "expression": "AggregatedSensorRead.location"
-            },
-            {
-              "name": "AverageDensityAndSpeedPerLocation",
-              "expression": "AverageDensityAndSpeedPerLocation.location"
-            }
-          ]
-        },
-        {
-          "name": "SegmentationByLane",
-          "createdDate": "Sun Aug 31 2014",
-          "participantEvents": [
-            {
-              "name": "AggregatedSensorRead",
-              "expression": "AggregatedSensorRead.lane"
-            }
-          ]
-        },
+      "segmentation": [        
+     
         {
           "name": "SegmentationByProblemId",
           "createdDate": "Sun Nov 09 2014",
@@ -885,10 +1196,7 @@
               "name": "Congestion",
               "expression": "Congestion.problem_id"
             },
-            {
-              "name": "PredictedCongestion",
-              "expression": "PredictedCongestion.problem_id"
-            },
+            
             {
               "name": "PredictedTrend",
               "expression": "PredictedTrend.problem_id"
@@ -899,32 +1207,58 @@
             },
             {
               "name": "AverageDensityAndSpeedPerLocation",
-              "expression": " AverageDensityAndSpeedPerLocation.location"
+              "expression": " AverageDensityAndSpeedPerLocation.sensorId"
+            },
+            {
+              "name": "AggregatedQueueLength",
+              "expression": " AggregatedQueueLength.sensorId"
+            },
+            {
+              "name": "PredictedRampOverflow",
+              "expression": " PredictedRampOverflow.sensorId"
+            },
+             {
+              "name": "ClearRampOverflow",
+              "expression": " ClearRampOverflow.sensorId"
             }
           ]
         }
       ],
-      "composite": [
-        {
-          "name": "14secsLocationCompositeContext",
-          "createdDate": "Sun Nov 09 2014",
-          "temporalContexts": [
-            {
-              "name": "14SecsNonOverlappingContext"
-            }
-          ],
-          "segmentationContexts": [
-            {
-              "name": "SegmentationByLocation"
-            }
-          ]
-        },
+      "composite": [       
         {
           "name": "CompositeMonitoringCongestion",
           "createdDate": "Sun Nov 09 2014",
           "temporalContexts": [
             {
               "name": "TemporalMonitoringCongestion"
+            }
+          ],
+          "segmentationContexts": [
+            {
+              "name": "SegmentationByProblemId"
+            }
+          ]
+        },
+         {
+          "name": "CompositeRampOverflow",
+          "createdDate": "Sun Nov 09 2014",
+          "temporalContexts": [
+            {
+              "name": "TemporalMonitoringRampOverflow"
+            }
+          ],
+          "segmentationContexts": [
+            {
+              "name": "SegmentationByProblemId"
+            }
+          ]
+        },
+        {
+          "name": "CompositeRampClearOverflow",
+          "createdDate": "Sun Nov 09 2014",
+          "temporalContexts": [
+            {
+              "name": "TemporalMonitoringClearRampOverflow"
             }
           ],
           "segmentationContexts": [
@@ -962,30 +1296,44 @@
           ]
         },
         {
-          "name": "CompositeOnRamp2minsContext",
+          "name": "CompositeTemporalWindowsForOnRampAggregation",
           "createdDate": "Sun Nov 09 2014",
           "temporalContexts": [
             {
-              "name": "2minsTemporalWindowsForOnRamp"
+              "name": "TemporalWindowsForOnRampAggregation"
             }
           ],
           "segmentationContexts": [
             {
-              "name": "SegmentationByLocation"
+              "name": "SegmentationByProblemId"
+            }
+          ]
+        },
+         {
+          "name": "CompositeTemporalWindowsForOffRampAggregation",
+          "createdDate": "Sun Nov 09 2014",
+          "temporalContexts": [
+            {
+              "name": "TemporalWindowsForOffRampAggregation"
+            }
+          ],
+          "segmentationContexts": [
+            {
+              "name": "SegmentationByProblemId"
             }
           ]
         },
         {
-          "name": "CompositeAggregated2minsContext",
+          "name": "CompositeAggregatedIntervalContext",
           "createdDate": "Sun Nov 09 2014",
           "temporalContexts": [
             {
-              "name": "2minsTemporalWindowAggregated"
+              "name": "TemporalWindowAggregatedInterval"
             }
           ],
           "segmentationContexts": [
             {
-              "name": "SegmentationByLocation"
+              "name": "SegmentationByProblemId"
             }
           ]
         }
@@ -1004,7 +1352,7 @@
           },
           {
             "name": "formatter",
-            "value": "tag"
+            "value": "json"
           },
           {
             "name": "delimiter",
@@ -1020,13 +1368,10 @@
           },
           {
             "name": "dateFormat",
-            "value": "dd/MM/yyyy-HH:mm:ss"
+            "value": "dd/MM/yyyy HH:mm:ss"
           }
         ],
-        "events": [
-          {
-            "name": "PredictedCongestion"
-          },
+        "events": [                
           {
             "name": "PredictedTrend"
           },
@@ -1037,28 +1382,42 @@
             "name": "ClearCongestion"
           },
     	  {
-            "name": "OnRampFlow"
+            "name": "AverageOnRampValuesOverInterval"
           },
           {
             "name": "AverageDensityAndSpeedPerLocation"
           },
            {
-            "name": "2minsAverageDensityAndSpeedPerLocation"
-          }              
-        ],
+            "name": "AverageOffRampValuesOverInterval"
+          },
+          
+           {
+            "name": "AverageDensityAndSpeedPerLocationOverInterval"
+          } ,
+          {
+            "name": "AggregatedQueueLength"
+          },
+                    {
+            "name": "PredictedRampOverflow"
+          },
+	{
+            "name": "ClearRampOverflow"
+          }  
+
+   		],
         "actions": []
       }
     ],
     "producers": 
     [
-    	      {
+      {
         "name": "TextProducer",
         "createdDate": "Sun Aug 31 2014",
         "type": "Timed",
         "properties": [
           {
             "name": "filename",
-            "value": "/tmp/speedd-cep.out"
+            "value": "D:/EP/Projects/Proton/MergeOpenSourceUncertaintyWorkspace/ProtonEU/SPEEDD/Grenoble/for integration (prototype demo)/2015/simulator_data_incident_enriched.csv"
           },
           {
             "name": "pollingInterval",
@@ -1066,23 +1425,31 @@
           },
           {
             "name": "sendingDelay",
-            "value": "4000"
+            "value": "1000"
           },
-          {
+ {
             "name": "formatter",
-            "value": "tag"
+            "value": "csv"
           },
           {
             "name": "delimiter",
-            "value": ";"
+            "value": ","
           },
           {
             "name": "tagDataSeparator",
             "value": "="
           },
           {
+            "name": "csvEventType",
+            "value": "AverageDensityAndSpeedPerLocation"
+          },
+          {
+            "name": "csvAttributeNames",            
+            "value": "timestamp,sensorId,average_speed,vehicle_count_car,vehicle_count_truck,density,density_car,density_truck,average_occupancy,average_density,average_flow,lane,location,dmPartition,queueLength,OccurrenceTime"
+          },
+          {
             "name": "dateFormat",
-            "value": "dd/MM/yyyy-HH:mm:ss"
+            "value": "dd/MM/yyyy HH:mm:ss"
           }
         ],
         "events": []

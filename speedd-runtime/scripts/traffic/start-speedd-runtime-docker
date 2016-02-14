@@ -3,7 +3,7 @@ source ../setup-env
 
 MODE=remote
 
-$STORM_CMD jar $SPEEDD_RUNTIME_LIB/speedd-runtime-0.0.1-SNAPSHOT-jar-with-dependencies.jar org.speedd.SpeeddTopology \
+$STORM_CMD jar $SPEEDD_RUNTIME_LIB/speedd-runtime-0.0.1-SNAPSHOT-jar-with-dependencies.jar org.speedd.SpeeddRunner \
 -D nimbus.host=nimbus -D nimbus.thrift.port=6627 \
 -m remote \
 -Dproducer.type=sync -Dcompression.codec=none -Dserializer.class=org.speedd.kafka.JsonEventEncoder \
@@ -17,7 +17,7 @@ $STORM_CMD jar $SPEEDD_RUNTIME_LIB/speedd-runtime-0.0.1-SNAPSHOT-jar-with-depend
 -Dtopic.admin=speedd-traffic-admin \
 -Dproton.epnPath=CNRSIntegration.json \
 -Dspeedd.inEventScheme=org.speedd.traffic.TrafficAimsunReadingScheme \
--Dspeedd.dmClass=org.speedd.dm.TrafficDecisionMakerBolt \
 -Dspeedd.enricherPath=rochade_sensor_and_aimsun_labels_partitions.csv \
--Dspeedd.enricherClass=org.speedd.traffic.TrafficEnricherBolt \
+-Dspeedd.topology.class=org.speedd.traffic.TrafficManagementTopology \
+-Dtopology.debug=false \
 &
