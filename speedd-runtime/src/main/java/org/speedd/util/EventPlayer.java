@@ -43,6 +43,8 @@ public class EventPlayer {
 	
 	private int rate;
 	
+	private String keyAttr;
+	
 	private static final Logger log = LoggerFactory.getLogger(EventPlayer.class);
 
 	public void playEventsFromFile(String path) throws Exception {
@@ -55,7 +57,7 @@ public class EventPlayer {
 				delayMicroseconds = 1000000 / rate;
 			}
 			
-			eventFileReader = new BufferedEventFileReader(path, topic, kafkaProducerProperties, delayMicroseconds, reps);
+			eventFileReader = new BufferedEventFileReader(path, topic, kafkaProducerProperties, delayMicroseconds, reps, eventParser, keyAttr);
 		} else { 
 			eventFileReader = new TimedEventFileReader(path, topic, kafkaProducerProperties, eventParser);
 		}
@@ -104,6 +106,7 @@ public class EventPlayer {
 		options.addOption("s", "stress", false, "run in stress test mode - no pauses between events");
 		options.addOption("r", "repeat", true, "repeat (n times), 0 = endless loop");
 		options.addOption("a", "rate", true, "rate (events/sec");
+		options.addOption("k", "key", true, "key attribute name");
 
 		CommandLineParser clParser = new DefaultParser();
 
@@ -122,6 +125,8 @@ public class EventPlayer {
 		boolean repModeOn = false;
 		
 		int eventRate = 0;
+		
+		String keyAttr = null;
 
 		try {
 			CommandLine cmd = clParser.parse(options, args);
@@ -151,6 +156,10 @@ public class EventPlayer {
 			
 			if(cmd.hasOption("a")){
 				eventRate = Integer.parseInt(cmd.getOptionValue("a"));
+			}
+			
+			if(cmd.hasOption("k")){
+				keyAttr = cmd.getOptionValue("k");
 			}
 
 			@SuppressWarnings("unchecked")
@@ -184,6 +193,11 @@ public class EventPlayer {
 			player = new EventPlayer(configPath, topic,
 					null, stressModeOn, repModeOn, reps, eventRate);
 		}
+		
+		if(keyAttr != null){
+			player.keyAttr = keyAttr;
+		}
+		
 		player.playEventsFromFile(eventFile);
 		
 		return;
