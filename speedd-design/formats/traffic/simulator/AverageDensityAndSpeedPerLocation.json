@@ -80,8 +80,8 @@
           },
           {
             "dimension": 0,
-            "name": "queueLength",
-            "type": "Integer"
+            "name": "density",
+            "type": "Double"
           }
         ],
         "createdDate": "Sun Aug 31 2014"
