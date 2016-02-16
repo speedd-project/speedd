@@ -48,7 +48,7 @@ public class CCFTopology extends BaseSpeeddTopology {
 			throw new RuntimeException("Building Proton topology failed, reason: ", e);
 		}
 
-		builder.setBolt(OUT_EVENT_WRITER, eventWriterBolt, 2).shuffleGrouping(CEP_EVENT_CONSUMER).setNumTasks(2);
+		builder.setBolt(OUT_EVENT_WRITER, eventWriterBolt, 4).shuffleGrouping(CEP_EVENT_CONSUMER).setNumTasks(8);
 
 		return builder.createTopology();	
 	}
