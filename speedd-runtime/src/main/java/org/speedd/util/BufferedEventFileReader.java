@@ -5,10 +5,12 @@ import java.util.ArrayList;
 import java.util.Properties;
 
 import org.speedd.EventFileReader;
+import org.speedd.EventParser;
 import org.speedd.EventReaderException;
+import org.speedd.data.Event;
 
 public class BufferedEventFileReader extends EventFileReader {
-	ArrayList<String> buffer;
+	ArrayList<EventMessageRecord> buffer;
 	
 	protected static final int INITIAL_BUFFER_CAPACITY = 10000;
 	
@@ -24,15 +26,26 @@ public class BufferedEventFileReader extends EventFileReader {
 	
 	protected static final int DEFAULT_REPS = 1;
 	
+	private EventParser eventParser;
+	
+	private String keyAttr;
+	
+	public BufferedEventFileReader(String filePath, String topic,
+			Properties kafkaProducerProperties, long sendDelayMillis, int reps, EventParser eventParser, String keyAttr){
+		super(filePath, topic, kafkaProducerProperties, sendDelayMillis);
+		buffer = new ArrayList<EventMessageRecord>(INITIAL_BUFFER_CAPACITY);
+		this.reps = reps;
+		this.eventParser = eventParser;
+	}
+	
 	public BufferedEventFileReader(String filePath, String topic,
 			Properties kafkaProducerProperties, long sendDelayMillis, int reps){
-		super(filePath, topic, kafkaProducerProperties, sendDelayMillis);
-		buffer = new ArrayList<String>(INITIAL_BUFFER_CAPACITY);
-		this.reps = reps;
+		this(filePath, topic, kafkaProducerProperties, sendDelayMillis, reps, null, null);
 	}
+	
 	public BufferedEventFileReader(String filePath, String topic,
 			Properties kafkaProducerProperties, long sendDelayMillis) {
-		this(filePath, topic, kafkaProducerProperties, sendDelayMillis, DEFAULT_REPS);
+		this(filePath, topic, kafkaProducerProperties, sendDelayMillis, DEFAULT_REPS, null, null);
 	}
 	
 	@Override
@@ -55,7 +68,7 @@ public class BufferedEventFileReader extends EventFileReader {
 			}
 			
 			if (line != null){
-				buffer.add(line);
+				buffer.add(createEventMessageRecord(line));
 			} else {
 				done = true;
 			}
@@ -68,6 +81,17 @@ public class BufferedEventFileReader extends EventFileReader {
 		repCount = -1;
 		
 		isOpen = true;
+	}
+	
+	private EventMessageRecord createEventMessageRecord(String line){
+		if(eventParser != null && keyAttr != null){
+			Event event = eventParser.fromBytes(line.getBytes());
+			Object key = event.getAttributes().get(keyAttr);
+			return new EventMessageRecord(line, delayMicroseconds, key.toString());
+			
+		} else {
+			return new EventMessageRecord(line, delayMicroseconds);
+		}
 	}
 	
 	@Override
@@ -92,7 +116,7 @@ public class BufferedEventFileReader extends EventFileReader {
 			repCount++;
 		}
 		
-		return repCount < reps? new EventMessageRecord(buffer.get(cursor), delayMicroseconds) : null;
+		return repCount < reps? buffer.get(cursor) : null;
 	}
 
 }

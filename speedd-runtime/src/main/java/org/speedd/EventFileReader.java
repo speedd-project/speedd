@@ -22,10 +22,16 @@ public class EventFileReader {
 	protected static class EventMessageRecord {
 		public final String messageText;
 		public final long sendDelayMicroseconds;
+		public final String key;
 
-		public EventMessageRecord(String msg, long delay) {
+		public EventMessageRecord(String msg, long delay, String messageKey) {
 			messageText = msg;
 			sendDelayMicroseconds = delay;
+			key = messageKey;
+		}
+
+		public EventMessageRecord(String msg, long delay) {
+			this(msg, delay, null);
 		}
 	}
 
@@ -195,11 +201,13 @@ public class EventFileReader {
 				EventMessageRecord eventMessageRecord = nextEventMessageRecord();
 				if (eventMessageRecord != null) {
 					TimeUnit.MICROSECONDS.sleep(eventMessageRecord.sendDelayMicroseconds);
-
+					
 					logger.debug(String.format("Line to send to topic %s: %s",
 							topic, eventMessageRecord.messageText));
 					ProducerRecord<String, String> message = new ProducerRecord<String, String>(
-							topic, eventMessageRecord.messageText);
+							topic, 
+							eventMessageRecord.key, 
+							eventMessageRecord.messageText);
 
 					producer.send(message, sendCallback);
 					
