@@ -40,5 +40,5 @@ CLASSPATH=$SPEEDD_RUNTIME_LIB/speedd-runtime-0.0.1-SNAPSHOT-jar-with-dependencie
 
 echo "Running stress test with target rate $rate events/sec using events from $in_event_file"
 
-java -cp $CLASSPATH org.speedd.util.EventPlayer -c ../producer-mesos.properties -t speedd-fraud-in-events -p org.speedd.fraud.FraudAggregatedReadingCsv2Event -s -r 1 -a $rate $in_event_file
+java -cp $CLASSPATH org.speedd.util.EventPlayer -c ../producer-mesos.properties -t speedd-fraud-in-events -p org.speedd.fraud.FraudAggregatedReadingCsv2Event -s -k card_pan -r 1 -a $rate $in_event_file
 
