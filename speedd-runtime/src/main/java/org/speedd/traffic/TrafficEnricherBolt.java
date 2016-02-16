@@ -38,15 +38,13 @@ public class TrafficEnricherBolt extends BaseBasicBolt {
 		 */
 		private static final long serialVersionUID = 1L;
 		private String dm_partition;
-		private String lane;
-		private double queueLength;
+		private String lane;	
 		private String location;
 		
 		private EnrichmentInformation(String dm_partition, String lane,
-				double queueLength, String location) {			
+				 String location) {			
 			this.dm_partition = dm_partition;
-			this.lane = lane;
-			this.queueLength = queueLength;
+			this.lane = lane;			
 			this.location = location;
 		}
 
@@ -75,15 +73,16 @@ public class TrafficEnricherBolt extends BaseBasicBolt {
 			updatedAttributes.put(TrafficAimsunReadingCsv2Event.ATTR_LANE, information.lane);
 			updatedAttributes.put(TrafficAimsunReadingCsv2Event.ATTR_DM_PARTITION,information.dm_partition);
 			updatedAttributes.put(TrafficAimsunReadingCsv2Event.ATTR_LOCATION,information.location);
-			updatedAttributes.put(TrafficAimsunReadingCsv2Event.ATTR_QUEUE_LENGTH,information.queueLength);
+			updatedAttributes = Collections.unmodifiableMap(updatedAttributes);
+			
+			List<Object> tuple = new ArrayList<Object>();
+			tuple.add(input.getValueByField(Fields.FIELD_PROTON_EVENT_NAME));
+			tuple.add(input.getValueByField(Fields.FIELD_TIMESTAMP));
+			tuple.add(updatedAttributes);
+			
+			collector.emit(tuple);
 		}
-		 updatedAttributes = Collections.unmodifiableMap(updatedAttributes);
-		 List<Object> tuple = new ArrayList<Object>();
-		 tuple.add(input.getValueByField(Fields.FIELD_PROTON_EVENT_NAME));
-		 tuple.add(input.getValueByField(Fields.FIELD_TIMESTAMP));
-		 tuple.add(updatedAttributes);
-		
-		 collector.emit(tuple);
+		 
 
 	}
 
@@ -113,12 +112,11 @@ public class TrafficEnricherBolt extends BaseBasicBolt {
 				String aimsunId = tuple[1];
 				String lane = tuple[3];
 				String dm_partition = tuple[2];
-				String location = tuple[0];
-				Double queueLength = Double.valueOf(tuple[8]);
+				String location = tuple[0];				
 				
 				if (!aimsunId.equals("????")){
 										
-					EnrichmentInformation enrichmentInfo= new EnrichmentInformation(dm_partition, lane, queueLength, location);
+					EnrichmentInformation enrichmentInfo= new EnrichmentInformation(dm_partition, lane, location);
 					mappingTable.put(aimsunId, enrichmentInfo);
 				}
 				line = reader.readLine();

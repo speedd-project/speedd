@@ -536,6 +536,11 @@
             "dimension": 0
           },
           {
+            "name": "density",
+            "type": "Double",
+            "dimension": 0
+          },
+          {
             "name": "average_density",
             "type": "Double",
             "dimension": 0
@@ -570,12 +575,8 @@
             "name": "dmPartition",
             "type": "String",
             "dimension": 0
-          },
-		  {
-            "name": "queueLength",
-            "type": "Integer",
-            "dimension": 0
-          }		  		            		                                
+          }
+		 	            		                                
              
         ]
       },

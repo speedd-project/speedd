@@ -12,16 +12,16 @@ import org.speedd.data.EventFactory;
 
 public class TrafficAimsunReadingCsv2Event implements EventParser, Constants {
 	protected static final String ATTR_LOCATION = "location";
-	protected static final String ATTR_DETECTOR_ID = "detector_id";
+	protected static final String ATTR_DETECTOR_ID = "sensorId";
 	protected static final String ATTR_LANE = "lane";
 	protected static final String ATTR_VEHICLES = "average_flow";
 	protected static final String ATTR_OCCUPANCY = "average_occupancy";	
 	protected static final String ATTR_TIMESTAMP = "timestamp";
 	protected static final String ATTR_AVG_SPEED = "average_speed";	
 	protected static final String ATTR_NORMALIZED_DENSITY = "average_density";	
+	protected static final String ATTR_DENSITY = "density";
 	protected static final String ATTR_DM_PARTITION = "dm_partition";		
-	protected static final String ATTR_QUEUE_LENGTH = "queue_length";
-	
+		
 	
 	private static final int ATTR_TIME_INDEX = 0;
 	private static final int ATTR_OCCUPANCY_INDEX = 8;
@@ -75,6 +75,7 @@ public class TrafficAimsunReadingCsv2Event implements EventParser, Constants {
 			attrMap.put(ATTR_VEHICLES, carsNumber+trucksNumber);			
 			attrMap.put(ATTR_AVG_SPEED, getNumericValue(tuple[ATTR_AVG_SPEED_INDEX]));
 			attrMap.put(ATTR_NORMALIZED_DENSITY, calculatedDensity);
+			attrMap.put(ATTR_DENSITY, average_density);
 			
 
 			return eventFactory.createEvent(name, timestamp, attrMap);

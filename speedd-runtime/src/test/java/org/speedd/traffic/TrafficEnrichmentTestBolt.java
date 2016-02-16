@@ -23,14 +23,15 @@ import backtype.storm.tuple.Values;
 
 public class TrafficEnrichmentTestBolt {
 	protected static final String ATTR_LOCATION = "location";
-	protected static final String ATTR_DETECTOR_ID = "detector_id";
+	protected static final String ATTR_DETECTOR_ID = "sensorId";
 	protected static final String ATTR_LANE = "lane";
 	protected static final String ATTR_VEHICLES = "average_flow";	
 	protected static final String ATTR_TIMESTAMP = "timestamp";
 	protected static final String ATTR_AVG_SPEED = "average_speed";	
-	protected static final String ATTR_NORMALIZED_DENSITY = "average_density";	
+	protected static final String ATTR_NORMALIZED_DENSITY = "average_density";
+	protected static final String ATTR_DENSITY = "density";	
 	protected static final String ATTR_DM_PARTITION = "dm_partition";		
-	protected static final String ATTR_QUEUE_LENGTH = "queue_length";
+	
 
 	
 	
@@ -74,6 +75,7 @@ public class TrafficEnrichmentTestBolt {
 		eventAttributes.put(ATTR_VEHICLES, 10);			
 		eventAttributes.put(ATTR_AVG_SPEED, 86.5);
 		eventAttributes.put(ATTR_NORMALIZED_DENSITY, 0.98);
+		eventAttributes.put(ATTR_DENSITY,123);
 		String eventName = "AverageDensityAndSpeedPerLocation";
 		
 		Tuple input = mockTuple(new Values(eventName,currentTimestamp ,eventAttributes));
@@ -86,8 +88,7 @@ public class TrafficEnrichmentTestBolt {
 		
 		Map<String,Object> eventUpdatedAttributes = (Map<String, Object>) outTuple.get(2);		
 		assertEquals(eventUpdatedAttributes.get(ATTR_DM_PARTITION),"section2");
-		assertEquals(eventUpdatedAttributes.get(ATTR_LANE),"onramp");
-		assertEquals(eventUpdatedAttributes.get(ATTR_QUEUE_LENGTH),120);
+		assertEquals(eventUpdatedAttributes.get(ATTR_LANE),"onramp");		
 		assertEquals(eventUpdatedAttributes.get(ATTR_LOCATION),"0024a4dc00001b67");
 		
 	}
