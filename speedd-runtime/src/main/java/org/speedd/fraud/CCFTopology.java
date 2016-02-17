@@ -13,6 +13,7 @@ import backtype.storm.topology.base.BaseRichSpout;
 
 import com.ibm.hrl.proton.ProtonTopologyBuilder;
 import com.ibm.hrl.proton.metadata.parser.ParsingException;
+import com.ibm.hrl.proton.utilities.containers.Pair;
 
 public class CCFTopology extends BaseSpeeddTopology {
 
@@ -38,12 +39,12 @@ public class CCFTopology extends BaseSpeeddTopology {
 		ProtonTopologyBuilder protonTopologyBuilder = new ProtonTopologyBuilder();
 
 		try {
-			protonTopologyBuilder.buildProtonTopology(
+			Pair<String,String> boltRoutingInformation = protonTopologyBuilder.buildProtonTopology(
 					builder, 
-					IN_EVENT_READER,
-					protonOutputConsumerBolt,
-					CEP_EVENT_CONSUMER,
-					speeddConfig.epnPath);
+					IN_EVENT_READER,					
+					speeddConfig.epnPath,
+					Integer.valueOf(speeddConfig.cepParallelismHint));
+			builder.setBolt(CEP_EVENT_CONSUMER, protonOutputConsumerBolt).shuffleGrouping(boltRoutingInformation.getFirstValue(), boltRoutingInformation.getSecondValue());
 		} catch (ParsingException e) {
 			throw new RuntimeException("Building Proton topology failed, reason: ", e);
 		}

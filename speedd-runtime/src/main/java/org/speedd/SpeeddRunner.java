@@ -111,6 +111,7 @@ public class SpeeddRunner {
 				.getProperty("speedd.enricherClass");
 		configuration.inEventScheme = (String) properties
 				.getProperty("speedd.inEventScheme");
+		configuration.cepParallelismHint = (String)properties.getProperty("speedd.cepParallelismHint");
 
 		configuration.topicInEvents = (String) properties.getProperty(CONFIG_KEY_IN_EVENTS_TOPIC);
 		configuration.topicOutEvents = (String) properties.getProperty(CONFIG_KEY_OUT_EVENTS_TOPIC);

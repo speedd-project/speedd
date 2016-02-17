@@ -19,5 +19,6 @@ $STORM_CMD jar $SPEEDD_RUNTIME_LIB/speedd-runtime-0.0.1-SNAPSHOT-jar-with-depend
 -Dspeedd.inEventScheme=org.speedd.traffic.TrafficAimsunReadingScheme \
 -Dspeedd.enricherPath=rochade_sensor_and_aimsun_labels_partitions.csv \
 -Dspeedd.topology.class=org.speedd.traffic.TrafficManagementTopology \
+-Dspeedd.cepParallelismHint=3 \
 -Dtopology.debug=false \
 &
