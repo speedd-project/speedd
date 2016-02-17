@@ -369,13 +369,21 @@ public abstract class BaseSpeeddIntegrationTest {
 				.getProperty("zookeeper.connect");
 
 		String epnPath = properties.getProperty("proton.epnPath");
+		
+		String enricherPath = properties.getProperty("speedd.enricherPath");
+		
+		speeddConfiguration.cepParallelismHint = properties.getProperty("speedd.cepParallelismHint");
 
 		try {
-			URI epnUri = this.getClass().getClassLoader().getResource(epnPath)
-					.toURI();
+			ClassLoader cl = this.getClass().getClassLoader();
+			
+			URI epnUri = cl.getResource(epnPath).toURI();
 
-			speeddConfiguration.epnPath = Paths.get(epnUri).toAbsolutePath()
-					.toString();
+			speeddConfiguration.epnPath = Paths.get(epnUri).toAbsolutePath().toString();
+			
+			if(enricherPath != null)	{
+				speeddConfiguration.enricherPath = Paths.get(cl.getResource(enricherPath).toURI()).toAbsolutePath().toString();
+			}
 
 		} catch (URISyntaxException e) {
 			fail("Cannot read epnPath property as a path: " + e.getMessage());

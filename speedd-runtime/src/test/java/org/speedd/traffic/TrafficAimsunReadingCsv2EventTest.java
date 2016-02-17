@@ -3,6 +3,9 @@ package org.speedd.traffic;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.InputStreamReader;
 import java.nio.charset.Charset;
 
 import org.junit.Test;
@@ -28,6 +31,35 @@ public class TrafficAimsunReadingCsv2EventTest {
 		Event event = parser.fromBytes(empty.getBytes(Charset.forName("UTF-8")));
 		
 		assertNull(event);
+	}
+	
+	
+	@Test
+	public void testMany() throws Exception {
+		BufferedReader reader = new BufferedReader(new FileReader("c:\\temp\\inevents2.txt"));
+		
+		boolean done = false;
+		
+		try {
+		while(!done){
+			String csv = reader.readLine();
+			
+			if(csv != null) {
+				Event event = parser.fromBytes(csv.getBytes(Charset.forName("UTF-8")));
+				if(csv.trim().isEmpty()){
+					assertNull(event);
+				} else {
+					assertNotNull(event);
+				}
+			} else {
+				done = true;
+			}
+		}
+		} finally {
+			if(reader != null){
+				reader.close();
+			}
+		}
 	}
 
 }

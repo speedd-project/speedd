@@ -4,18 +4,19 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.speedd.data.impl.SpeeddEventFactory;
 import org.speedd.traffic.TrafficAggregatedReadingCsv2Event;
+import org.speedd.traffic.TrafficAimsunReadingCsv2Event;
 import org.speedd.traffic.TrafficManagementTopology;
 
 public class TestTrafficManagement extends BaseSpeeddIntegrationTest {
 	private static final String TOPOLOGY_NAME = "speedd-traffic-test";
 
 	@Test
-	@Ignore
+//	@Ignore
 	public void testCNRS() throws Exception {
-		TimedEventFileReader eventReader = new TimedEventFileReader(TestTrafficManagement.class.getClassLoader().getResource("traffic-data-short.csv").getPath(), "speedd-traffic-in-events", createProducerConfig(), new TrafficAggregatedReadingCsv2Event(SpeeddEventFactory.getInstance()));
+		TimedEventFileReader eventReader = new TimedEventFileReader(TestTrafficManagement.class.getClassLoader().getResource("simulator_data_incident_short.csv").getPath(), "speedd-traffic-in-events", createProducerConfig(), new TrafficAimsunReadingCsv2Event(SpeeddEventFactory.getInstance()));
 		//EventFileReader eventReader = new EventFileReader(TestTrafficManagement.class.getClassLoader().getResource("inputCNRS.csv").getPath(), "speedd-in-events", createProducerConfig(), 1000);
 
-		streamEventsAndVerifyResults("speedd-traffic.properties", "traffic", eventReader, new String[]{"PredictedCongestion", "2minsAverageDensityAndSpeedPerLocation"}, new String[]{"UpdateMeteringRateAction"});
+		streamEventsAndVerifyResults("speedd-traffic.properties", "traffic", eventReader, new String[]{"Congestion", "AverageDensityAndSpeedPerLocation"}, new String[]{});
 		
 	}
 
