@@ -16,6 +16,8 @@ import java.util.Map;
 public class network {
     public final Map<Integer,Intersection> Intersections;
     public final Map<Integer,Road> Roads;
+    public final Map<Integer,Integer> sensor2road;
+    public final Map<Integer,Integer> actuator2intersection;
     
     // constructor - Grenoble rocade (hardcoded) 
     public network(String networkId) {
@@ -33,7 +35,7 @@ public class network {
 			int[] sens_on = { 1708, 1703,   -1,   -1};
 			int[] sens_of = {   -1,   -1,   -1,   -1};
 			double[] beta = {   0.,   0.,   0.,   0.};
-			int[] actu_id = {   -1, 1589,   -1,   -1};
+			int[] actu_id = {   -1, 4489,   -1,   -1};
 			double[] length = { 1.,   1.,   1.,   1.};
 			double[] ql   = {   1.,   1.,   1.,   1.};
 			network buffer = makeFreeway(sens_in,sens_ou,sens_on,sens_qu,sens_of,actu_id,beta,length,ql,1);
@@ -47,7 +49,7 @@ public class network {
 			int[] sens_on = {   -1, 1687,   -1, 1679, 1675,   -1,   -1};
 			int[] sens_of = { 1691,   -1, 1683,   -1,   -1,   -1,   -1};
 			double[] beta = {  0.2,   0.,  0.2,   0.,   0.,   0.,   0.};
-			int[] actu_id = {   -1,   -1,   -1, 1347,   -1,   -1,   -1};
+			int[] actu_id = {   -1,   -1,   -1, 4488,   -1,   -1,   -1};
 			double[] length = { 1.,   1.,   1.,   1.,   1.,   1.,   1.};
 			double[] ql   = {   1.,   1.,   1.,   1.,   1.,   1.,   1.};
 			network buffer = makeFreeway(sens_in,sens_ou,sens_on,sens_qu,sens_of,actu_id,beta,length,ql,4);
@@ -61,7 +63,7 @@ public class network {
 			int[] sens_on = {   -1, 1666,   -1,   -1};
 			int[] sens_of = { 1670,   -1,   -1,   -1};
 			double[] beta = {  0.2,   0.,   0.,   0.};
-			int[] actu_id = {   -1, 1558,   -1,   -1};
+			int[] actu_id = {   -1, 4487,   -1,   -1};
 			double[] length = { 1.,   1.,   1.,   1.};
 			double[] ql   = {   1.,   1.,   1.,   1.};
 			network buffer = makeFreeway(sens_in,sens_ou,sens_on,sens_qu,sens_of,actu_id,beta,length,ql,10);
@@ -72,10 +74,10 @@ public class network {
 			int[] sens_in = {   -1, 4375,   -1, 4057,   -1,   -1};
 			int[] sens_ou = {   -1, 4058,   -1, 4056, 4166,   -1};   
 			int[] sens_qu = {   -1, 4135,   -1, 4136,   -1,   -1};
-			int[] sens_on = {   -1, 1658,   -1, 1680,   -1,   -1};
+			int[] sens_on = {   -1, 1658,   -1, 1650,   -1,   -1};
 			int[] sens_of = { 1662,   -1, 1654,   -1,   -1,   -1};
 			double[] beta = {  0.2,   0.,  0.2,   0.,   0.,   0.};
-			int[] actu_id = {   -1, 1547,   -1, 3995,   -1,   -1};
+			int[] actu_id = {   -1, 4486,   -1, 4453,   -1,   -1};
 			double[] length = { 1.,   1.,   1.,   1.,   1.,   1.};
 			double[] ql   = {   1.,   1.,   1.,   1.,   1.,   1.};
 			network buffer = makeFreeway(sens_in,sens_ou,sens_on,sens_qu,sens_of,actu_id,beta,length,ql,13);
@@ -89,7 +91,7 @@ public class network {
 			int[] sens_on = {   -1, 1642,   -1, 1634,   -1};
 			int[] sens_of = { 1646,   -1, 1638,   -1,   -1};
 			double[] beta = {  0.2,   0.,  0.2,   0.,   0.};
-			int[] actu_id = {   -1, 4007,   -1,   -1,   -1};
+			int[] actu_id = {   -1, 4490,   -1,   -1,   -1};
 			double[] length = { 1.,   1.,   1.,   1.,   1.};
 			double[] ql   = {   1.,   1.,   1.,   1.,   1.};
 			network buffer = makeFreeway(sens_in,sens_ou,sens_on,sens_qu,sens_of,actu_id,beta,length,ql,18);
@@ -100,6 +102,9 @@ public class network {
         	this.Roads = null;
         	throw(new IllegalArgumentException("Unknwon subnetwork name."));
         }
+        // create lookup tables
+        this.actuator2intersection = this.makeActuator2Intersection();
+        this.sensor2road = this.makeSensor2road();
     }
    
     /**
@@ -117,6 +122,9 @@ public class network {
         for (Map.Entry<Integer,Intersection> entry : this.Intersections.entrySet()) {
     		entry.getValue().setRoadReferences(this.Roads);
         }
+        // create lookup tables
+        this.actuator2intersection = this.makeActuator2Intersection();
+        this.sensor2road = this.makeSensor2road();
     }
     
     /**
@@ -342,7 +350,43 @@ public class network {
 		
 		return new network(intersections,roads); 
 	}
-	
+	   
+    /**
+     * Create lookup table mapping sensorId to roadId. To be called in the
+     * constructor.
+     * @return lookup table
+     */
+    private Map<Integer,Integer> makeSensor2road() {
+    	// create datastructure
+    	Map<Integer,Integer> sensor2road = new HashMap<Integer,Integer>();
+    	// iterate over roads
+    	for (Map.Entry<Integer,Road> entry : this.Roads.entrySet()) {
+    		if (entry.getValue().sensor_begin != -1) {
+    			sensor2road.put(entry.getValue().sensor_begin, entry.getKey());
+    		}
+    		if (entry.getValue().sensor_end != -1) {
+    			sensor2road.put(entry.getValue().sensor_end, entry.getKey());
+    		}
+    	}
+    	return sensor2road;
+    }
+    
+    /**
+     * Create lookup table mapping actuatorId to intersectionId. To be called
+     * in the constructor.
+     * @return
+     */
+    private Map<Integer,Integer> makeActuator2Intersection() {
+    	// create datastructure
+    	Map<Integer,Integer> actuator2intersection = new HashMap<Integer,Integer>();
+    	// iterate over roads
+    	for (Map.Entry<Integer,Intersection> entry : this.Intersections.entrySet()) {
+    		if (entry.getValue().ActuatorId != -1) {
+    			actuator2intersection.put(entry.getValue().ActuatorId, entry.getKey());
+    		}
+    	}
+    	return actuator2intersection;
+    }
     
 }
 

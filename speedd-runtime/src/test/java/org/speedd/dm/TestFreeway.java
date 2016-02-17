@@ -38,16 +38,6 @@ public class TestFreeway {
 		// create controller
 		DistributedRM controller = new DistributedRM(freeway);
 		
-		
-		// test "findCorresponding onramp"
-		assertEquals(-1, controller.findCorrespondingOnramp(0)); // no onramp found
-		assertEquals(-1, controller.findCorrespondingOnramp(123)); // sensor doesn't exist
-		assertEquals(1, controller.findCorrespondingOnramp(1));
-		assertEquals(1, controller.findCorrespondingOnramp(2));
-		assertEquals(1, controller.findCorrespondingOnramp(403));
-		assertEquals(1, controller.findCorrespondingOnramp(4));
-		assertEquals(5, controller.findCorrespondingOnramp(5));
-		assertEquals(5, controller.findCorrespondingOnramp(6));
 		// test "sensor2onramp"
 		assertEquals(null, controller.sensor2onramp(0)); // no onramp found
 		assertEquals(null, controller.sensor2onramp(123)); // sensor doesn't exist

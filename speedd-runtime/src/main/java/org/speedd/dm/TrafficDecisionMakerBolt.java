@@ -36,7 +36,7 @@ public class TrafficDecisionMakerBolt extends BaseRichBolt {
     Map<String, subnetData> subnetDataMap = new HashMap<String, subnetData>();
     
     public final double dt = 15/3600;
-    public final double tperiod = 120/3600;
+    public final double tperiod = 60/3600;
 
 
 	@SuppressWarnings("rawtypes")
@@ -81,7 +81,7 @@ public class TrafficDecisionMakerBolt extends BaseRichBolt {
             subnetData localData = subnetDataMap.get(DMlocation);
             if (localData == null) {
                 // create instance of data if not yet created
-                localData = new subnetData();
+                localData = new subnetData(timestamp);
                 // save instance
                 subnetDataMap.put(DMlocation,localData);
             }  
@@ -90,8 +90,9 @@ public class TrafficDecisionMakerBolt extends BaseRichBolt {
             if (eventName.equals("mainlineAverages") || eventName.equals("onrampAverages"))
             {
             	// check if external inflow
-            	int roadId = distController.findRoadId(location);
-	            	if (roadId != -1) {
+            	//int roadId = distController.findRoadId(location);
+            	Integer roadId = freeway.sensor2road.get(location);
+	            if (roadId != null) {
 	            	// FIXME: Some implicit assumptions about a sensor being on the road entering a subnetwork here...
 	            	if (freeway.Roads.get(roadId).intersection_begin == -1) {
 	            		// external inflow
@@ -100,34 +101,33 @@ public class TrafficDecisionMakerBolt extends BaseRichBolt {
 	                    localData.externalDemand.put(location, inflow);
 	            	} else {
 	            		// internal measurement
-	            		// potentially simulate for one step
 	            		Double density = (Double) attributes.get("average_density");
-	                    localData.densityMeasurements.put(location, density);
-	                    Double flow = (Double) attributes.get("average_flow");
-	                    localData.flowMeasurements.put(location,  flow);
-	                    
-	                    // Update system state
-	                    if ((timestamp - localData.tUpdate) > dt) {
-	                    	double T = timestamp - localData.tUpdate;
-	                        // predict flows
-	                    	Map<Integer,Double> flows = freeway.predictFlows(localData.iTLPmap, T);
-	                    	// Flow correction step
-	                    	flows = this.updateData(flows, localData.flowMeasurements, 1.); // FIXME: Magic number --> estimate variance instead?
-	                    	// predict densities
-	                    	Map<Integer,Double> densities = freeway.predictDensity(flows, localData.externalDemand);  	
-	                    	// Density correction step
-	                    	densities = this.updateData(densities, localData.densityMeasurements, 1.); // FIXME: Magic number --> estimate variance instead?
-	                    	// saveback
-	                    	freeway.initDensitites(densities);
-	                    	
-	                    	// clear measurement structs
-	                    	localData.densityMeasurements.clear();
-	                    	localData.flowMeasurements.clear();
-	                    	localData.externalDemand.clear();
-	                    	// reset time of last measurement
-	                    	localData.tUpdate = timestamp;
-	                    }
+	                    localData.densityMeasurements.put(freeway.sensor2road.get(location), density); // FIXME: What if two sensors on one road?
+	                    // sDouble flow = (Double) attributes.get("average_flow");
+	                    // localData.flowMeasurements.put(location,  flow); // FIXME translation of sensor id required
 	            	}
+	            	// Update system state
+                    if ((timestamp - localData.tUpdate) > dt) {
+                    	double T = timestamp - localData.tUpdate;
+                        // predict flows
+                    	Map<Integer,Double> flows = freeway.predictFlows(localData.iTLPmap, T);
+                    	// Flow correction step
+                    	// flows = this.updateData(flows, localData.flowMeasurements, 1.); // FIXME: Magic number --> estimate variance instead?
+                    	// FIXME: Flow correction won't work yet, flow measurements have to be translated to correct IDs
+                    	// predict densities
+                    	Map<Integer,Double> densities = freeway.predictDensity(flows, localData.externalDemand);  	
+                    	// Density correction step
+                    	densities = this.updateData(densities, localData.densityMeasurements, 1.); // FIXME: Magic number --> estimate variance instead?
+                    	// saveback
+                    	freeway.initDensitites(densities);
+                    	
+                    	// clear measurement structs
+                    	localData.densityMeasurements.clear();
+                    	localData.flowMeasurements.clear();
+                    	localData.externalDemand.clear();
+                    	// reset time of last measurement
+                    	localData.tUpdate = timestamp;
+                    }
             	}
             }
  
@@ -171,7 +171,11 @@ public class TrafficDecisionMakerBolt extends BaseRichBolt {
     	public Map<Integer,Double> externalDemand = new HashMap<Integer,Double>();
         public Map<Integer,Double> flowMeasurements = new HashMap<Integer,Double>();
         public Map<Integer,Double> densityMeasurements = new HashMap<Integer,Double>();
-        public long tUpdate = 0;
+        public long tUpdate;
+        
+        public subnetData(long t_init) {
+        	this.tUpdate = t_init;
+        }
     }
     
     private Map<Integer,Double> updateData(Map<Integer,Double> estimate, Map<Integer,Double> measurement, double lambda) {

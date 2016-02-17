@@ -2,6 +2,7 @@ package org.speedd.dm;
 
 import static org.junit.Assert.*;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -121,6 +122,17 @@ public class TestNetworkCreation{
 		System.out.println("\n");
 		section5.printNetwork();
 		
+		// test lookup tables
+		// use "section4", since it is sufficiently "intersesting"
+		System.out.println(Arrays.toString(section4.sensor2road.entrySet().toArray()));
+		// check sensors-roads
+		assertEquals((Integer) 16, section4.sensor2road.get(4057));
+		assertEquals((Integer) 17, section4.sensor2road.get(4166));
+		assertEquals((Integer) 116, section4.sensor2road.get(1650));
+		assertEquals((Integer) 114, section4.sensor2road.get(1658));
+		// check actuators-intersections
+		assertEquals((Integer) 14, section4.actuator2intersection.get(4486));
+		assertEquals((Integer) 16, section4.actuator2intersection.get(4453));
 		
 		
 	}
