@@ -97,7 +97,8 @@ public class DistributedRM {
 		Map<String, Object> attributes = inEvent.getAttributes();
 		onrampStruct localOnramp =  processEvent(eventName, timestamp, attributes);
 		
-		if (!(localOnramp == null) && (localOnramp.operationMode >= 1)) {
+		// next line contains as last elment the trigger to issue new ramp metering commands
+		if (!(localOnramp == null) && (localOnramp.operationMode >= 1) && (eventName.equals("onrampAverages"))) {
 			// Create Action Event
 	        Map<String, Object> outAttrs = new HashMap<String, Object>();
 	        outAttrs.put("newMeteringRate", localOnramp.dutycycle); // compute action
@@ -170,27 +171,6 @@ public class DistributedRM {
 	}
 	
 	/**
-	 * Convert dutycycles [0,1] to the durations of individual traffic light
-	 * phases.
-	 * FIXME: Still in development.
-	 * 
-	 * @param dutycycles	map relating IDs of metered onramp merges to the
-     * 					 	corresponding dutycycle
-	 * @return				map relating IDs of metered onramp merges to the
-     * 					 	durations of individual traffic light phases
-	 */
-	@Deprecated
-	public static Map<Integer,Double[]> convertMapToTLF(Map<Integer,Double> dutycycles) {
-		Map<Integer,Double[]> iTLFmap = new HashMap<Integer,Double[]>();
-		for (Map.Entry<Integer,Double> entry : dutycycles.entrySet()) {
-			Double dutycycle = entry.getValue();
-			Double[] iTLF = {dutycycle, 1-dutycycle};
-			iTLFmap.put(entry.getKey(),iTLF);
-		}
-		return iTLFmap;
-	}
-	
-	/**
 	 * Convert dutycycle [0,1] to the duration of individual traffic light
 	 * phases.
 	 * FIXME: Add checks.
@@ -202,9 +182,11 @@ public class DistributedRM {
 		return new Double[] {dutycycle, 1-dutycycle};
 	}
 	
-
-	
-	// wrapper function for "findCorrespondingOnramp", those two functions should later be merged
+	/**
+	 * Wrapper function?
+	 * @param sensorId
+	 * @return
+	 */
 	public onrampStruct sensor2onramp(int sensorId) {
 		// check if ramp metering parameters have been defined for this onramp
 		onrampStruct localRamp = this.sensor2onramp.get(sensorId);
@@ -238,9 +220,10 @@ public class DistributedRM {
 	 * @param 	sensorId
 	 * @return	intersectionID of onramp merge
 	 */
-	public int findCorrespondingOnramp(Integer sensorId) {
+	private int findCorrespondingOnramp(Integer sensorId) {
 		// find roadId
-		int roadId = findRoadId(sensorId);
+		// Integer roadId = findRoadId(sensorId);
+		Integer roadId = this.freeway.sensor2road.get(sensorId);
 		Road thisRoad = this.freeway.Roads.get(roadId);
 		if (thisRoad != null) {
 			if (thisRoad.type == "freeway") {
@@ -272,9 +255,8 @@ public class DistributedRM {
 		}
 		
 		// check if actuator id
-		// FIXME: ???
-		int intersectionId = findIntersectionId(sensorId);
-		if (intersectionId != -1) {
+		Integer intersectionId = this.freeway.actuator2intersection.get(sensorId);
+		if (intersectionId != null) {
 			return intersectionId;
 		}
 		
@@ -298,43 +280,7 @@ public class DistributedRM {
 		}
 		return -1;
 	}
-
-	// FIXME: This should be a function of 'network'.
-	/**
-	 * Find the road ID corresponding to a sensor ID by simply iterating
-	 * over all the roads.
-	 * 
-	 * @param 	sensorId
-	 * @return 	roadId
-	 */
-	public int findRoadId(Integer sensorId) {
-		// iterate over roads to find sensor
-    	for (Map.Entry<Integer,Road> entry : this.freeway.Roads.entrySet()) {
-    		Road myroad = entry.getValue();
-    		Integer road_id = entry.getKey();
-    		
-    		if (sensorId.equals(myroad.sensor_begin)) {
-    			return road_id;
-    		} 
-    		if (sensorId.equals(myroad.sensor_end)) {
-    				return road_id;
-    		}
-    	}
-    	return -1;
-	}
 	
-	public int findIntersectionId(Integer actuatorId) {
-		// iterate over roads to find sensor
-    	for (Map.Entry<Integer,Intersection> entry : this.freeway.Intersections.entrySet()) {
-    		Intersection myintersection = entry.getValue();
-    		Integer intersection_id = entry.getKey();
-    		
-    		if (actuatorId.equals(myintersection.ActuatorId)) {
-    			return intersection_id;
-    		} 
-    	}
-    	return -1;
-	}
 	 	
 	
 }
