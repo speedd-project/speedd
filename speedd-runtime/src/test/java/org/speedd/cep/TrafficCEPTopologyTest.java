@@ -27,6 +27,7 @@ import backtype.storm.topology.TopologyBuilder;
 
 import com.ibm.hrl.proton.ProtonTopologyBuilder;
 import com.ibm.hrl.proton.metadata.parser.ParsingException;
+import com.ibm.hrl.proton.utilities.containers.Pair;
 
 @SuppressWarnings("serial")
 public class TrafficCEPTopologyTest implements Serializable {
@@ -48,9 +49,11 @@ public class TrafficCEPTopologyTest implements Serializable {
 		String epnPath = this.getClass().getClassLoader()
 				.getResource("cnrsUnitTest.json").getPath();
 
+		int parallelismHint = 3;
 		try {
-			protonTopologyBuilder.buildProtonTopology(builder, "inputSpout",
-					eventConsumer, "event-consumer", epnPath);
+			Pair<String,String> boltRoutingInformation = protonTopologyBuilder.buildProtonTopology(builder, "inputSpout",
+					 epnPath,parallelismHint);
+			builder.setBolt("event-consumer", eventConsumer).shuffleGrouping(boltRoutingInformation.getFirstValue(), boltRoutingInformation.getSecondValue());
 		} catch (ParsingException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

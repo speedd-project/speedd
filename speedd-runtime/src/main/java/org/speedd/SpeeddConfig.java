@@ -12,4 +12,5 @@ public class SpeeddConfig {
 	public String topicActions;
 	public String topicAdmin;
 	public String topicActionsConfirmed;
+	public String cepParallelismHint;
 }
