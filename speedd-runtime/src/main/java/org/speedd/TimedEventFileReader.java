@@ -30,6 +30,11 @@ public class TimedEventFileReader extends EventFileReader {
 		if (line != null) {
 			Event event = eventParser.fromBytes(line.getBytes(Charset
 					.forName("UTF-8")));
+			
+			if(event == null){
+				return null;
+			}
+			
 			long timestamp = event.getTimestamp();
 
 			long delayMicroseconds = prevTimestamp > 0 ? 1000 * (timestamp - prevTimestamp) : 0;
