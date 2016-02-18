@@ -36,7 +36,7 @@ public class TrafficAimsunReadingCsv2EventTest {
 	
 	@Test
 	public void testMany() throws Exception {
-		BufferedReader reader = new BufferedReader(new FileReader("c:\\temp\\inevents2.txt"));
+		BufferedReader reader = new BufferedReader(new InputStreamReader(this.getClass().getClassLoader().getResourceAsStream("aimsun-events.csv")));
 		
 		boolean done = false;
 		
