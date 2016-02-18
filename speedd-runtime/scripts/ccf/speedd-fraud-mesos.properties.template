@@ -78,7 +78,7 @@ proton.epnPath=FeedzaiFraudIntegration.json
 
 speedd.inEventScheme=org.speedd.fraud.FraudAggregatedReadingScheme
 
-speedd.dmClass=org.speedd.dm.EchoBolt
+speedd.cepParallelismHint=2
 
 # Storm topology settings
 
@@ -88,7 +88,7 @@ speedd.topology.class=org.speedd.fraud.CCFTopology
 
 topology.debug=false
 
-topology.acker.executors=0
+topology.acker.executors=6
 #topology.max.task.parallelism=10
 
 topology.max.spout.pending=150

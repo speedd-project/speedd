@@ -1,9 +1,18 @@
 #!/bin/bash
 source ../setup-env-mesos
 
+cd $KAFKA_MESOS_HOME
+brokerlist=`./kafka-mesos.sh status|grep endpoint|cut -d':' -f2,3`
+brokerlist=`echo $brokerlist |tr ' ' ','`
+
+cat $SPEEDD_RUNTIME_HOME/scripts/producer-mesos.properties.template|sed -e "s/__BROKERLIST__/${brokerlist}/g" > $SPEEDD_RUNTIME_HOME/scripts/producer-mesos.properties
+
 CLASSPATH=$SPEEDD_RUNTIME_LIB/speedd-runtime-0.0.1-SNAPSHOT-jar-with-dependencies.jar:$KAFKA_HOME/libs/log4j-1.2.15.jar
 
-IN_EVENT_FILE=dataRushHourTruncated.csv
+#IN_EVENT_FILE=simulator_data_incident.csv
+IN_EVENT_FILE=/tmp/inevents.txt
 
-$JAVA_CMD -cp $CLASSPATH org.speedd.util.EventPlayer -c ../producer-mesos.properties -t speedd-traffic-in-events -p org.speedd.traffic.TrafficAggregatedReadingCsv2Event $IN_EVENT_FILE
+cd $SPEEDD_RUNTIME_HOME/scripts/traffic
+
+java -cp $CLASSPATH org.speedd.util.EventPlayer -c ../producer-mesos.properties -t speedd-traffic-in-events -p org.speedd.traffic.TrafficAimsunReadingCsv2Event $IN_EVENT_FILE
 
