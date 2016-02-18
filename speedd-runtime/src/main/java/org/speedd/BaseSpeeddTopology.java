@@ -38,11 +38,13 @@ public abstract class BaseSpeeddTopology implements ISpeeddTopology {
 			String topic, 
 			String spoutId
 	) {
-		SpoutConfig kafkaConfig = new SpoutConfig(brokerHosts, topic, "",
+		SpoutConfig kafkaConfig = new SpoutConfig(
+				brokerHosts,
+				topic, 
+				"",
 				spoutId);
 		try {
-			Class<? extends Scheme> clazz = (Class<Scheme>) this.getClass()
-					.getClassLoader().loadClass(schemeClassName);
+			Class<? extends Scheme> clazz = (Class<Scheme>) this.getClass().getClassLoader().loadClass(schemeClassName);
 			kafkaConfig.scheme = new SchemeAsMultiScheme(clazz.newInstance());
 		} catch (Exception e) {
 			throw new RuntimeException("Creating a scheme instance failed", e);

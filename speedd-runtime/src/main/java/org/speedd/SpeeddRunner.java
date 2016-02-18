@@ -111,8 +111,27 @@ public class SpeeddRunner {
 				.getProperty("speedd.enricherClass");
 		configuration.inEventScheme = (String) properties
 				.getProperty("speedd.inEventScheme");
-		configuration.cepParallelismHint = (String)properties.getProperty("speedd.cepParallelismHint");
+		
+		if(properties.contains("speedd.cepParallelismHint")){
+			configuration.cepParallelismHint = Integer.parseInt(properties.getProperty("speedd.cepParallelismHint"));	
+		}
+		
+		if(properties.contains("speedd.inEventReaderParallelismHint")){
+			configuration.inEventReaderParallelismHint = Integer.parseInt(properties.getProperty("speedd.inEventReaderParallelismHint"));
+		}
+		
+		if(properties.contains("speedd.inEventReaderTaskNum")){
+			configuration.inEventReaderTaskNum = Integer.parseInt(properties.getProperty("speedd.inEventReaderTaskNum"));
+		}
 
+		if(properties.contains("speedd.outEventWriterParallelismHint")){
+			configuration.outEventWriterParallelismHint = Integer.parseInt(properties.getProperty("speedd.outEventWriterParallelismHint"));
+		}
+
+		if(properties.contains("speedd.outEventWriterTaskNum")){
+			configuration.outEventWriterTaskNum = Integer.parseInt(properties.getProperty("speedd.outEventWriterTaskNum"));
+		}
+		
 		configuration.topicInEvents = (String) properties.getProperty(CONFIG_KEY_IN_EVENTS_TOPIC);
 		configuration.topicOutEvents = (String) properties.getProperty(CONFIG_KEY_OUT_EVENTS_TOPIC);
 		configuration.topicActions = (String) properties.getProperty(CONFIG_KEY_ACTIONS_TOPIC);

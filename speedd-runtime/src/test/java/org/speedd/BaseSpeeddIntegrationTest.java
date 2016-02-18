@@ -372,8 +372,6 @@ public abstract class BaseSpeeddIntegrationTest {
 		
 		String enricherPath = properties.getProperty("speedd.enricherPath");
 		
-		speeddConfiguration.cepParallelismHint = properties.getProperty("speedd.cepParallelismHint");
-
 		try {
 			ClassLoader cl = this.getClass().getClassLoader();
 			
@@ -413,8 +411,6 @@ public abstract class BaseSpeeddIntegrationTest {
 				stormConfig.put(entry.getKey(), entry.getValue());
 			}
 		}
-
-		stormConfig.setMaxTaskParallelism(1);
 
 		storm.submitTopology(getTopologyName(), stormConfig,
 				speeddTopology.buildTopology());

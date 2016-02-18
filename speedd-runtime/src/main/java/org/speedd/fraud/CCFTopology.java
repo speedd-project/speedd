@@ -23,35 +23,50 @@ public class CCFTopology extends BaseSpeeddTopology {
 
 		BaseRichSpout inEventReaderSpout = createKafkaReaderSpout(
 				brokerHosts,
-				speeddConfig.inEventScheme,
+				speeddConfig.inEventScheme, 
 				speeddConfig.topicInEvents,
 				IN_EVENT_READER);
 
-		builder.setSpout(IN_EVENT_READER, inEventReaderSpout, 2).setNumTasks(2);
+		builder.setSpout(
+				IN_EVENT_READER,
+				inEventReaderSpout,
+				speeddConfig.inEventReaderParallelismHint
+		).setNumTasks(speeddConfig.inEventReaderTaskNum);
 
-		KafkaBolt<String, Event> eventWriterBolt = new KafkaBolt<String, Event>().withTopicSelector(
-				new DefaultTopicSelector(speeddConfig.topicOutEvents))
-				.withTupleToKafkaMapper(
-						new FieldNameBasedTupleToKafkaMapper());
-		
+		KafkaBolt<String, Event> eventWriterBolt = new KafkaBolt<String, Event>()
+				.withTopicSelector(	new DefaultTopicSelector(speeddConfig.topicOutEvents))
+				.withTupleToKafkaMapper(new FieldNameBasedTupleToKafkaMapper());
+
 		ProtonOutputConsumerBolt protonOutputConsumerBolt = new ProtonOutputConsumerBolt();
 
 		ProtonTopologyBuilder protonTopologyBuilder = new ProtonTopologyBuilder();
 
 		try {
-			Pair<String,String> boltRoutingInformation = protonTopologyBuilder.buildProtonTopology(
-					builder, 
-					IN_EVENT_READER,					
-					speeddConfig.epnPath,
-					Integer.valueOf(speeddConfig.cepParallelismHint));
-			builder.setBolt(CEP_EVENT_CONSUMER, protonOutputConsumerBolt).shuffleGrouping(boltRoutingInformation.getFirstValue(), boltRoutingInformation.getSecondValue());
+			Pair<String, String> boltRoutingInformation = protonTopologyBuilder
+					.buildProtonTopology(
+							builder,
+							IN_EVENT_READER,
+							speeddConfig.epnPath,
+							speeddConfig.cepParallelismHint);
+			builder.setBolt(
+					CEP_EVENT_CONSUMER,
+					protonOutputConsumerBolt,
+					speeddConfig.cepConsumerParallelismHint)
+					.shuffleGrouping(boltRoutingInformation.getFirstValue(), boltRoutingInformation.getSecondValue())
+					.setNumTasks(speeddConfig.cepConsumerTaskNum);
 		} catch (ParsingException e) {
-			throw new RuntimeException("Building Proton topology failed, reason: ", e);
+			throw new RuntimeException(
+					"Building Proton topology failed, reason: ", e);
 		}
 
-		builder.setBolt(OUT_EVENT_WRITER, eventWriterBolt, 4).shuffleGrouping(CEP_EVENT_CONSUMER).setNumTasks(8);
+		builder.setBolt(
+				OUT_EVENT_WRITER, 
+				eventWriterBolt, 
+				speeddConfig.outEventWriterParallelismHint)
+				.shuffleGrouping(CEP_EVENT_CONSUMER)
+				.setNumTasks(speeddConfig.outEventWriterTaskNum);
 
-		return builder.createTopology();	
+		return builder.createTopology();
 	}
 
 }
