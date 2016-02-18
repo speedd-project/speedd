@@ -112,23 +112,23 @@ public class SpeeddRunner {
 		configuration.inEventScheme = (String) properties
 				.getProperty("speedd.inEventScheme");
 		
-		if(properties.contains("speedd.cepParallelismHint")){
+		if(properties.containsKey("speedd.cepParallelismHint")){
 			configuration.cepParallelismHint = Integer.parseInt(properties.getProperty("speedd.cepParallelismHint"));	
 		}
 		
-		if(properties.contains("speedd.inEventReaderParallelismHint")){
+		if(properties.containsKey("speedd.inEventReaderParallelismHint")){
 			configuration.inEventReaderParallelismHint = Integer.parseInt(properties.getProperty("speedd.inEventReaderParallelismHint"));
 		}
 		
-		if(properties.contains("speedd.inEventReaderTaskNum")){
+		if(properties.containsKey("speedd.inEventReaderTaskNum")){
 			configuration.inEventReaderTaskNum = Integer.parseInt(properties.getProperty("speedd.inEventReaderTaskNum"));
 		}
 
-		if(properties.contains("speedd.outEventWriterParallelismHint")){
+		if(properties.containsKey("speedd.outEventWriterParallelismHint")){
 			configuration.outEventWriterParallelismHint = Integer.parseInt(properties.getProperty("speedd.outEventWriterParallelismHint"));
 		}
 
-		if(properties.contains("speedd.outEventWriterTaskNum")){
+		if(properties.containsKey("speedd.outEventWriterTaskNum")){
 			configuration.outEventWriterTaskNum = Integer.parseInt(properties.getProperty("speedd.outEventWriterTaskNum"));
 		}
 		
