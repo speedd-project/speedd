@@ -132,8 +132,12 @@ public class SpeeddRunner {
 			configuration.outEventWriterTaskNum = Integer.parseInt(properties.getProperty("speedd.outEventWriterTaskNum"));
 		}
 		
-		if(properties.containsKey("speedd.cepParallelismHint")){
-			configuration.cepParallelismHint = Integer.parseInt(properties.getProperty("speedd.cepParallelismHint"));
+		if(properties.containsKey("speedd.cepConsumerParallelismHint")){
+			configuration.cepConsumerParallelismHint = Integer.parseInt(properties.getProperty("speedd.cepConsumerParallelismHint"));
+		}
+
+		if(properties.containsKey("speedd.cepConsumerTaskNum")){
+			configuration.cepConsumerTaskNum = Integer.parseInt(properties.getProperty("speedd.cepConsumerTaskNum"));
 		}
 
 		configuration.topicInEvents = (String) properties.getProperty(CONFIG_KEY_IN_EVENTS_TOPIC);
