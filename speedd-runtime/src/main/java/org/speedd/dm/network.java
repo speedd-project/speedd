@@ -8,7 +8,7 @@ import java.util.Map;
 
 /**
  * DM traffic use case V2.0:
- * Implementation of traffic network
+ * Implementation of general traffic network
  *
  * @author mschmitt
  *

@@ -54,24 +54,24 @@ public class TestFreeway {
 		
 		// test "processEvent"
 		Map<String, Object> attributes = new HashMap<String, Object>();
-		attributes.put("location", 403);
+		attributes.put("sensorId", "403");
 		onrampStruct result = controller.processEvent("Congestion", 0, attributes);
 		assertEquals(1, result.ramp);
 		assertEquals(1, result.operationMode);
 		
-		attributes.put("location", 3);
+		attributes.put("sensorId", "3");
 		attributes.put("lowerLimit",(Double) 100.);
 		result = controller.processEvent("setMeteringRateLimits", 0, attributes);
 		assertEquals(1, result.ramp); // should remain from before
 		assertEquals(1, result.operationMode);
 		assertEquals((Double) 100., result.minFlow);
 		
-		attributes.put("location", 3);
+		attributes.put("sensorId", "3");
 		result = controller.processEvent("ClearCongestion", 0, attributes);
 		assertEquals(1, result.ramp);
 		assertEquals(0, result.operationMode);
 		
-		attributes.put("location", 5);
+		attributes.put("sensorId", "5");
 		attributes.put("upperLimit", 2000.);
 		result = controller.processEvent("setMeteringRateLimits", 0, attributes);
 		assertEquals(5, result.ramp);
@@ -99,11 +99,11 @@ public class TestFreeway {
 		init_cars.put(105, 0.);
 		freeway.initDensitites(init_cars); // initialize densities
 		double eps = 1e-6;
-		attributes.put("location", 2);
+		attributes.put("sensorId", "2");
 		attributes.put("lowerLimit", -1.); // disable lower limit
 		controller.processEvent("setMeteringRateLimits", 0, attributes);
 		assertEquals(-1., controller.computeDutyCycle(101, 0, 120./3600), eps); // controller not active 
-		attributes.put("location", 2);
+		attributes.put("sensorId", "2");
 		controller.processEvent("Congestion", 0, attributes);
 		assertEquals(10/60., controller.computeDutyCycle(101, 0, 120./3600), eps); // active
 		init_cars.put(1, 50.);
@@ -112,7 +112,7 @@ public class TestFreeway {
 		init_cars.put(1, 60.);
 		freeway.initDensitites(init_cars); // initialize densities
 		assertEquals(0., controller.computeDutyCycle(101, 0, 120./3600), eps); // above critical density
-		attributes.put("location", 2);
+		attributes.put("sensorId", "2");
 		attributes.put("lowerLimit", 100.); // disable lower limit
 		controller.processEvent("setMeteringRateLimits", 0, attributes);
 		assertEquals(100./1800, controller.computeDutyCycle(101, 0, 120./3600), eps); // above critical density, but lower limit active
