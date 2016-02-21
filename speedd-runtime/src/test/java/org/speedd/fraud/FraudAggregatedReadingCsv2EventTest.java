@@ -3,10 +3,15 @@ package org.speedd.fraud;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
+import java.io.BufferedReader;
 import java.nio.charset.Charset;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
+
+import jline.internal.InputStreamReader;
 
 import org.junit.Test;
 import org.speedd.data.Event;
@@ -15,6 +20,10 @@ import org.speedd.data.impl.SpeeddEventFactory;
 public class FraudAggregatedReadingCsv2EventTest {
 	private static final FraudAggregatedReadingCsv2Event parser = new FraudAggregatedReadingCsv2Event(SpeeddEventFactory.getInstance());
 
+	private volatile Event event;
+	
+	private volatile List<Object> tuple;
+	
 	@Test
 	public void testFromBytes() throws Exception {
 		String eventCsv = "1423150200000,TXN_ID,1,250.0,567745453,201702,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,1532322,201801,17,18,0";
@@ -66,5 +75,53 @@ public class FraudAggregatedReadingCsv2EventTest {
 		
 		String outEventCsv = new String(parser.toBytes(event));
 		assertEquals(inEventCsv, outEventCsv);
+	}
+	
+	@Test
+	public void testPerformanceMircoBenchmark() throws Exception {
+		BufferedReader reader = new BufferedReader(new InputStreamReader(this.getClass().getClassLoader().getResourceAsStream("FeedzaiIntegrationData.csv")));
+		
+		ArrayList<byte[]> csvArray = new ArrayList<byte[]>();
+		
+		boolean readCompleted = false;
+		while(!readCompleted){
+			String csv = reader.readLine();
+			
+			if(csv != null) {
+				csvArray.add(csv.getBytes());
+			} else {
+				readCompleted = true;
+			}
+		}
+		
+		//warm up
+		event = parser.fromBytes(csvArray.get(0));
+		
+		long start = System.currentTimeMillis();
+		for (byte[] bs : csvArray) {
+			event = parser.fromBytes(bs);
+		}
+		long end = System.currentTimeMillis();
+		long elapsed = end - start;
+		double avg = (double)elapsed / csvArray.size();
+		
+		System.out.println(String.format("Parsed %d events. Total time: %d ms, avg %f ms per event", csvArray.size(), elapsed, avg));
+		
+		
+		
+		FraudAggregatedReadingScheme scheme = new FraudAggregatedReadingScheme();
+		//warm up
+		tuple = scheme.deserialize(csvArray.get(0));
+		
+		start = System.currentTimeMillis();
+		for (byte[] bs : csvArray) {
+			tuple = scheme.deserialize(bs);
+		}
+		end = System.currentTimeMillis();
+		elapsed = end - start;
+		avg = (double)elapsed / csvArray.size();
+		
+		System.out.println(String.format("Parsed %d tuples. Total time: %d ms, avg %f ms per tuple", csvArray.size(), elapsed, avg));
+		
 	}
 }

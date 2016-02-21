@@ -173,6 +173,11 @@ public class SpeeddRunner {
 		setStormConfigPropertyInteger(conf, properties, Config.TOPOLOGY_MAX_TASK_PARALLELISM, null);
 		setStormConfigPropertyInteger(conf, properties, Config.TOPOLOGY_ACKER_EXECUTORS, null);
 		setStormConfigPropertyInteger(conf, properties, Config.TOPOLOGY_WORKERS, 1);
+		setStormConfigPropertyInteger(conf, properties, Config.TOPOLOGY_RECEIVER_BUFFER_SIZE, 8);
+		setStormConfigPropertyInteger(conf, properties, Config.TOPOLOGY_TRANSFER_BUFFER_SIZE, 32);
+		setStormConfigPropertyInteger(conf, properties, Config.TOPOLOGY_EXECUTOR_RECEIVE_BUFFER_SIZE, 16384);
+		setStormConfigPropertyInteger(conf, properties, Config.TOPOLOGY_EXECUTOR_SEND_BUFFER_SIZE, 16384);
+		
 		
 		StormTopology topology = speeddTopology.buildTopology();
 

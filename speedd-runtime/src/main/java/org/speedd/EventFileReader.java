@@ -239,7 +239,9 @@ public class EventFileReader {
 		}
 
 		stats.reset();
-
+		
+		logger.info("Start streaming events, start timestamp: " + stats.startTime);
+		
 		doStreamEvents();
 		
 		stats.setFinished();
