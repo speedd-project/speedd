@@ -127,17 +127,13 @@ function setConsumerEvents(){
 		
 		// checks if event is one that should be displayed in the ui
 		var ev = JSON.parse(message.value);
-<<<<<<< HEAD
 		if (ev.name == "PredictedCongestion" || ev.name == "ClearCongestion" || ev.name == "Congestion" || ev.name == "SetTrafficLightPhases" || ev.name =="AverageDensityAndSpeedPerLocation" || ev.name == "AverageOffRampValuesOverInterval" || ev.name == "AverageOnRampValuesOverInterval" || ev.name =="ClearRampOverflow" || ev.name == "PredictedRampOverflow" || ev.name =="AverageDensityAndSpeedPerLocationOverInterval")
 		{
-            // sends event to ui
-            io.emit('speedd-out-events', message.value);
-            // stores event in eventList
-            eventList.push(JSON.parse(message.value));
-        }	
-=======
-		if (ev.name == "PredictedCongestion" || ev.name == "ClearCongestion" || ev.name == "Congestion" || ev.name == "UpdateMeteringRateAction" || ev.name =="AverageDensityAndSpeedPerLocation")
-			eventList.push(JSON.parse(message.value));
->>>>>>> origin/master
+	            // sends event to ui
+	            io.emit('speedd-out-events', message.value);
+	            // stores event in eventList
+	            eventList.push(JSON.parse(message.value));
+	        }	
+
 	});
 }
