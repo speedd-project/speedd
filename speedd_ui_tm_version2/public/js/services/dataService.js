@@ -3,26 +3,26 @@ app.factory('dataService', function ($rootScope,socket) { // this service broadc
   
   data.cams = {'cam1':'img/traffic1.jpg', 'cam2': 'img/traffic2.jpg', 'cam3': 'img/traffic3.jpg', 'cam4': 'img/traffic4.jpg', 'cam5': 'img/traffic5.jpg', 'cam6': 'img/traffic6.jpg', 'cam7': 'img/traffic7.jpg', 'cam8': 'img/traffic8.jpg'};
   
-  data.nodes = [{'id':'node1', 'location':'0024a4dc00003356', 'name':'1 - Meylan', 'camX': 575, 'camY': 250},
-        {'id':'node2', 'location':'0024a4dc00003354', 'name':'2 - A41', 'camX': 550, 'camY': 270},
-        {'id':'node3', 'location':'0024a4dc0000343c', 'name':'3 - Carronerie', 'camX': 530, 'camY': 310},
-        {'id':'node4o', 'location':'0024a4dc0000343b', 'name':'4 - Domaine Uni', 'camX': 520, 'camY': 325},
-        {'id':'node4', 'location':'0024a4dc0000343b', 'name':'4 - Domaine Uni', 'camX': 510, 'camY': 360},
-        {'id':'node5o', 'location':'0024a4dc00003445', 'name':'5 - Gabriel Peri', 'camX': 510, 'camY': 385},
-        {'id':'node5', 'location':'0024a4dc00003445', 'name':'5 - Gabriel Peri', 'camX': 500, 'camY': 400},
-        {'id':'node6', 'location':'0024a4dc00001b67', 'name':'6 - Gabriel Peri', 'camX': 485, 'camY': 415},
-        {'id':'node7', 'location':'0024a4dc00003357', 'name':'7 - SMH', 'camX': 460, 'camY': 445},
-        {'id':'node8', 'location':'0024a4dc00000ddd', 'name':'8 - SMH Centre', 'camX': 435, 'camY': 470},
-        {'id':'node9', 'location':'0024a4dc00003355', 'name':'9 - SMH Centre', 'camX': 420, 'camY': 495},
-        {'id':'node10', 'location':'0024a4dc000021d1', 'name':'10 - Eybens', 'camX': 395, 'camY': 515},
-        {'id':'node11', 'location':'0024a4dc0000343f', 'name':'11 - Eybens', 'camX': 368, 'camY': 528},
-        {'id':'node12', 'location':'0024a4dc00001b5c', 'name':'12 - Echirolles', 'camX': 335, 'camY': 528},
-        {'id':'node13', 'location':'0024a4dc000025eb', 'name':'13 - Echirolles', 'camX': 295, 'camY': 510},
-        {'id':'node14', 'location':'0024a4dc000025ea', 'name':'14 - Etats Generaux', 'camX': 280, 'camY': 500},
-        {'id':'node16', 'location':'0024a4dc000013c6', 'name':'16 - Etats Generaux', 'camX': 255, 'camY': 485},
-        {'id':'node17', 'location':'0024a4dc00003444', 'name':'17 - Liberation', 'camX': 235, 'camY': 475},
-        {'id':'node18', 'location':'0024a4dc000025ec', 'name':'18 - Liberation', 'camX': 210, 'camY': 470},
-        {'id':'node19', 'location':'0024a4dc0000343e', 'name':'19 - Rondeau', 'camX': 175, 'camY': 465}
+  data.nodes = [{'id':'node1', 'location':'0024a4dc00003356', 'name':'1 - Meylan', 'camX': 680, 'camY': 160},
+        {'id':'node2', 'location':'0024a4dc00003354', 'name':'2 - A41', 'camX': 660, 'camY': 180},
+        {'id':'node3', 'location':'0024a4dc0000343c', 'name':'3 - Carronerie', 'camX': 665, 'camY': 225},
+        {'id':'node4o', 'location':'0024a4dc0000343b', 'name':'4 - Domaine Uni', 'camX': 665, 'camY': 260},
+        {'id':'node4', 'location':'0024a4dc0000343b', 'name':'4 - Domaine Uni', 'camX': 665, 'camY': 275},
+        {'id':'node5o', 'location':'0024a4dc00003445', 'name':'5 - Gabriel Peri', 'camX': 655, 'camY': 295},
+        {'id':'node5', 'location':'0024a4dc00003445', 'name':'5 - Gabriel Peri', 'camX': 650, 'camY': 305},
+        {'id':'node6', 'location':'0024a4dc00001b67', 'name':'6 - Gabriel Peri', 'camX': 635, 'camY': 320},
+        {'id':'node7', 'location':'0024a4dc00003357', 'name':'7 - SMH', 'camX': 595, 'camY': 350},
+        {'id':'node8', 'location':'0024a4dc00000ddd', 'name':'8 - SMH Centre', 'camX': 570, 'camY': 390},
+        {'id':'node9', 'location':'0024a4dc00003355', 'name':'9 - SMH Centre', 'camX': 550, 'camY': 415},
+        {'id':'node10', 'location':'0024a4dc000021d1', 'name':'10 - Eybens', 'camX': 520, 'camY': 450},
+        {'id':'node11', 'location':'0024a4dc0000343f', 'name':'11 - Eybens', 'camX': 500, 'camY': 470},
+        {'id':'node12', 'location':'0024a4dc00001b5c', 'name':'12 - Echirolles', 'camX': 470, 'camY': 480},
+        {'id':'node13', 'location':'0024a4dc000025eb', 'name':'13 - Echirolles', 'camX': 440, 'camY': 480},
+        {'id':'node14', 'location':'0024a4dc000025ea', 'name':'14 - Etats Generaux', 'camX': 415, 'camY': 470},
+        {'id':'node16', 'location':'0024a4dc000013c6', 'name':'16 - Etats Generaux', 'camX': 375, 'camY': 475},
+        {'id':'node17', 'location':'0024a4dc00003444', 'name':'17 - Liberation', 'camX': 360, 'camY': 430},
+        {'id':'node18', 'location':'0024a4dc000025ec', 'name':'18 - Liberation', 'camX': 350, 'camY': 435},
+        {'id':'node19', 'location':'0024a4dc0000343e', 'name':'19 - Rondeau', 'camX': 330, 'camY': 440}
     ];
     
     data.segments = [{'id':'seg12', 'n1':'node1', 'n2':'node2', 'camX': 0, 'camY': 0},
@@ -198,14 +198,14 @@ app.factory('dataService', function ($rootScope,socket) { // this service broadc
 			data.currentMapEvent = event;
 			data.broadcastMapEvent();
 		}
-		else if (event.name == "UpdateMeteringRateAction")
+		else if (event.name == "SetTrafficLightPhases" || event.name == "ClearRampOverflow" || event.name == "PredictedRampOverflow")
 		{
 			data.rampEventList.push(event);
 			data.currentRampEvent = event;
 			data.broadcastRampEvent();
 		}
 		// updates main road density colour
-		else if (event.name == "AverageDensityAndSpeedPerLocation")
+		else if (event.name == "AverageDensityAndSpeedPerLocation" || event.name =="AverageDensityAndSpeedPerLocationOverInterval" || event.name == "AverageOffRampValuesOverInterval" || event.name == "AverageOnRampValuesOverInterval")
 		{
 			data.mainRoadEventList.push(event);
 			data.currentMainRoadEvent = event;
@@ -245,6 +245,21 @@ app.factory('dataService', function ($rootScope,socket) { // this service broadc
   ///////////////////////////////////////////////
   data.changeCamFocus = function (node){
       
+      // remove highlights of bar containers
+      for (var i=0; i < data.nodes.length ; i++)
+      { 
+            var cc = "#cc"+data.nodeToNumber(data.nodes[i].id);
+            var pc = "#pc"+data.nodeToNumber(data.nodes[i].id);
+            d3.select(circularMap).select("svg").select(cc).attr("class","st7");
+            d3.select(circularMap).select("svg").select(pc).attr("class","st7");
+      }
+      
+      // highlight bar containers
+      var cc = "#cc"+data.nodeToNumber(node.id);
+      var pc = "#pc"+data.nodeToNumber(node.id);
+      d3.select(circularMap).select("svg").select(cc).attr("class","st6");
+      d3.select(circularMap).select("svg").select(pc).attr("class","st6");
+      
       // move camera icon
       d3.select(circularMap).select("svg").select("#cam")
             .attr('x', node.camX)
@@ -253,13 +268,12 @@ app.factory('dataService', function ($rootScope,socket) { // this service broadc
       // change image in cam feed window
 //      var camImage = "img/traffic"+data.randomInt(1,19)+".jpg";
       var camImage = "img/traffic"+data.nodeToNumber(node.id)+".jpg";
-      
-//      console.log(node)
 
+      
+      // puts image in the big cam window
       d3.select("#cam8").select("img").attr("src",camImage).attr("width","100%");
       data.cams.cam8 = camImage;
       
- //     console.log(data.cams);
   }
   
   

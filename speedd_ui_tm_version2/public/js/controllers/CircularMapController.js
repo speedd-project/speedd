@@ -12,15 +12,15 @@ app.controller('CircularMapController', ['$scope','$interval','$window','dataSer
         
     $scope.segClass = d3.scale.ordinal()
         .domain(["normal","medium","congestion"])
-        .range(["st4","st5","st2"]);
+        .range(["st2","st3","st4"]);
     
     $scope.barClass = d3.scale.ordinal()
         .domain(["rnorm","rprob","onorm","oprob","snorm","sprob","rother","oother","sother"])
-        .range(["st23","st29","st21","st28","st19","st27","st26","st25","st24"]);
+        .range(["st13","st17","st12","st16","st11","st15","st10","st9","st8"]);
     
     $scope.nodeClass = d3.scale.ordinal()
         .domain(["normal","medium","congestion"])
-        .range(["st35","st5","st2"]);
+        .range(["st5","st3","st4"]);
 
 
 	$scope.isCollapsed = false;
@@ -33,49 +33,142 @@ app.controller('CircularMapController', ['$scope','$interval','$window','dataSer
     $scope.$on("broadcastRawEventList", function(){
 		var eventList = dataService.rawEventList;
 		console.log(eventList);
-		setTimeout(function (){
-		for (var j = 0 ; j < eventList.length ; j++)
-		{
-			$scope.parseEvent(eventList[j]);
-		}
-		}, 2000);
+		
+        setTimeout(function (){
+            for (var j = 0 ; j < eventList.length ; j++)
+            {
+                $scope.parseEvent(eventList[j]);
+            }
+        }, 2000);
 	});   
  
   
     $scope.parseEvent = function(event){
         if (event.name == "Congestion"){
-			$scope.displayCongestion(event,true);
+			var node = dataService.locationToNode(event.attributes.location);
             
-            console.log(event);
+            if(node){
+                $scope.displayCongestion(event,true);
+                
+                console.log(event);
+            }
+            else
+                console.log("location " + event.attributes.location + " not found")
         }
         else if(event.name == "PredictedCongestion"){
-             $scope.displayPredictedCongestion(event);
-             
-             console.log(event);
+             var node = dataService.locationToNode(event.attributes.location);
+            
+            if(node){
+                $scope.displayPredictedCongestion(event);
+                
+                console.log(event);
+             }
+            else
+                console.log("location " + event.attributes.location + " not found")
         }
 		else if(event.name == "ClearCongestion"){
-            $scope.clearPredictedCongestion(event);
-			$scope.clearCongestion(event,true);
+            var node = dataService.locationToNode(event.attributes.location);
             
-            console.log(event);
+            if(node){
+                $scope.clearPredictedCongestion(event);
+                $scope.clearCongestion(event,true);
+                
+                console.log(event);
+            }
+            else
+                console.log("location " + event.attributes.location + " not found")
         }
-        else if (event.name == "UpdateMeteringRateAction"){
+        else if (event.name == "SetTrafficLightPhases"){
 			// update current density and rate for that ramp
 	        var node = dataService.locationToNode(event.attributes.location);
             
-            $scope.currentRate(node, event.attributes.newMeteringRate);
-            $scope.currentOccupancy(node, event.attributes.density);
+            if(node){
+                $scope.currentRate(node, event.attributes.newMeteringRate);
+                $scope.currentOccupancy(node, event.attributes.density);
+                
+                console.log(event);
+            }
+            else
+                console.log("location " + event.attributes.location + " not found")
             
-            console.log(event);
 		}
-        else {
+        else if (event.name == "AverageDensityAndSpeedPerLocation"){
             var node = dataService.locationToNode(event.attributes.location);
         
-            $scope.currentSpeed(node, event.attributes.average_speed);
-            $scope.currentOccupancy(node, event.attributes.average_density);
-            
-            console.log(event);
+            if(node){
+                $scope.currentSpeed(node, event.attributes.average_speed);
+                if(event.attributes.average_occupancy)
+                    $scope.currentOccupancy(node, event.attributes.average_occupancy);
+                else
+                    $scope.currentOccupancy(node, event.attributes.average_density);
+                
+                console.log(event);
+            }
+            else
+                console.log("location " + event.attributes.location + " not found")
         }
+        else if (event.name == "AverageDensityAndSpeedPerLocationOverInterval"){
+            var node = dataService.locationToNode(event.attributes.location);
+        
+            if(node){
+                $scope.currentSpeed(node, event.attributes.average_speed);
+                if(event.attributes.average_occupancy)
+                    $scope.currentOccupancy(node, event.attributes.average_occupancy);
+                else
+                    $scope.currentOccupancy(node, event.attributes.average_density);
+                
+                console.log(event);
+            }
+            else
+                console.log("location " + event.attributes.location + " not found")
+        }
+        else if (event.name == "AverageOffRampValuesOverInterval"){
+            var node = dataService.locationToNode(event.attributes.location);
+            
+            if(node){
+                $scope.currentSpeed(node, event.attributes.average_speed);
+                $scope.currentOccupancy(node, event.attributes.average_occupancy);
+                
+                console.log(event);
+            }
+            else
+                console.log("location " + event.attributes.location + " not found")
+        }
+        else if (event.name == "AverageOnRampValuesOverInterval"){
+            var node = dataService.locationToNode(event.attributes.location);
+        
+            if(node){
+                $scope.currentSpeed(node, event.attributes.average_speed);
+                $scope.currentOccupancy(node, event.attributes.average_occupancy);
+                
+                console.log(event);
+            }
+            else
+                console.log("location " + event.attributes.location + " not found")
+        }
+        else if (event.name == "PredictedRampOverflow"){
+            var node = dataService.locationToNode(event.attributes.location);
+        
+            if(node){
+                $scope.displayPredictedCongestion(event);
+                
+                console.log(event);
+            }
+            else
+                console.log("location " + event.attributes.location + " not found")
+        }
+        else if (event.name == "ClearRampOverflow"){
+            var node = dataService.locationToNode(event.attributes.location);
+        
+            if(node){
+                $scope.clearPredictedCongestion(event);
+                
+                console.log(event);
+            }
+            else
+                console.log("location " + event.attributes.location + " not found")
+        }
+        else;
     }     
 	
 	$scope.$on("broadcastMapEvent", function(){
@@ -121,13 +214,15 @@ app.controller('CircularMapController', ['$scope','$interval','$window','dataSer
         var node = dataService.locationToNode(event.attributes.location);
         
         // make node red
-        d3.select(circularMap).select('#'+node).attr("class", $scope.nodeClass("congestion"));
+        d3.select(circularMap).select('#'+node).attr("class", $scope.nodeClass("congestion"))
+                                                .style("stroke-width","10px");
         
         // get segments that are defined by node
         var segments = dataService.segmentsWithNode(node);
         // make segments red
         segments.forEach(function(segment){
-            d3.select(circularMap).select('#'+segment).attr("class", $scope.segClass("congestion"));
+            d3.select(circularMap).select('#'+segment).attr("class", $scope.segClass("congestion"))
+                                                        .style("stroke-width","10px");;
             
             if(complex == true){
                var nodesOfSegment = dataService.nodesOfSegment(segment);
@@ -166,6 +261,47 @@ app.controller('CircularMapController', ['$scope','$interval','$window','dataSer
         
     }
     
+    $scope.displayRampOverflow = function (event){
+        var node = dataService.locationToNode(event.attributes.location);
+        
+        // attract attention to current bars
+        var barNo = node.slice(-2);
+            if(barNo[0] == "e")
+                barNo = node.slice(-1);
+                
+        d3.select(circularMap).select('#cr'+barNo).attr("class", $scope.barClass("rprob"));
+        d3.select(circularMap).select('#co'+barNo).attr("class", $scope.barClass("oprob"));
+        d3.select(circularMap).select('#cs'+barNo).attr("class", $scope.barClass("sprob"));
+        
+        d3.select(circularMap).select('#po'+barNo).attr("height", $scope.barScale(100));
+        d3.select(circularMap).select('#ps'+barNo).attr("height", $scope.barScale(15));
+        
+        d3.select(circularMap).select('#po'+barNo).attr("class", $scope.barClass("oprob"));
+        d3.select(circularMap).select('#ps'+barNo).attr("class", $scope.barClass("sprob"));  
+        
+        
+    }
+    
+    $scope.clearRampOverflow = function (event){
+        var node = dataService.locationToNode(event.attributes.location);
+        
+        // remove attention from current bars
+        var barNo = node.slice(-2);
+            if(barNo[0] == "e")
+                barNo = node.slice(-1);
+        
+        d3.select(circularMap).select('#cr'+barNo).attr("class", $scope.barClass("rnorm"));
+        d3.select(circularMap).select('#co'+barNo).attr("class", $scope.barClass("onorm"));
+        d3.select(circularMap).select('#cs'+barNo).attr("class", $scope.barClass("snorm"));
+
+        d3.select(circularMap).select('#po'+barNo).attr("height", $scope.barScale(30));
+        d3.select(circularMap).select('#ps'+barNo).attr("height", $scope.barScale(70));  
+        
+        d3.select(circularMap).select('#po'+barNo).attr("class", $scope.barClass("oother"));
+        d3.select(circularMap).select('#ps'+barNo).attr("class", $scope.barClass("sother"));
+
+    }
+    
     $scope.displayPredictedCongestion = function (event){
         var node = dataService.locationToNode(event.attributes.location);
         
@@ -179,33 +315,8 @@ app.controller('CircularMapController', ['$scope','$interval','$window','dataSer
         d3.select(circularMap).select('#cs'+barNo).attr("class", $scope.barClass("sprob"));
         
         
-        // have to write this code because bar po4 is rotated 180 deg
-        if(barNo != "4"){
-            d3.select(circularMap).select('#po'+barNo).attr("height", $scope.barScale(100));
-            d3.select(circularMap).select('#ps'+barNo).attr("height", $scope.barScale(15));  
-        }
-     /*   
-        else {
-            if( parseFloat(d3.select(circularMap).select('#po'+barNo).attr("height")) > $scope.barScale(100))
-            {
-                var difference = parseFloat(d3.select(circularMap).select('#po'+barNo).attr("height")) - parseFloat($scope.barScale(100));
-                var currentY = parseFloat(d3.select(circularMap).select('#po'+barNo).attr("y"));
-                
-                d3.select(circularMap).select('#po'+barNo).attr("height", $scope.barScale(100));
-                d3.select(circularMap).select('#po'+barNo).attr("y", currentY-difference);
-            }
-            else
-            {
-                var difference = parseFloat($scope.barScale(100)) - parseFloat(d3.select(circularMap).select('#po'+barNo).attr("height"));
-                var currentY = parseFloat(d3.select(circularMap).select('#po'+barNo).attr("y"));
-                
-                d3.select(circularMap).select('#po'+barNo).attr("height", $scope.barScale(100));
-                d3.select(circularMap).select('#po'+barNo).attr("y", currentY+difference);
-            }
-            d3.select(circularMap).select('#ps'+barNo).attr("height", $scope.barScale(15));  
-        }
-       */ 
-        
+        d3.select(circularMap).select('#'+node).attr("class", $scope.nodeClass("congestion"))
+                                               .style("stroke-width","10px");    
     }
     
     $scope.clearPredictedCongestion = function (event){
@@ -219,46 +330,25 @@ app.controller('CircularMapController', ['$scope','$interval','$window','dataSer
         d3.select(circularMap).select('#cr'+barNo).attr("class", $scope.barClass("rnorm"));
         d3.select(circularMap).select('#co'+barNo).attr("class", $scope.barClass("onorm"));
         d3.select(circularMap).select('#cs'+barNo).attr("class", $scope.barClass("snorm"));
+
         
-        // have to write this code because bar po4 is rotated 180 deg
-        if(barNo != "4"){
-            d3.select(circularMap).select('#po'+barNo).attr("height", $scope.barScale(100));
-            d3.select(circularMap).select('#ps'+barNo).attr("height", $scope.barScale(70));  
-        }
-   /*     
-        else {
-            if( parseFloat(d3.select(circularMap).select('#po'+barNo).attr("height")) > $scope.barScale(15))
-            {
-                var difference = parseFloat(d3.select(circularMap).select('#po'+barNo).attr("height")) - $scope.barScale(100);
-                var currentY = parseFloat(d3.select(circularMap).select('#po'+barNo).attr("y"));
-                
-                d3.select(circularMap).select('#po'+barNo).attr("height", $scope.barScale(15));
-                d3.select(circularMap).select('#po'+barNo).attr("y", currentY-difference);
-            }
-            else
-            {
-                var difference = parseFloat($scope.barScale(100)) - parseFloat(d3.select(circularMap).select('#po'+barNo).attr("height"));
-                var currentY = parseFloat(d3.select(circularMap).select('#po'+barNo).attr("y"));
-                
-                d3.select(circularMap).select('#po'+barNo).attr("height", $scope.barScale(15));
-                d3.select(circularMap).select('#po'+barNo).attr("y", currentY+difference);
-            }
-            d3.select(circularMap).select('#ps'+barNo).attr("height", $scope.barScale(70));  
-        }
-    */   
+        d3.select(circularMap).select('#'+node).attr("class", $scope.nodeClass("normal"))
+                                                .style("stroke-width","2.25");
     }
     
     $scope.clearCongestion = function (event, complex){
         var node = dataService.locationToNode(event.attributes.location);
         
         // make node normal
-        d3.select(circularMap).select('#'+node).attr("class", $scope.nodeClass("normal"));
+        d3.select(circularMap).select('#'+node).attr("class", $scope.nodeClass("normal"))
+                                                .style("stroke-width","2.25");
         
          // get segments that are defined by node
         var segments = dataService.segmentsWithNode(node);
         // make segments normal
         segments.forEach(function(segment){
-            d3.select(circularMap).select('#'+segment).attr("class", $scope.segClass("normal"));
+            d3.select(circularMap).select('#'+segment).attr("class", $scope.segClass("normal"))
+                                                        .style("stroke-width","3.25");
             
             if(complex == true){
                var nodesOfSegment = dataService.nodesOfSegment(segment);
@@ -368,7 +458,7 @@ app.controller('CircularMapController', ['$scope','$interval','$window','dataSer
     $scope.appendCam = function (){
         // appends cam icon to circular map
 //        var node = dataService.nodes[dataService.randomInt(0,dataService.nodes.length)];
-        var node = dataService.nodes[9] // "node8"
+        var node = dataService.nodes[10] // "node8"
         
         d3.select(circularMap).select("svg").append("svg:image").attr("id","cam")
         .attr('x', node.camX)

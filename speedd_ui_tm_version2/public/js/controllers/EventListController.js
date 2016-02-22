@@ -50,7 +50,9 @@ app.controller('EventListController', ['$scope','$interval','$window','dataServi
 	function formatEventList(dataToFormat){
 		for(var i=0; i<dataToFormat.length;i++)
 		{
-			formatEvent(dataToFormat[i]);
+            // show only derived events -- no sensor readings
+            if(dataToFormat[i].name == "PredictedCongestion" || dataToFormat[i].name == "Congestion" || dataToFormat[i].name == "ClearCongestion" || dataToFormat[i].name == "ClearRampOverflow" || dataToFormat[i].name == "PredictedRampOverflow")
+                formatEvent(dataToFormat[i]);
 		}
 	}
 	
