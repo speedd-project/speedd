@@ -106,7 +106,12 @@
             "name": "sensorId",
             "type": "String",
             "dimension": 0
-          },                  
+          },
+           {
+            "name": "location",
+            "type": "String",
+            "dimension": 0
+          },                    
            {
             "name": "dmPartition",
             "type": "String",
@@ -172,6 +177,11 @@
             "name": "dmPartition",
             "type": "String",
             "dimension": 0
+          },
+          {
+            "name": "location",
+            "type": "String",
+            "dimension": 0
           }
         ]
       },
@@ -219,6 +229,11 @@
           },                  
            {
             "name": "dmPartition",
+            "type": "String",
+            "dimension": 0
+          },
+          {
+            "name": "location",
             "type": "String",
             "dimension": 0
           }
@@ -795,6 +810,7 @@
             "expressions": {
               "Certainty": "Sigmoid(-2.367,0.693,trend.count)",                      
               "dmPartition": "GetAttribute(ArrayGet(trend.participants,0),\"dmPartition\")",
+              "location": "GetAttribute(ArrayGet(trend.participants,0),\"location\")",
                "sensorId": "context.SegmentationByProblemId",
               "Duration": "0"              
           	}
@@ -829,6 +845,7 @@
             "expressions": {              
               "Certainty": "1.0",                      
               "dmPartition": "GetAttribute(ArrayGet(trend.participants,0),\"dmPartition\")",
+              "location": "GetAttribute(ArrayGet(trend.participants,0),\"location\")",
                "sensorId": "context.SegmentationByProblemId",
               "Duration": "0"              
           	}
