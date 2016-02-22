@@ -16,7 +16,7 @@ public class TestTrafficManagement extends BaseSpeeddIntegrationTest {
 		TimedEventFileReader eventReader = new TimedEventFileReader(TestTrafficManagement.class.getClassLoader().getResource("simulator_data_incident_short.csv").getPath(), "speedd-traffic-in-events", createProducerConfig(), new TrafficAimsunReadingCsv2Event(SpeeddEventFactory.getInstance()));
 		//EventFileReader eventReader = new EventFileReader(TestTrafficManagement.class.getClassLoader().getResource("inputCNRS.csv").getPath(), "speedd-in-events", createProducerConfig(), 1000);
 
-		streamEventsAndVerifyResults("speedd-traffic.properties", "traffic", eventReader, new String[]{"Congestion", "AverageDensityAndSpeedPerLocation"}, new String[]{});
+		streamEventsAndVerifyResults("speedd-traffic.properties", "traffic", eventReader, new String[]{/*"Congestion", */"AverageDensityAndSpeedPerLocation"}, new String[]{});
 		
 	}
 

@@ -20,7 +20,7 @@ public class TrafficAimsunReadingCsv2Event implements EventParser, Constants {
 	protected static final String ATTR_AVG_SPEED = "average_speed";	
 	protected static final String ATTR_NORMALIZED_DENSITY = "average_density";	
 	protected static final String ATTR_DENSITY = "density";
-	protected static final String ATTR_DM_PARTITION = "dm_partition";		
+	protected static final String ATTR_DM_PARTITION = "dmPartition";		
 		
 	
 	private static final int ATTR_TIME_INDEX = 0;

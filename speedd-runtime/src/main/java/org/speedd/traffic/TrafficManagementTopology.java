@@ -91,21 +91,21 @@ public class TrafficManagementTopology extends BaseSpeeddTopology {
 		builder.setSpout(ADMIN_COMMAND_READER, adminSpout)
 				.setMaxTaskParallelism(1);
 
-//		IRichBolt dmBolt = new TrafficDecisionMakerBolt();
-//		
-//		// @FIXME distribute output events according to the use-case specific
-//		// grouping strategy
-//		builder.setBolt(DECISION_MAKER, dmBolt)
-//				//.fieldsGrouping(CEP_EVENT_CONSUMER,new Fields(TrafficAimsunReadingCsv2Event.ATTR_DM_PARTITION))
-//				.shuffleGrouping(CEP_EVENT_CONSUMER)
-//				.allGrouping(ADMIN_COMMAND_READER);
-//
-//		builder.setBolt(DECISION_WRITER,
-//				new KafkaBolt<String, Event>().withTopicSelector(
-//						new DefaultTopicSelector(speeddConfig.topicActions))
-//						.withTupleToKafkaMapper(
-//								new FieldNameBasedTupleToKafkaMapper()))
-//				.shuffleGrouping(DECISION_MAKER);
+		IRichBolt dmBolt = new TrafficDecisionMakerBolt();
+		
+		// @FIXME distribute output events according to the use-case specific
+		// grouping strategy
+		builder.setBolt(DECISION_MAKER, dmBolt)
+				//.fieldsGrouping(CEP_EVENT_CONSUMER,new Fields(TrafficAimsunReadingCsv2Event.ATTR_DM_PARTITION))
+				.shuffleGrouping(CEP_EVENT_CONSUMER)
+				.allGrouping(ADMIN_COMMAND_READER);
+
+		builder.setBolt(DECISION_WRITER,
+				new KafkaBolt<String, Event>().withTopicSelector(
+						new DefaultTopicSelector(speeddConfig.topicActions))
+						.withTupleToKafkaMapper(
+								new FieldNameBasedTupleToKafkaMapper()))
+				.shuffleGrouping(DECISION_MAKER);
 
 		return builder.createTopology();
 	}

@@ -30,7 +30,7 @@ public class TrafficEnrichmentTestBolt {
 	protected static final String ATTR_AVG_SPEED = "average_speed";	
 	protected static final String ATTR_NORMALIZED_DENSITY = "average_density";
 	protected static final String ATTR_DENSITY = "density";	
-	protected static final String ATTR_DM_PARTITION = "dm_partition";		
+	protected static final String ATTR_DM_PARTITION = "dmPartition";		
 	
 
 	
@@ -87,9 +87,9 @@ public class TrafficEnrichmentTestBolt {
 		assertEquals(outTuple.get(1),currentTimestamp);
 		
 		Map<String,Object> eventUpdatedAttributes = (Map<String, Object>) outTuple.get(2);		
-		assertEquals(eventUpdatedAttributes.get(ATTR_DM_PARTITION),"section2");
-		assertEquals(eventUpdatedAttributes.get(ATTR_LANE),"onramp");		
-		assertEquals(eventUpdatedAttributes.get(ATTR_LOCATION),"0024a4dc00001b67");
+		assertEquals("section2", eventUpdatedAttributes.get(ATTR_DM_PARTITION));
+		assertEquals("onramp", eventUpdatedAttributes.get(ATTR_LANE));		
+		assertEquals("0024a4dc00001b67", eventUpdatedAttributes.get(ATTR_LOCATION));
 		
 	}
 

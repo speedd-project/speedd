@@ -18,12 +18,12 @@ $STORM_CMD jar $SPEEDD_RUNTIME_LIB/speedd-runtime-0.0.1-SNAPSHOT-jar-with-depend
 -Dproton.epnPath=FeedzaiFraudIntegration.json \
 -Dspeedd.inEventScheme=org.speedd.fraud.FraudAggregatedReadingScheme \
 -Dspeedd.topology.class=org.speedd.fraud.CCFTopology \
--Dspeedd.cepParallelismHint=2 \
--Dspeedd.inEventReaderParallelismHint=4 \
--Dspeedd.inEventReaderTaskNum=4 \
--Dspeedd.outEventWriterParallelismHint=4 \
--Dspeedd.outEventWriterTaskNum=4 \
--Dspeedd.cepConsumerParallelismHint=2 \
--Dspeedd.cepConsumerTaskNum=2 \
--Dtopology.debug=false \
+-Dspeedd.cepParallelismHint=1 \
+-Dspeedd.inEventReaderParallelismHint=1 \
+-Dspeedd.inEventReaderTaskNum=1 \
+-Dspeedd.outEventWriterParallelismHint=1 \
+-Dspeedd.outEventWriterTaskNum=1 \
+-Dspeedd.cepConsumerParallelismHint=1 \
+-Dspeedd.cepConsumerTaskNum=1 \
+-Dtopology.debug=true \
 &
