@@ -150,7 +150,7 @@ app.controller('CircularMapController', ['$scope','$interval','$window','dataSer
             var node = dataService.locationToNode(event.attributes.location);
         
             if(node){
-                $scope.displayPredictedCongestion(event);
+                $scope.displayRampOverflow(event);
                 
                 console.log(event);
             }
@@ -161,7 +161,7 @@ app.controller('CircularMapController', ['$scope','$interval','$window','dataSer
             var node = dataService.locationToNode(event.attributes.location);
         
             if(node){
-                $scope.clearPredictedCongestion(event);
+                $scope.clearRampOverflow(event);
                 
                 console.log(event);
             }
