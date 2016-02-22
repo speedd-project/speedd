@@ -54,57 +54,58 @@ public class TrafficDecisionMakerBolt extends BaseRichBolt {
 		String eventName = event.getEventName();
 		long timestamp = event.getTimestamp();
 		Map<String, Object> attributes = event.getAttributes();
-		// attribute "dm_location" needs to be present, since partitioning is done according to it
-		String DMlocation = (String) attributes.get("dm_location");
-		// attribute "location" needs to be present, since that is also required
-		Integer location = (Integer) attributes.get("location"); // FIXME: there should be a check.
+		// attribute "dm_sensorId" needs to be present, since partitioning is done according to it
+		String dmPartition = (String) attributes.get("dmPartition");
+		// attribute "sensorId" needs to be present, since that is also required
+		Integer sensorId = Integer.parseInt((String) attributes.get("sensorId")); // FIXME: there should be a check.
 		
 		
-		if (DMlocation != null)
+		if (dmPartition != null)
 		{
             
-			network freeway = networkMap.get(DMlocation); // read sub-network data
+			network freeway = networkMap.get(dmPartition); // read sub-network data
             if (freeway == null) {
                 // create instance of subnetwork if not yet created
-                freeway = new network(DMlocation);
+                freeway = new network(dmPartition);
                 // save instance
-                networkMap.put(DMlocation,freeway);
+                networkMap.put(dmPartition,freeway);
 
             }
-            DistributedRM distController = distRMmap.get(DMlocation);
+            DistributedRM distController = distRMmap.get(dmPartition);
             if (distController == null) {
                 // create instance of controller if not yet created
                 distController = new DistributedRM(freeway);
                 // save instance
-                distRMmap.put(DMlocation,distController);
+                distRMmap.put(dmPartition,distController);
             }
-            subnetData localData = subnetDataMap.get(DMlocation);
+            subnetData localData = subnetDataMap.get(dmPartition);
             if (localData == null) {
                 // create instance of data if not yet created
                 localData = new subnetData(timestamp);
                 // save instance
-                subnetDataMap.put(DMlocation,localData);
+                subnetDataMap.put(dmPartition,localData);
             }  
             // now everything is present ...
             
-            if (eventName.equals("mainlineAverages") || eventName.equals("onrampAverages"))
+            if (eventName.equals("AverageDensityAndSpeedPersensorIdOverInterval") || eventName.equals("AverageOnRampValuesOverInterval"))
             {
             	// check if external inflow
-            	//int roadId = distController.findRoadId(location);
-            	Integer roadId = freeway.sensor2road.get(location);
+            	//int roadId = distController.findRoadId(sensorId);
+            	Integer roadId = freeway.sensor2road.get(sensorId);
 	            if (roadId != null) {
 	            	// FIXME: Some implicit assumptions about a sensor being on the road entering a subnetwork here...
 	            	if (freeway.Roads.get(roadId).intersection_begin == -1) {
 	            		// external inflow
 	            		// just save value
 	            		Double inflow = (Double) attributes.get("average_flow");
-	                    localData.externalDemand.put(location, inflow);
+	                    localData.externalDemand.put(sensorId, inflow);
 	            	} else {
 	            		// internal measurement
-	            		Double density = (Double) attributes.get("average_density");
-	                    localData.densityMeasurements.put(freeway.sensor2road.get(location), density); // FIXME: What if two sensors on one road?
+	            		Double density = (Double) attributes.get("average_occupancy");
+	            		density = density * 100; // FIXME: Check conversion factor.
+	                    localData.densityMeasurements.put(freeway.sensor2road.get(sensorId), density); // FIXME: What if two sensors on one road?
 	                    // sDouble flow = (Double) attributes.get("average_flow");
-	                    // localData.flowMeasurements.put(location,  flow); // FIXME translation of sensor id required
+	                    // localData.flowMeasurements.put(sensorId,  flow); // FIXME translation of sensor id required
 	            	}
 	            	// Update system state
                     if ((timestamp - localData.tUpdate) > dt) {
@@ -133,14 +134,14 @@ public class TrafficDecisionMakerBolt extends BaseRichBolt {
  
 			
 			if (eventName.equals("PredictedCongestion") || eventName.equals("Congestion") || eventName.equals("ClearCongestion") ||
-					eventName.equals("setMeteringRateLimits") || eventName.equals("RampCooperation") || eventName.equals("rampOverFlow") ||
-					eventName.equals("clearRampOverFlow") || eventName.equals("onrampAverages")) {	
+					eventName.equals("setMeteringRateLimits") || eventName.equals("RampCooperation") || eventName.equals("PredictedRampOverflow") ||
+					eventName.equals("ClearRampOverflow") || eventName.equals("AverageOnRampValuesOverInterval")) {	
 				// Call ProcessEvent to deal with the event
 				Event outEvent = distController.processEvent2(event);
 				
 				if (outEvent != null) {
 	                // Use sensor labels for partitioning by kafka
-	                collector.emit(new Values(location, outEvent));
+	                collector.emit(new Values(sensorId, outEvent));
 	                // Save decision also locally - FIXME: Move this functionality to other function
 					if (outEvent.getEventName().equals("newMeteringRate")) {
 						// FIXME: move functionality
@@ -151,10 +152,10 @@ public class TrafficDecisionMakerBolt extends BaseRichBolt {
 
 			}
 			
-			// Events "AverageDensityAndSpeedPerLocation" are not used, we use the 2minsAverage... instead.
-			networkMap.put(DMlocation, freeway); // saveback local network state
+			// Events "AverageDensityAndSpeedPersensorId" are not used, we use the 2minsAverage... instead.
+			networkMap.put(dmPartition, freeway); // saveback local network state
 		} else {
-			logger.warn("location is null for tuple " + input);
+			logger.warn("sensorId is null for tuple " + input);
 			// Discard event and do nothing. Could throw an exception, report an error etc.
 		}
 				

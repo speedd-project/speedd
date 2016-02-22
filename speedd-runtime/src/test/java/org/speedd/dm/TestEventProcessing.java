@@ -19,6 +19,7 @@ import backtype.storm.tuple.Tuple;
 import backtype.storm.tuple.Values;
 
 public class TestEventProcessing {
+	private final double OCCU_DENS_CONVERSION = 100;
 	
 	public class TestCollector extends OutputCollector {
 
@@ -46,6 +47,9 @@ public class TestEventProcessing {
 	
 	@Test
 	public void testDMBolt() {
+		
+
+		
 		TrafficDecisionMakerBolt dmBolt = new TrafficDecisionMakerBolt();
 		
 		TestCollector collector = new TestCollector(null);
@@ -70,7 +74,7 @@ public class TestEventProcessing {
 		assertNotNull(outTuple);
 		Event actionEvent = (Event)outTuple.get(1);
 		double new_rate = 1.; // FIXME: Add correct value
-		verifyAction(actionEvent, 4453, new_rate);
+		verifyAction(actionEvent, "4453", new_rate);
 		
 		
 		// (b) upper limit
@@ -84,9 +88,9 @@ public class TestEventProcessing {
 		outTuple = collector.tuple;
 		assertNotNull(outTuple);
 		actionEvent = (Event)outTuple.get(1);
-		verifyAction(actionEvent, 4453, upperLimit/1800); // upper limit
+		verifyAction(actionEvent, "4453", upperLimit/1800); // upper limit
 		
-		// (c) nonsensical identifier "location"
+		// (c) nonsensical identifier "sensorId"
 		collector.tuple = null;
 		try{
 			dmBolt.execute(mockTuple(new Values("1", createOnramp(0, 4136,"abcde",0,0) )));
@@ -117,7 +121,7 @@ public class TestEventProcessing {
 		outTuple = collector.tuple;
 		assertNotNull(outTuple);
 		actionEvent = (Event)outTuple.get(1);
-		verifyAction(actionEvent, 4453, lowerLimit/1800); // upper limit
+		verifyAction(actionEvent, "4453", lowerLimit/1800); // upper limit
 		
 		// get some references that will be useful for writing robust tests
 		network freeway = dmBolt.networkMap.get("section4");
@@ -132,32 +136,15 @@ public class TestEventProcessing {
 		outTuple = collector.tuple;
 		assertNotNull(outTuple);
 		actionEvent = (Event)outTuple.get(1);
-		verifyAction(actionEvent, 4453, 0.); // upper limit
+		verifyAction(actionEvent, "4453", 0.); // upper limit
 		
-//		
-//		// (f) missing flow measurement
-//		collector.tuple = null;
-//		dmBolt.execute(mockTuple(new Values("1", createDensity("0024a4dc00003354", 0)))); // low density, but no recent flow measurement
-//		outTuple = collector.tuple;
-//		assertNull(outTuple);
-//		
-//		// (g) remove lower limit
-//		dmBolt.execute(mockTuple(new Values("1", createLimits("0024a4dc00003354", -1, -1) )));
-//		dmBolt.execute(mockTuple(new Values("1", createOnRampFlow("0024a4dc00003354",300) )));
-//		dmBolt.execute(mockTuple(new Values("1", createDensity("0024a4dc00003354",188))));
-//		outTuple = collector.tuple;
-//		assertNotNull(outTuple);
-//		actionEvent = (Event)outTuple.get(1);
-//		verifyAction(actionEvent, "0024a4dc00003354", 0); // lower limit removed: zero is absolut lower limit
-//		
-//		// (h) disable ramp metering
-//		collector.tuple = null;
-//		dmBolt.execute(mockTuple(new Values("1", clearCongestion("0024a4dc00003354"))));
-//		dmBolt.execute(mockTuple(new Values("1", createOnRampFlow("0024a4dc00003354",300) )));
-//		dmBolt.execute(mockTuple(new Values("1", createDensity("0024a4dc00003354",77))));
-//		outTuple = collector.tuple;
-//		assertNull(outTuple);
-//		
+		// (f) disable ramp metering
+		collector.tuple = null;
+		dmBolt.execute(mockTuple(new Values("1", clearCongestion(90, 4166,"section4"))));
+		dmBolt.execute(mockTuple(new Values("1", createOnramp(60, 4136,"section4",dens_qu,100))));
+		outTuple = collector.tuple;
+		assertNull(outTuple);
+		
 //		// (i) Reactivate ramp metering: old limits should still be in place
 //		dmBolt.execute(mockTuple(new Values("1", createCongestion("0024a4dc00003354"))));
 //		dmBolt.execute(mockTuple(new Values("1", createOnRampFlow("0024a4dc00003354",300) )));
@@ -172,63 +159,63 @@ public class TestEventProcessing {
 	}
 	
 	// functions to create events
-	private Event createCongestion(long timestamp, int location, String dmlocation) {
+	private Event createCongestion(long timestamp, int sensorId, String dmsensorId) {
 		// Create a congestion event
 		Map<String, Object> attrs = new HashMap<String, Object>();
-		attrs.put("location", location);
-		attrs.put("dm_location", dmlocation);
+		attrs.put("sensorId", Integer.toString(sensorId));
+		attrs.put("dmPartition", dmsensorId);
 		return SpeeddEventFactory.getInstance().createEvent("PredictedCongestion", timestamp, attrs);
 	}
-	private Event clearCongestion(long timestamp, int location, String dmlocation) {
+	private Event clearCongestion(long timestamp, int sensorId, String dmsensorId) {
 		// Clear a congestion event
 		Map<String, Object> attrs = new HashMap<String, Object>();
-		attrs.put("location", location);
-		attrs.put("dm_location", dmlocation);
+		attrs.put("sensorId", Integer.toString(sensorId));
+		attrs.put("dmPartition", dmsensorId);
 		return SpeeddEventFactory.getInstance().createEvent("ClearCongestion", timestamp, attrs);
 	}
-	private Event createMainline(long timestamp, int location, String dmlocation, double density, double flow) {
+	private Event createMainline(long timestamp, int sensorId, String dmsensorId, double density, double flow) {
 		// Create a mainline measurement event
 		Map<String, Object> attrs = new HashMap<String, Object>();
-		attrs.put("location", location);
-		attrs.put("dm_location", dmlocation);
-		attrs.put("average_density", density);
+		attrs.put("sensorId", Integer.toString(sensorId));
+		attrs.put("dmPartition", dmsensorId);
+		attrs.put("average_occupancy", density/OCCU_DENS_CONVERSION);
 		attrs.put("average_flow", flow);
-		return SpeeddEventFactory.getInstance().createEvent("mainlineAverages", timestamp, attrs);
+		return SpeeddEventFactory.getInstance().createEvent("AverageDensityAndSpeedPersensorIdOverInterval", timestamp, attrs);
 	}
-	private Event createOnramp(long timestamp, int location, String dmlocation, double density, double flow) {
+	private Event createOnramp(long timestamp, int sensorId, String dmsensorId, double density, double flow) {
 		// Create a mainline measurement event
 		Map<String, Object> attrs = new HashMap<String, Object>();
-		attrs.put("location", location);
-		attrs.put("dm_location", dmlocation);
-		attrs.put("average_density", density);
+		attrs.put("sensorId", Integer.toString(sensorId));
+		attrs.put("dmPartition", dmsensorId);
+		attrs.put("average_occupancy", density/OCCU_DENS_CONVERSION);
 		attrs.put("average_flow", flow);
-		return SpeeddEventFactory.getInstance().createEvent("onrampAverages", timestamp, attrs);
+		return SpeeddEventFactory.getInstance().createEvent("AverageOnRampValuesOverInterval", timestamp, attrs);
 	}
-	private Event createOfframp(long timestamp, int location, String dmlocation, double density, double flow) {
+	private Event createOfframp(long timestamp, int sensorId, String dmsensorId, double density, double flow) {
 		// Create a mainline measurement event
 		Map<String, Object> attrs = new HashMap<String, Object>();
-		attrs.put("location", location);
-		attrs.put("dm_location", dmlocation);
-		attrs.put("average_density", density);
+		attrs.put("sensorId", Integer.toString(sensorId));
+		attrs.put("dmPartition", dmsensorId);
+		attrs.put("average_occupancy", density/OCCU_DENS_CONVERSION);
 		attrs.put("average_flow", flow);
 		return SpeeddEventFactory.getInstance().createEvent("offrampAverages", timestamp, attrs);
 	}
-	private Event createLimits(long timestamp, int location, String dm_location, double lower, double upper) {
+	private Event createLimits(long timestamp, int sensorId, String dmPartition, double lower, double upper) {
 		// Create a limit event
 		Map<String, Object> attrs = new HashMap<String, Object>();
-		attrs.put("location", location);
-		attrs.put("dm_location", dm_location);
+		attrs.put("sensorId", Integer.toString(sensorId));
+		attrs.put("dmPartition", dmPartition);
 		attrs.put("lowerLimit", lower);
 		attrs.put("upperLimit", upper);
 		return SpeeddEventFactory.getInstance().createEvent("setMeteringRateLimits", timestamp, attrs);
 	}
 
 	// function to verify actions
-	private void verifyAction(Event actionEvent, int expected_actu_id, double expectedMeterRate) {
+	private void verifyAction(Event actionEvent, String expected_actu_id, double expectedMeterRate) {
 		// read attributes
 		Double meterRate = (Double)actionEvent.getAttributes().get("newMeteringRate");
-		int actuator_id = (int)actionEvent.getAttributes().get("location");
-		// String dm_location = (String)actionEvent.getAttributes().get("dm_location");
+		String actuator_id = (String) actionEvent.getAttributes().get("sensorId");
+		// String dmPartition = (String)actionEvent.getAttributes().get("dmPartition");
 		// compare
 		assertEquals(expected_actu_id, actuator_id);
 		assertEquals(expectedMeterRate, meterRate, 1e-3);

@@ -36,7 +36,8 @@ public class DistributedRM {
 	 */
 	public onrampStruct processEvent(String eventName, long timestamp, Map<String, Object> attributes) {
 		
-		Integer sensor_Id = (Integer) attributes.get("location");
+		String buffer = (String) attributes.get("sensorId");
+		Integer sensor_Id = Integer.parseInt((String) attributes.get("sensorId"));
 		onrampStruct localRamp = null;
 		
 		if (sensor_Id != null) {
@@ -66,7 +67,7 @@ public class DistributedRM {
 						else localRamp.maxFlow = 1800.; // disable upper limit
 					}
 				}
-				else if (eventName.equals("onrampAverages")) {
+				else if (eventName.equals("AverageOnRampValuesOverInterval")) {
 					Double onrampFlow = (Double)attributes.get("average_flow");
 					// FIXME: Add test that field present. Add test that this is the QUEUE flow
 					
@@ -77,7 +78,7 @@ public class DistributedRM {
 				}
 			}
 		} else {
-			throw(new IllegalArgumentException("Field location in event attributes is empty."));
+			throw(new IllegalArgumentException("Field sensorId in event attributes is empty."));
 		}
 
 		return localRamp;
@@ -98,12 +99,12 @@ public class DistributedRM {
 		onrampStruct localOnramp =  processEvent(eventName, timestamp, attributes);
 		
 		// next line contains as last elment the trigger to issue new ramp metering commands
-		if (!(localOnramp == null) && (localOnramp.operationMode >= 1) && (eventName.equals("onrampAverages"))) {
+		if (!(localOnramp == null) && (localOnramp.operationMode >= 1) && (eventName.equals("AverageOnRampValuesOverInterval"))) {
 			// Create Action Event
 	        Map<String, Object> outAttrs = new HashMap<String, Object>();
 	        outAttrs.put("newMeteringRate", localOnramp.dutycycle); // compute action
-	        outAttrs.put("location", localOnramp.actuatorId);
-	        outAttrs.put("dm_location", (String)attributes.get("dm_location"));
+	        outAttrs.put("sensorId", Integer.toString(localOnramp.actuatorId));
+	        outAttrs.put("dm_sensorId", (String)attributes.get("dm_sensorId"));
 	        
 	        Event outEvent = eventFactory.createEvent("UpdateMeteringRateAction", timestamp, outAttrs);
 			return outEvent;
