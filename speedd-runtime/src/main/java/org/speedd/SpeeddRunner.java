@@ -177,7 +177,7 @@ public class SpeeddRunner {
 		setStormConfigPropertyInteger(conf, properties, Config.TOPOLOGY_TRANSFER_BUFFER_SIZE, 32);
 		setStormConfigPropertyInteger(conf, properties, Config.TOPOLOGY_EXECUTOR_RECEIVE_BUFFER_SIZE, 16384);
 		setStormConfigPropertyInteger(conf, properties, Config.TOPOLOGY_EXECUTOR_SEND_BUFFER_SIZE, 16384);
-		conf.put("topology.spout.max.batch.size", 64 * 1024);
+		setStormConfigPropertyString(conf, properties, Config.WORKER_CHILDOPTS, null);
 		
 		StormTopology topology = speeddTopology.buildTopology();
 
@@ -196,7 +196,7 @@ public class SpeeddRunner {
 		}
 	}
 
-	private static void setStormConfigPropertyInteger(Config config, Properties properties, String name, Object defaultValue){
+	private static void setStormConfigPropertyInteger(Config config, Properties properties, String name, Integer defaultValue){
 		if(properties.containsKey(name)){
 			config.put(name, Integer.parseInt(properties.getProperty(name)));
 		} else {
@@ -204,6 +204,14 @@ public class SpeeddRunner {
 		}
 	}
 	
+	private static void setStormConfigPropertyString(Config config, Properties properties, String name, String defaultValue){
+		if(properties.containsKey(name)){
+			config.put(name, properties.getProperty(name));
+		} else if (defaultValue != null) {
+			config.put(name, defaultValue);
+		}
+	}
+
 	private static ISpeeddTopology createTopology(String topologyClassName) throws SpeeddRunnerException {
 		try {
 			return (ISpeeddTopology)Class.forName(topologyClassName).newInstance();
