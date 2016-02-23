@@ -12,6 +12,8 @@ import org.speedd.data.EventFactory;
 
 public class TrafficAimsunReadingCsv2Event implements EventParser, Constants {
 	protected static final String ATTR_LOCATION = "location";
+	public static final String ATTR_OCCURRENCE_TIME           = "OccurrenceTime";
+	public static final String ATTR_DETECTION_TIME       = "DetectionTime";
 	protected static final String ATTR_DETECTOR_ID = "sensorId";
 	protected static final String ATTR_LANE = "lane";
 	protected static final String ATTR_VEHICLES = "average_flow";
@@ -56,6 +58,7 @@ public class TrafficAimsunReadingCsv2Event implements EventParser, Constants {
 			
 			long timestamp;
 
+			long detectionTime = System.currentTimeMillis();
 			timestamp = dateTimeFormat.parse(tuple[ATTR_TIME_INDEX]).getTime();
 
 			HashMap<String, Object> attrMap = new HashMap<String, Object>();
@@ -76,6 +79,8 @@ public class TrafficAimsunReadingCsv2Event implements EventParser, Constants {
 			}
 									
 			attrMap.put(ATTR_TIMESTAMP, timestamp);
+			attrMap.put(ATTR_OCCURRENCE_TIME, timestamp);
+			attrMap.put(ATTR_DETECTION_TIME, Long.valueOf(detectionTime));
 			attrMap.put(ATTR_DETECTOR_ID, tuple[ATTR_DETECTOR_ID_INDEX]);
 			attrMap.put(ATTR_OCCUPANCY, getNumericValue(tuple[ATTR_OCCUPANCY_INDEX])/100);	
 			attrMap.put(ATTR_VEHICLES, carsNumber+trucksNumber);			
