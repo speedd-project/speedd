@@ -8,7 +8,7 @@ var argv = require('minimist')(process.argv.slice(2));
 var io;
 var Consumer, client, consumer, Producer, producer;
 
-var zk = argv.zk? "localhost:"+argv.zk.toString()+"/" : 'localhost:2181/';
+var zk = argv.zk? argv.zk : 'localhost:2181';
 var uiport = argv.ui? argv.ui : 3000;
 
 console.log("\nzookeeper url is set to: "+zk);
@@ -123,16 +123,11 @@ function setConsumerEvents(){
 	});
 	consumer.on('message', function (message) {
 		console.log(message.value);
+		io.emit('speedd-out-events', message.value);
 		
-		// sends event to ui
-            	io.emit('speedd-out-events', message.value);
 		// checks if event is one that should be displayed in the ui
 		var ev = JSON.parse(message.value);
-		
-
-            	// stores event in eventList
-            	eventList.push(JSON.parse(message.value));
-	        	
-
+//		if (ev.name == "PredictedCongestion" || ev.name == "ClearCongestion" || ev.name == "Congestion" || ev.name == "UpdateMeteringRateAction")
+			eventList.push(JSON.parse(message.value));
 	});
 }
