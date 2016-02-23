@@ -96,7 +96,7 @@ function setKafka(){
 			 { topic: 'speedd-traffic-out-events', partition: 0, offset: 0 }
 			 ],
 		// options
-		{fromOffset: true} // true = read messages from beginning
+		{fromOffset: false} // true = read messages from beginning
 	);
 
 	//// Setting up Kafka Producer
