@@ -31,7 +31,7 @@ public class TrafficAimsunReadingCsv2Event implements EventParser, Constants {
 	private static final int ATTR_NUMBER_OF_CARS_INDEX = 3;
 	private static final int ATTR_NUMBER_OF_TRUCKS_INDEX = 4;
 	private static final int ATTR_DENSITY_INDEX = 5;	
-	private static final int ATTR_AVG_SPEED_INDEX = 3;
+	private static final int ATTR_AVG_SPEED_INDEX = 2;
 	
 	//total expected number of fields in a csv line. Assuming here that the length histogram is the ending part of csv
 	
