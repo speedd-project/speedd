@@ -476,7 +476,14 @@ app.controller('CircularMapController', ['$scope','$interval','$window','dataSer
                 barNo = node.slice(-1);
         
         // change bar height
-        d3.select(circularMap).select('#co'+barNo).attr("height", $scope.obarScale(percentage))
+        d3.select(circularMap).select('#co'+barNo).attr("height", function(){
+            if (percentage<=1 && percentage>=0) 
+                return $scope.obarScale(percentage); 
+            else if (percentage>1) 
+                return $scope.obarScale(1);
+            else
+                return $scope.obarScale(0.1);
+        }); 
         
         
         // update tooltip content
@@ -495,10 +502,12 @@ app.controller('CircularMapController', ['$scope','$interval','$window','dataSer
        
         // change bar height
         d3.select(circularMap).select('#cs'+barNo).attr("height", function(){
-            if (percentage<=90) 
+            if (percentage<=90 && percentage>=0) 
                 return $scope.sbarScale(percentage); 
-            else 
+            else if (percentage>90) 
                 return $scope.sbarScale(90);
+            else
+                return $scope.sbarScale(1);
         }); 
         
         // update tooltip content
@@ -513,7 +522,14 @@ app.controller('CircularMapController', ['$scope','$interval','$window','dataSer
                 barNo = node.slice(-1);
        
         // change bar height
-        d3.select(circularMap).select('#cr'+barNo).attr("height", $scope.rbarScale(percentage))  
+        d3.select(circularMap).select('#cr'+barNo).attr("height", function(){
+            if (percentage<=60 && percentage>=0) 
+                return $scope.rbarScale(percentage); 
+            else if (percentage>60) 
+                return $scope.rbarScale(60);
+            else
+                return $scope.rbarScale(1);
+        });   
         
          // update tooltip content
         d3.select(circularMap).select('#cr'+barNo).select("title")
