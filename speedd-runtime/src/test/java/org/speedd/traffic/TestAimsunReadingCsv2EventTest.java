@@ -36,7 +36,16 @@ public class TestAimsunReadingCsv2EventTest {
 		assertEquals(6, calendar.get(Calendar.HOUR));
 		assertEquals(0, calendar.get(Calendar.MINUTE));
 		assertEquals(15, calendar.get(Calendar.SECOND));
-
+		
+		Map<String,Object> attributes = event.getAttributes();
+		assertEquals(attributes.get(TrafficAimsunReadingCsv2Event.ATTR_DETECTOR_ID),"1375");
+		assertEquals(attributes.get(TrafficAimsunReadingCsv2Event.ATTR_AVG_SPEED),Double.valueOf("60.607787719"));
+		assertEquals(attributes.get(TrafficAimsunReadingCsv2Event.ATTR_OCCUPANCY),Double.valueOf("7.328")/100);
+		assertEquals(attributes.get(TrafficAimsunReadingCsv2Event.ATTR_VEHICLES),3);
+		assertEquals(attributes.get(TrafficAimsunReadingCsv2Event.ATTR_DENSITY),Double.valueOf("11.8837352842"));
+					
+		
+	
 		/*Map<String, Object> attrs = event.getAttributes();
 		assertEquals(12.16, attrs.get("occupancy"));
 		assertEquals(Long.valueOf(7), attrs.get("vehicles"));

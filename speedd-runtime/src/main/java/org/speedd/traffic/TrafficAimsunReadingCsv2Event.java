@@ -11,18 +11,18 @@ import org.speedd.data.Event;
 import org.speedd.data.EventFactory;
 
 public class TrafficAimsunReadingCsv2Event implements EventParser, Constants {
-	protected static final String ATTR_LOCATION = "location";
+	public static final String ATTR_LOCATION = "location";
 	public static final String ATTR_OCCURRENCE_TIME           = "OccurrenceTime";
 	public static final String ATTR_DETECTION_TIME       = "DetectionTime";
-	protected static final String ATTR_DETECTOR_ID = "sensorId";
-	protected static final String ATTR_LANE = "lane";
-	protected static final String ATTR_VEHICLES = "average_flow";
-	protected static final String ATTR_OCCUPANCY = "average_occupancy";	
-	protected static final String ATTR_TIMESTAMP = "timestamp";
-	protected static final String ATTR_AVG_SPEED = "average_speed";	
-	protected static final String ATTR_NORMALIZED_DENSITY = "average_density";	
-	protected static final String ATTR_DENSITY = "density";
-	protected static final String ATTR_DM_PARTITION = "dmPartition";		
+	public static final String ATTR_DETECTOR_ID = "sensorId";
+	public static final String ATTR_LANE = "lane";
+	public static final String ATTR_VEHICLES = "average_flow";
+	public static final String ATTR_OCCUPANCY = "average_occupancy";	
+	public static final String ATTR_TIMESTAMP = "timestamp";
+	public static final String ATTR_AVG_SPEED = "average_speed";	
+	public static final String ATTR_NORMALIZED_DENSITY = "average_density";	
+	public static final String ATTR_DENSITY = "density";
+	public static final String ATTR_DM_PARTITION = "dmPartition";		
 		
 	
 	private static final int ATTR_TIME_INDEX = 0;
