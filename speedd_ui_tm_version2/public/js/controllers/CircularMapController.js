@@ -296,7 +296,12 @@ app.controller('CircularMapController', ['$scope','$interval','$window','dataSer
         
         d3.select(circularMap).select('#po'+barNo).attr("height", $scope.obarScale(1));
         d3.select(circularMap).select('#ps'+barNo).attr("height", $scope.sbarScale(15));
-        
+        // update tooltip contents
+        d3.select(circularMap).select('#po'+barNo).select("title")
+                .text(function (){return $scope.obarScale2(d3.select(circularMap).select('#po'+barNo).attr('height')).toFixed(2)+" %"});
+        d3.select(circularMap).select('#ps'+barNo).select("title")
+                .text(function (){return $scope.sbarScale2(d3.select(circularMap).select('#ps'+barNo).attr('height')).toFixed(2)+" kmph"});
+       
         d3.select(circularMap).select('#po'+barNo).attr("class", $scope.barClass("oprob"));
         d3.select(circularMap).select('#ps'+barNo).attr("class", $scope.barClass("sprob"));  
         
@@ -316,7 +321,12 @@ app.controller('CircularMapController', ['$scope','$interval','$window','dataSer
         d3.select(circularMap).select('#cs'+barNo).attr("class", $scope.barClass("snorm"));
 
         d3.select(circularMap).select('#po'+barNo).attr("height", $scope.obarScale(0.3));
-        d3.select(circularMap).select('#ps'+barNo).attr("height", $scope.sbarScale(70));  
+        d3.select(circularMap).select('#ps'+barNo).attr("height", $scope.sbarScale(70));
+        // update tooltip contents
+        d3.select(circularMap).select('#po'+barNo).select("title")
+                .text(function (){return $scope.obarScale2(d3.select(circularMap).select('#po'+barNo).attr('height')).toFixed(2)+" %"});
+        d3.select(circularMap).select('#ps'+barNo).select("title")
+                .text(function (){return $scope.sbarScale2(d3.select(circularMap).select('#ps'+barNo).attr('height')).toFixed(2)+" kmph"});  
         
         d3.select(circularMap).select('#po'+barNo).attr("class", $scope.barClass("oother"));
         d3.select(circularMap).select('#ps'+barNo).attr("class", $scope.barClass("sother"));
@@ -428,26 +438,34 @@ app.controller('CircularMapController', ['$scope','$interval','$window','dataSer
                 barNo = node.slice(-1);
             // historical
             d3.select(circularMap).select('#hr'+barNo).attr("class", $scope.barClass("rother"))
-                                                        .append("title").text(function (){return "Historical Average Rate"});
-                                                                      //  return $scope.rbarScale2(d3.select(circularMap).select('#hr'+barNo).attr('height')).toFixed(2)});
+                                                        .append("title").text(function (){//return "Historical Average Rate"});
+                                                                        return $scope.rbarScale2(d3.select(circularMap).select('#hr'+barNo).attr('height')).toFixed(2)+" % green"});
             d3.select(circularMap).select('#ho'+barNo).attr("class", $scope.barClass("oother"))
-                                                        .append("title").text(function (){return "Historical Average Occupancy"});
+                                                        .append("title").text(function (){//return "Historical Average Occupancy"});
+                                                                        return $scope.obarScale2(d3.select(circularMap).select('#ho'+barNo).attr('height')).toFixed(2)+" %"});
             d3.select(circularMap).select('#hs'+barNo).attr("class", $scope.barClass("sother"))
-                                                        .append("title").text(function (){return "Historical Average Speed"});
+                                                        .append("title").text(function (){//return "Historical Average Speed"});
+                                                                        return $scope.sbarScale2(d3.select(circularMap).select('#hs'+barNo).attr('height')).toFixed(2)+" kmph"});
             // predicted
             d3.select(circularMap).select('#pr'+barNo).attr("class", $scope.barClass("rother"))
-                                                        .append("title").text(function (){return "Predicted Rate"});
+                                                        .append("title").text(function (){//return "Predicted Rate"});
+                                                                        return $scope.rbarScale2(d3.select(circularMap).select('#pr'+barNo).attr('height')).toFixed(2)+" % green"});
             d3.select(circularMap).select('#po'+barNo).attr("class", $scope.barClass("oother"))
-                                                        .append("title").text(function (){return "Predicted Occupancy"});
+                                                        .append("title").text(function (){//return "Predicted Occupancy"});
+                                                                        return $scope.obarScale2(d3.select(circularMap).select('#po'+barNo).attr('height')).toFixed(2)+" %"});
             d3.select(circularMap).select('#ps'+barNo).attr("class", $scope.barClass("sother"))
-                                                        .append("title").text(function (){return "Predicted Speed"});
+                                                        .append("title").text(function (){//return "Predicted Speed"});
+                                                                        return $scope.sbarScale2(d3.select(circularMap).select('#ps'+barNo).attr('height')).toFixed(2)+" kmph"});
             // current
             d3.select(circularMap).select('#cr'+barNo).attr("class", $scope.barClass("rnorm"))
-                                                        .append("title").text(function (){return "Current Rate"});
+                                                        .append("title").text(function (){//return "Current Rate"});
+                                                                        return $scope.rbarScale2(d3.select(circularMap).select('#cr'+barNo).attr('height')).toFixed(2)+" % green"});
             d3.select(circularMap).select('#co'+barNo).attr("class", $scope.barClass("onorm"))
-                                                        .append("title").text(function (){return "Current Occupancy"});
+                                                        .append("title").text(function (){//return "Current Occupancy"});
+                                                                        return $scope.obarScale2(d3.select(circularMap).select('#co'+barNo).attr('height')).toFixed(2)+" %"});
             d3.select(circularMap).select('#cs'+barNo).attr("class", $scope.barClass("snorm"))
-                                                        .append("title").text(function (){return "Current Speed"});
+                                                        .append("title").text(function (){//return "Current Speed"});
+                                                                        return $scope.sbarScale2(d3.select(circularMap).select('#cs'+barNo).attr('height')).toFixed(2)+" kmph"});
         })      
     }
     
@@ -460,8 +478,13 @@ app.controller('CircularMapController', ['$scope','$interval','$window','dataSer
         // change bar height
         d3.select(circularMap).select('#co'+barNo).attr("height", $scope.obarScale(percentage))
         
+        
+        // update tooltip content
+        d3.select(circularMap).select('#co'+barNo).select("title")
+                .text(function (){return $scope.obarScale2(d3.select(circularMap).select('#co'+barNo).attr('height')).toFixed(2)+" %"});
+        
         // colour road segments
-//        $scope.colourRoadSegments(node, percentage);   
+//        $scope.colourRoadSegments(node, percentage);  
     }
     
     $scope.currentSpeed = function (node, percentage){     
@@ -476,7 +499,11 @@ app.controller('CircularMapController', ['$scope','$interval','$window','dataSer
                 return $scope.sbarScale(percentage); 
             else 
                 return $scope.sbarScale(90);
-        });    
+        }); 
+        
+        // update tooltip content
+        d3.select(circularMap).select('#cs'+barNo).select("title")
+                .text(function (){return $scope.sbarScale2(d3.select(circularMap).select('#cs'+barNo).attr('height')).toFixed(2)+" kmph"});   
     }
     
     $scope.currentRate = function (node, percentage){     
@@ -486,7 +513,11 @@ app.controller('CircularMapController', ['$scope','$interval','$window','dataSer
                 barNo = node.slice(-1);
        
         // change bar height
-        d3.select(circularMap).select('#cr'+barNo).attr("height", $scope.rbarScale(percentage))    
+        d3.select(circularMap).select('#cr'+barNo).attr("height", $scope.rbarScale(percentage))  
+        
+         // update tooltip content
+        d3.select(circularMap).select('#cr'+barNo).select("title")
+                .text(function (){return $scope.rbarScale2(d3.select(circularMap).select('#cr'+barNo).attr('height')).toFixed(2)+" % green"});  
     }
     
     $scope.appendCam = function (){
