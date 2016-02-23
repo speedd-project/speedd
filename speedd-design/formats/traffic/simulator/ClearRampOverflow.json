@@ -42,6 +42,11 @@
             "dimension": 0,
             "name": "dmPartition",
             "type": "String"
+          },
+		  {
+            "name": "location",
+            "type": "String",
+            "dimension": 0
           }
         ],
         "createdDate": "Sun Aug 31 2014"

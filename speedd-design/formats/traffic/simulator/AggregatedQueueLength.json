@@ -52,6 +52,11 @@
             dimension 0,
             name maxQueueLength,
             type Double
+          },
+		  {
+            "name": "location",
+            "type": "String",
+            "dimension": 0
           }
         ],
         createdDate Sun Aug 31 2014
