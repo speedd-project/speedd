@@ -123,16 +123,11 @@ function setConsumerEvents(){
 	});
 	consumer.on('message', function (message) {
 		console.log(message.value);
+		io.emit('speedd-out-events', message.value);
 		
-		// sends event to ui
-            	io.emit('speedd-out-events', message.value);
 		// checks if event is one that should be displayed in the ui
 		var ev = JSON.parse(message.value);
-		
-
-            	// stores event in eventList
-            	eventList.push(JSON.parse(message.value));
-	        	
-
+//		if (ev.name == "PredictedCongestion" || ev.name == "ClearCongestion" || ev.name == "Congestion" || ev.name == "UpdateMeteringRateAction")
+			eventList.push(JSON.parse(message.value));
 	});
 }
