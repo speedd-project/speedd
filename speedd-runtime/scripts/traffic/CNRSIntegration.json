@@ -684,6 +684,11 @@
             "name": "Count",
             "aggregationType": "Count",
             "AverageDensityAndSpeedPerLocation": "1"
+          },
+           {
+            "name": "DensityAverage",
+            "aggregationType": "Average",
+            "AverageDensityAndSpeedPerLocation": "AverageDensityAndSpeedPerLocation.density"
           }
          ],
           "assertion": "Count >14",
@@ -699,7 +704,7 @@
               "location": "ArrayGet(AverageDensityAndSpeedPerLocation.location,0)",
               "dmPartition": "ArrayGet(AverageDensityAndSpeedPerLocation.dmPartition,0)",
               "sensorId":"context.SegmentationByProblemId",
-              "average_density": "ArrayGet(AverageDensityAndSpeedPerLocation.average_density,ArraySize(AverageDensityAndSpeedPerLocation.average_density)-1)",
+              "average_density": "DensityAverage",
               "problem_id": "context.SegmentationByProblemId"
             }
           }
@@ -777,7 +782,7 @@
               "dmPartition": "GetAttribute(ArrayGet(trend.participants,0),\"dmPartition\")",
                "sensorId": "context.SegmentationByProblemId",
               "Duration": "0",
-              "average_density": "GetAttribute(ArrayGet(trend.participants,ArraySize(trend.participants)-1),\"average_density\")",
+              "average_density": "GetAttribute(ArrayGet(trend.participants,ArraySize(trend.participants)-1),\"density\")",
               "count": "trend.count"
           	}
           }
