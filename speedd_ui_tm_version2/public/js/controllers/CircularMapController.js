@@ -65,6 +65,18 @@ app.controller('CircularMapController', ['$scope','$interval','$window','dataSer
  
   
     $scope.parseEvent = function(event){
+        // update simulation time
+        if(event.attributes.OccurrenceTime){
+            d3.select(circularMap).select("#simTime").text(function(){
+                var time = new Date(event.attributes.OccurrenceTime).toTimeString();
+                time = time.split(' ')[0];
+                console.log(time);
+                return time;
+            });
+            
+            console.log("time");
+        }
+        
         if (event.name == "Congestion"){
 			var node = dataService.locationToNode(event.attributes.location);
             
@@ -127,6 +139,7 @@ app.controller('CircularMapController', ['$scope','$interval','$window','dataSer
             }
             else
                 console.log("location " + event.attributes.location + " not found")
+
         }
         else if (event.name == "AverageDensityAndSpeedPerLocationOverInterval"){
             var node = dataService.locationToNode(event.attributes.location);
@@ -416,6 +429,22 @@ app.controller('CircularMapController', ['$scope','$interval','$window','dataSer
     }
 
     $scope.clearAll = function (){
+        // appends simulation time display
+         d3.select(circularMap).select("svg").append("g").append("text")
+                            .style("font-family","sans-serif")
+                            .style("font-size","15px")
+                            .style("fill","red") 
+                            .attr("y","15px")
+                            .text("simulation time");
+         d3.select(circularMap).select("svg").append("g").append("text")
+                            .attr("id","simTime")
+                            .style("font-family","sans-serif")
+                            .style("font-size","20px")
+                            .style("fill","black") 
+                            .attr("y","30px")
+                            .text("simulation time");
+        
+        
         // removes all preset titles for svg shapes (so they don't apear on mouseover)
         d3.select(circularMap).selectAll("title").remove();
         
