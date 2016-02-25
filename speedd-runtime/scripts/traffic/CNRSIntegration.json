@@ -705,7 +705,8 @@
               "dmPartition": "ArrayGet(AverageDensityAndSpeedPerLocation.dmPartition,0)",
               "sensorId":"context.SegmentationByProblemId",
               "average_density": "DensityAverage",
-              "problem_id": "context.SegmentationByProblemId"
+              "problem_id": "context.SegmentationByProblemId",
+              "OccurrenceTime":"ArrayGet(AverageDensityAndSpeedPerLocation.OccurrenceTime,ArraySize(AverageDensityAndSpeedPerLocation.OccurrenceTime)-1)"              
             }
           }
         ],
@@ -744,7 +745,8 @@
               "location": "ArrayGet(AverageDensityAndSpeedPerLocation.location,0)",
               "dmPartition": "ArrayGet(AverageDensityAndSpeedPerLocation.dmPartition,0)",
               "sensorId": "context.SegmentationByProblemId",
-              "problem_id": "context.SegmentationByProblemId"
+              "problem_id": "context.SegmentationByProblemId",
+              "OccurrenceTime":"ArrayGet(AverageDensityAndSpeedPerLocation.OccurrenceTime,ArraySize(AverageDensityAndSpeedPerLocation.OccurrenceTime)-1)"
             }
           }
         ],
@@ -783,6 +785,7 @@
                "sensorId": "context.SegmentationByProblemId",
               "Duration": "0",
               "average_density": "GetAttribute(ArrayGet(trend.participants,ArraySize(trend.participants)-1),\"density\")",
+              "OccurrenceTime": "GetAttribute(ArrayGet(trend.participants,ArraySize(trend.participants)-1),\"OccurrenceTime\")",              
               "count": "trend.count"
           	}
           }
@@ -817,6 +820,7 @@
               "dmPartition": "GetAttribute(ArrayGet(trend.participants,0),\"dmPartition\")",
               "location": "GetAttribute(ArrayGet(trend.participants,0),\"location\")",
                "sensorId": "context.SegmentationByProblemId",
+               "OccurrenceTime": "GetAttribute(ArrayGet(trend.participants,ArraySize(trend.participants)-1),\"OccurrenceTime\")",
               "Duration": "0"              
           	}
           }
@@ -852,6 +856,7 @@
               "dmPartition": "GetAttribute(ArrayGet(trend.participants,0),\"dmPartition\")",
               "location": "GetAttribute(ArrayGet(trend.participants,0),\"location\")",
                "sensorId": "context.SegmentationByProblemId",
+               "OccurrenceTime": "GetAttribute(ArrayGet(trend.participants,ArraySize(trend.participants)-1),\"OccurrenceTime\")",
               "Duration": "0"              
           	}
           }
@@ -900,6 +905,7 @@
               "location": "ArrayGet(AverageDensityAndSpeedPerLocation.location,0)",
               "sensorId": "context.SegmentationByProblemId",
               "dmPartition": "ArrayGet(AverageDensityAndSpeedPerLocation.dmPartition,0)",
+              "OccurrenceTime":"ArrayGet(AverageDensityAndSpeedPerLocation.OccurrenceTime,ArraySize(AverageDensityAndSpeedPerLocation.OccurrenceTime)-1)",
               "average_flow": "AverageFlow",             
               "average_speed": "AverageSpeed",
               "average_occupancy":"AverageOccupancy"
@@ -950,6 +956,7 @@
               "location": "ArrayGet(AverageDensityAndSpeedPerLocation.location,0)",
                "sensorId": "context.SegmentationByProblemId",
               "dmPartition": "ArrayGet(AverageDensityAndSpeedPerLocation.dmPartition,0)",
+              "OccurrenceTime":"ArrayGet(AverageDensityAndSpeedPerLocation.OccurrenceTime,ArraySize(AverageDensityAndSpeedPerLocation.OccurrenceTime)-1)",
               "average_flow": "AverageFlow",             
               "average_speed": "AverageSpeed",
               "average_occupancy":"AverageOccupancy"
@@ -1000,6 +1007,7 @@
               "location": "ArrayGet(AverageDensityAndSpeedPerLocation.location,0)",
                "sensorId": "context.SegmentationByProblemId",
               "dmPartition": "ArrayGet(AverageDensityAndSpeedPerLocation.dmPartition,0)",
+              "OccurrenceTime":"ArrayGet(AverageDensityAndSpeedPerLocation.OccurrenceTime,ArraySize(AverageDensityAndSpeedPerLocation.OccurrenceTime)-1)",
               "average_flow": "AverageFlow",             
               "average_speed": "AverageSpeed",
               "average_occupancy":"AverageOccupancy"
