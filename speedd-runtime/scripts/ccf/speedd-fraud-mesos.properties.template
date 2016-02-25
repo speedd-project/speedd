@@ -74,21 +74,28 @@ topic.actions.confirmed=speedd-fraud-actions-confirmed
 topic.admin=speedd-fraud-admin
 
 # Path to Proton's Event Processing Network definition file (JSON)
-proton.epnPath=FeedzaiFraudIntegration.json
+proton.epnPath=FeedzaiFraudIntegration-perf.json
 
 speedd.inEventScheme=org.speedd.fraud.FraudAggregatedReadingScheme
 
-speedd.cepParallelismHint=2
+speedd.cepParallelismHint=16
+speedd.inEventReaderParallelismHint=1
+speedd.inEventReaderTaskNum=1
+speedd.outEventWriterParallelismHint=4
+speedd.outEventWriterTaskNum=4
+speedd.cepConsumerParallelismHint=8
+speedd.cepConsumerTaskNum=8
 
 # Storm topology settings
 
-topology.workers=6
+topology.workers=16
  
 speedd.topology.class=org.speedd.fraud.CCFTopology
 
 topology.debug=false
 
-topology.acker.executors=6
-#topology.max.task.parallelism=10
+topology.acker.executors=16
+#topology.max.task.parallelism=1
 
 topology.max.spout.pending=150
+topology.worker.childopts=-Xmx2048m -XX:+UseConcMarkSweepGC -XX:+UseParNewGC -XX:+UseConcMarkSweepGC -XX:NewSize=128m -XX:CMSInitiatingOccupancyFraction=70 -XX:-CMSConcurrentMTEnabled -Djava.net.preferIPv4Stack=true
