@@ -54,4 +54,4 @@ value.serializer=org.apache.kafka.common.serialization.StringSerializer
 
 # the number of messages batched at the producer 
 #batch.num.messages=
-
+batch.size=1
