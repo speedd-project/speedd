@@ -115,7 +115,7 @@ public class FraudAggregatedReadingCsv2Event implements EventParser, Constants {
             attrMap.put(ATTR_AUTH_TYPE,            getIntegerValue(tuple[ATTR_AUTH_TYPE_INDEX], ATTR_AUTH_TYPE));
             attrMap.put(ATTR_IS_FRAUD,             getBooleanValue(tuple[ATTR_IS_FRAUD_INDEX], ATTR_IS_FRAUD));
 
-			return eventFactory.createEvent(name, detectionTime, attrMap);
+			return eventFactory.createEvent(name, timestamp, attrMap);
 		} catch (Exception e) {
 			throw new ParsingError(
 					"Error parsing transaction CSV.", e);
