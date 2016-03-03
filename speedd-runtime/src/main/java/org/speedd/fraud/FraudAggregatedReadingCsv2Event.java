@@ -84,7 +84,7 @@ public class FraudAggregatedReadingCsv2Event implements EventParser, Constants {
 
 			HashMap<String, Object> attrMap = new HashMap<String, Object>();
 
-            attrMap.put(ATTR_TIMESTAMP,            new Date(timestamp));
+            attrMap.put(ATTR_TIMESTAMP,            timestamp);
             attrMap.put(ATTR_DETECTION_TIME, 	   Long.valueOf(detectionTime));
             attrMap.put(ATTR_TRANSACTION_ID,       tuple[ATTR_TRANSACTION_ID_INDEX]);
             attrMap.put(ATTR_IS_CNP,               getBooleanValue(tuple[ATTR_IS_CNP_INDEX], ATTR_IS_CNP));
