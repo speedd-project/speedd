@@ -317,7 +317,7 @@
               "TransactionsCount": "Count",
               "is_cnp": "0",
               "transaction_ids": "ArrayConvert(Transaction.transaction_id)",
-              "timestamps":"ArrayConvert(Transaction.DetectionTime)",
+              "timestamps":"ArrayConvert(Transaction.DetectionTime)",              
               "acquirer_country":"ArrayConvert(Transaction.acquirer_country)",
               "card_country":"ArrayGet(Transaction.card_country,ArraySize(Transaction.card_country)-1)",
               "OccurrenceTime":"ArrayGet(Transaction.OccurrenceTime,ArraySize(Transaction.OccurrenceTime)-1)"                            
@@ -363,7 +363,7 @@
               "acquirer_country":"ArrayConvert(Split(Concat(Concat(T1.acquirer_country,\",\"),T2.acquirer_country),\",\"))",
               "timestamps":"ArrayConvert(Split(Concat(Concat(T1.DetectionTime,\",\"),T2.DetectionTime),\",\"))",
               "transaction_ids":"ArrayConvert(Split(Concat(Concat(T1.transaction_id,\",\"),T2.transaction_id),\",\"))",
-              "OccurrenceTime":"GetDate(T2.OccurrenceTime)"
+              "OccurrenceTime":"CreateDate(GetDate(T2.OccurrenceTime),GetHours(T2.OccurrenceTime),GetMinutes(T2.OccurrenceTime),GetSeconds(T2.OccurrenceTime))"
             }
           }
         ]
@@ -590,6 +590,9 @@
           },
           {
             "name": "TransactionsInFarAwayPlaces"
+          },
+           {
+            "name": "TransactionStats"
           }
         ]
       }
@@ -598,11 +601,11 @@
       {
         "name": "ExampleProducer",
         "createdDate": "Wed Aug 06 2014",
-        "type": "File",
+        "type": "Timed",
         "properties": [
           {
             "name": "filename",
-            "value": "D:\\EP\\Projects\\Proton\\MergeOpenSourceUncertaintyWorkspace\\ProtonEU\\SPEEDD\\Feedzai\\for integration (prototype demo)\\2015\\FeedzaiIntegrationData.csv"
+            "value": "D:/EP/Projects/Proton/MergeOpenSourceUncertaintyWorkspace/ProtonJ2SE/config/FeedzaiIntegrationData.csv"
           },
           {
             "name": "pollingInterval",

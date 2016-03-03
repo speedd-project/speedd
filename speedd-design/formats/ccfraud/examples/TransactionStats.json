@@ -1,0 +1,21 @@
+{
+  "timestamp": 1457011711753,
+  "name": "TransactionStats",
+  "attributes": {
+    "average_transaction_amount_eur": 22.444444444444443,
+    "transaction_count": 27,
+    "EventId": "273bedd9-522d-440e-af9a-c9982169b850",
+    "transaction_volume": 606,
+    "Chronon": null,
+    "DetectionTime": 1457011711753,
+    "country": "49",
+    "Name": "TransactionStats",
+    "Certainty": 1,
+    "Cost": 0,
+    "EventSource": "",
+    "OccurrenceTime": 1457011711753,
+    "Annotation": "",
+    "Duration": 0,
+    "ExpirationTime": null
+  }
+}

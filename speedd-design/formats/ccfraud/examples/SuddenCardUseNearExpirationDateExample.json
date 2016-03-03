@@ -1,18 +1,36 @@
 {
-  "is_cnp": "0",
-  "timestamps": "[2224702800000, 2224702800000, 2224702800000]",
-  "transaction_ids": "[9d47b44380024e82aedcf359f8be8dfb, 8727070543664142bc7d2ba980dc1f19, b1dedbeb44ad431f995076153c7bdcc8]",
-  "EventId": "c809754d-1362-49cf-b417-c903412a1b5a",
-  "TransactionsCount": "3.0",
-  "DetectionTime": "14/12/2015-12:00:32",
-  "Name": "SuddenCardUseNearExpirationDate",
-  "Cost": "0.0",
-  "Certainty": "0.5998883688639982",
-  "EventSource": "",
-  "OccurrenceTime": "14/12/2015-12:00:32",
-  "Duration": "0",
-  "Annotation": "",
-  "card_country": "5430",
-  "acquirer_country": "[49, 49, 49]",
-  "card_pan": "8de8552de9b94c1da2f798fcefe1ac16"
+  "timestamp": 1457011687602,
+  "name": "SuddenCardUseNearExpirationDate",
+  "attributes": {
+    "is_cnp": 0,
+    "timestamps": [
+      2224699200000,
+      2224699203000,
+      2224699206000
+    ],
+    "transaction_ids": [
+      "9d47b44380024e82aedcf359f8be8dfb",
+      "8727070543664142bc7d2ba980dc1f19",
+      "b1dedbeb44ad431f995076153c7bdcc8"
+    ],
+    "EventId": "8d778bac-a7be-4435-9d74-eb9fca610672",
+    "TransactionsCount": 3,
+    "Chronon": null,
+    "DetectionTime": 1457011687602,
+    "Name": "SuddenCardUseNearExpirationDate",
+    "Certainty": 0.5998883688639982,
+    "Cost": 0,
+    "EventSource": "",
+    "OccurrenceTime": 2224699206000,
+    "Annotation": "",
+    "Duration": 0,
+    "card_country": 5430,
+    "ExpirationTime": null,
+    "acquirer_country": [
+      49,
+      49,
+      49
+    ],
+    "card_pan": "8de8552de9b94c1da2f798fcefe1ac16"
+  }
 }
