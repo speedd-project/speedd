@@ -14,11 +14,10 @@ public class DistributedRM {
 	private Map<Integer,onrampStruct> sensor2onramp; // map congestion events to onramps
 	private Map<Integer,onrampStruct> intersection2onramp; // 1-to-1 map of intersections to onramp
 	private final network freeway;
-	private final double dt = 60./3600.; // FIXME: 2min period length. Make parameter
+	private final double dt = 60./3600.; // FIXME: 1min period length. Make parameter
 
 	/** 
 	 * Constructor, storing a reference to the network to be controlled.
-	 * 
 	 * @param freeway		reference to the network to be controlled
 	 */
 	public DistributedRM(network freeway) {
@@ -28,89 +27,100 @@ public class DistributedRM {
 	}
 	
 	/**
-	 * Generic function to process events
-	 * 
+	 * Wrapper function for processEvent(), only for testing purposes.
 	 * @param eventName
 	 * @param timestamp
 	 * @param attributes
-	 */
-	public onrampStruct processEvent(String eventName, long timestamp, Map<String, Object> attributes) {
-		
-		String buffer = (String) attributes.get("sensorId");
-		Integer sensor_Id = Integer.parseInt((String) attributes.get("sensorId"));
-		onrampStruct localRamp = null;
-		
-		if (sensor_Id != null) {
-			// find corresponding intersection (onramp merge)=============== //
-			localRamp = sensor2onramp(sensor_Id);
-			
-			// process event =============================================== //
-			if (localRamp != null) {
-				if (eventName.equals("PredictedCongestion") || eventName.equals("Congestion")) {
-					// turn on ramp metering
-					localRamp.operationMode = 1;
-				}
-				else if (eventName.equals("ClearCongestion")) {
-					// turn off ramp metering
-					localRamp.operationMode = 0;
-				}
-				else if (eventName.equals("setMeteringRateLimits")) {
-					// set metering rate limits
-					Double minFlow = (Double)attributes.get("lowerLimit");
-					if (minFlow != null) {
-						if (minFlow >= 0) localRamp.minFlow = minFlow;
-						else localRamp.minFlow = .0; // disable lower limit
-					}
-					Double maxFlow = (Double)attributes.get("upperLimit");
-					if (maxFlow != null) {
-						if (maxFlow >= 0) localRamp.maxFlow = maxFlow;
-						else localRamp.maxFlow = 1800.; // disable upper limit
-					}
-				}
-				else if (eventName.equals("AverageOnRampValuesOverInterval")) {
-					Double onrampFlow = (Double)attributes.get("average_flow");
-					// FIXME: Add test that field present. Add test that this is the QUEUE flow
-					
-					localRamp.dutycycle = computeDutyCycle(sensor_Id, onrampFlow, this.dt);
-					
-					// saveback: need to store active action
-					this.freeway.Intersections.get(localRamp.ramp).activeAction = convertToTLP(localRamp.dutycycle);
-				}
-			}
-		} else {
-			throw(new IllegalArgumentException("Field sensorId in event attributes is empty."));
-		}
-
-		return localRamp;
-	}
-	
-	/**
-	 * Wrapper function for event handling (packing and unpacking...)
-	 * 
-	 * @param inEvent
 	 * @return
 	 */
-	public Event processEvent2(Event inEvent) {
+	public onrampStruct processEventDebug(String eventName, long timestamp, Map<String, Object> attributes) {
+		// produce correct input
+		EventFactory factory = SpeeddEventFactory.getInstance();
+		processEvent(factory.createEvent(eventName, timestamp, attributes));
+		// read output
+		int sensorId = Integer.parseInt((String) attributes.get("sensorId"));
+		return sensor2onramp(sensorId);
+	}
+	
+	
+	/**
+	 * Process complex events
+	 * 
+	 * @param inEvent
+	 * @return Event[] outEvents: list of proposed actions
+	 */
+	public Event[] processEvent(Event inEvent) {
 		
 		// read event
 		String eventName = inEvent.getEventName();
 		long timestamp = inEvent.getTimestamp();
 		Map<String, Object> attributes = inEvent.getAttributes();
-		onrampStruct localOnramp =  processEvent(eventName, timestamp, attributes);
 		
-		// next line contains as last elment the trigger to issue new ramp metering commands
-		if (!(localOnramp == null) && (localOnramp.operationMode >= 1) && (eventName.equals("AverageOnRampValuesOverInterval"))) {
-			// Create Action Event
-	        Map<String, Object> outAttrs = new HashMap<String, Object>();
-	        outAttrs.put("newMeteringRate", localOnramp.dutycycle); // compute action
-	        outAttrs.put("sensorId", Integer.toString(localOnramp.actuatorId));
-	        outAttrs.put("dm_sensorId", (String)attributes.get("dm_sensorId"));
-	        
-	        Event outEvent = eventFactory.createEvent("UpdateMeteringRateAction", timestamp, outAttrs);
-			return outEvent;
+		Integer sensor_Id = Integer.parseInt((String) attributes.get("sensorId"));
+		if (sensor_Id != null) { // check if sensorId is valid
+			
+			// find corresponding intersection (onramp merge)=============== //
+			onrampStruct localOnramp = sensor2onramp(sensor_Id);
+
+			// process event =============================================== //
+			if (localOnramp != null) {
+				int onrampId = localOnramp.onrampRoadId;
+				
+				if (eventName.equals("PredictedCongestion") || eventName.equals("Congestion")) {
+					// turn on ramp metering
+					localOnramp.operationMode = 1;
+				}
+				else if (eventName.equals("ClearCongestion")) {
+					// turn off ramp metering
+					localOnramp.operationMode = 0;
+				}
+				else if (eventName.equals("setMeteringRateLimits")) {
+					// set metering rate limits
+					Double minFlow = (Double)attributes.get("lowerLimit");
+					if (minFlow != null) {
+						if (minFlow >= 0) localOnramp.minFlow = minFlow;
+						else localOnramp.minFlow = .0; // disable lower limit
+					}
+					Double maxFlow = (Double)attributes.get("upperLimit");
+					if (maxFlow != null) {
+						if (maxFlow >= 0) localOnramp.maxFlow = maxFlow;
+						else localOnramp.maxFlow = 1800.; // disable upper limit
+					}
+				}
+//				else if (eventName.equals("AverageOnRampValuesOverInterval") && (localOnramp.operationMode >= 1) &&
+//						(freeway.Roads.get(onrampId).sensor_begin == sensor_Id)) {
+				else if (eventName.equals("AverageOnRampValuesOverInterval")) {
+					// ACTION iff: - ramp metering on onramp is active
+					//   	       - event regarding the external inflow is received
+					
+					Double onrampFlow = (Double)attributes.get("average_flow");
+					localOnramp.dutycycle = computeDutyCycle(sensor_Id, onrampFlow * 60, this.dt); // conversion cars/min --> cars/h
+					
+					 // saveback: need to store active action
+					this.freeway.Intersections.get(localOnramp.ramp).activeAction = convertToTLP(localOnramp.dutycycle);
+					
+					Event[] outEvents = new Event[2];
+					
+					// Create Action Event
+			        Map<String, Object> outAttrs = new HashMap<String, Object>();
+			        outAttrs.put("junction_id", Integer.toString(localOnramp.actuatorId));
+			        outAttrs.put("phase_id", 1);
+			        outAttrs.put("phase_time", (int) (localOnramp.dutycycle * 60.)); // ASSUMPTION: phase 1 is "green"
+			        outEvents[0] = eventFactory.createEvent("SetTrafficLightPhases", timestamp, outAttrs);
+			        // Create Action Event
+			        outAttrs = new HashMap<String, Object>();
+			        outAttrs.put("junction_id", Integer.toString(localOnramp.actuatorId));
+			        outAttrs.put("phase_id", 2);
+			        outAttrs.put("phase_time", (int) ((1-localOnramp.dutycycle) * 60.)); // ASSUMPTION: phase 2 is "red"
+			        outEvents[1] = eventFactory.createEvent("SetTrafficLightPhases", timestamp, outAttrs);
+			        
+					return outEvents;
+				} // END if (eventName == ...)
+			} // END if (onrampFound)
+		} else {
+			throw(new IllegalArgumentException("Field sensorId in event attributes is empty."));
 		}
 		return null;
-
 	}
 	
 	/**
@@ -166,7 +176,6 @@ public class DistributedRM {
 
 				return Math.min(rmax, Math.max(rmin, r));
 			}
-			// FIXME: Check also if coordination mode is active.
 		}
 		return -1;
 	}
@@ -179,14 +188,16 @@ public class DistributedRM {
 	 * @param 		dutycycle	
 	 * @return		durations of individual traffic light phases
 	 */
-	public static Double[] convertToTLP(double dutycycle) {
+	private static Double[] convertToTLP(double dutycycle) {
 		return new Double[] {dutycycle, 1-dutycycle};
 	}
 	
 	/**
-	 * Wrapper function?
+	 * For given sensorId, find the corresponding onramp. Search along freeway
+	 * mainline is performed initially, if an onramp is found, it is stored
+	 * in a lookup table for later use.
 	 * @param sensorId
-	 * @return
+	 * @return onrampStruct
 	 */
 	public onrampStruct sensor2onramp(int sensorId) {
 		// check if ramp metering parameters have been defined for this onramp
@@ -203,6 +214,8 @@ public class DistributedRM {
 					// populate fields
 					localRamp.upstreamRamp = -1; // FIXME: implement for coordination
 					localRamp.downstreamRamp = -1; // FIXME: implement for coordination
+					int onrampRoadIndex = findRoad(freeway.Intersections.get(onrampMergeId).roads_in, "onramp");
+					localRamp.onrampRoadId = freeway.Intersections.get(onrampMergeId).roads_in_ID[onrampRoadIndex];
 					// save reference
 					this.intersection2onramp.put(onrampMergeId, localRamp);
 				}

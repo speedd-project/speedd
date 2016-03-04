@@ -7,6 +7,7 @@ class onrampStruct {
 	protected double dutycycle;
 	protected int upstreamRamp;
 	protected int ramp;
+	protected int onrampRoadId;
 	protected int downstreamRamp;
 	protected int actuatorId;
 
@@ -17,6 +18,7 @@ class onrampStruct {
 		this.minFlow = .0;
 		this.upstreamRamp = -1;
 		this.ramp = intersectionId;
+		this.onrampRoadId = -1;
 		this.downstreamRamp = -1;
 		this.actuatorId = actuatorId;
 	}
