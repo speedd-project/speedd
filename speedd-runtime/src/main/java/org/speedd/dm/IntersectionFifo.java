@@ -62,7 +62,7 @@ public class IntersectionFifo extends Intersection {
      * parameter and on the internal state of the adjacent roads.
      *
      * @param  iTLP		traffic light phases for this intersection
-     * @param  dt		simulation time
+     * @param  dt		simulation time (h)
      * @return 			map relating IDs of adjacent roads to the corresponding
      * 					flows
      */ 
@@ -75,7 +75,7 @@ public class IntersectionFifo extends Intersection {
     	// load traffic demand 
     	double[] demand = new double[n_in];
     	for(int ii=0;ii<n_in;ii++) {
-    		demand[ii] = this.roads_in[ii].getDemand();
+    		demand[ii] = this.roads_in[ii].getDemand() + 1e-6; // to avoid division by zero problems
     	}
     	// load traffic supply
     	double[] supply = new double[n_out];
@@ -101,7 +101,7 @@ public class IntersectionFifo extends Intersection {
     	
     	// compute demand satisfaction according to FIFO rule
     	RealVector demand2 = MatrixUtils.createRealVector(demand);
-    	RealVector d = aTLP.transpose().preMultiply(demand2);									// Matlab: d_s = aTLP*demand; FIXME: use "operate" instead
+    	RealVector d = aTLP.operate(demand2);													// Matlab: d_s = aTLP*demand;
     	RealVector kappa_supply = MatrixUtils.createRealVector(supply).ebeDivide(d);			// Matlab: kappa_supply = s./d_s;
     	
     	double[] kappa_demand = new double[n_in]; // allocate
@@ -122,7 +122,7 @@ public class IntersectionFifo extends Intersection {
     	RealVector fin = kappa_demand2.ebeMultiply(demand2).ebeMultiply(scaling); 				// Matlab: fin2 = kappa_demand2 .* demand2 .* scaling;
     	
     	RealMatrix TPM = MatrixUtils.createRealMatrix(this.params.TPM);
-    	RealVector fout = TPM.transpose().preMultiply(fin); 									// Matlab: fout = TPM*fin;
+    	RealVector fout = TPM.operate(fin); 									// Matlab: fout = TPM*fin;
     	
     	Map<Integer,Double> flows = new HashMap<Integer,Double>();
     	

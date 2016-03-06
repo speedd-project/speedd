@@ -162,8 +162,8 @@ public class network {
      * Predicts the number of cars in every road one step of length dt[h]
      * ahead. This prediction is based on the model used in the underlying
      * network instance, the states of the network and the chosen traffic light
-     * signals. The predicted number of cars are returned and the internal
-     * states of the network are updated accordingly.
+     * signals. The predicted number of cars are returned. The internal state
+     * is NOT updated
      *
      * @param  iTLPmap  traffic light signals for intersections
      * @param  exDemand external traffic demand
@@ -195,7 +195,7 @@ public class network {
     			delta_ncars += externalFlow;
     		}
 
-    		ncars.put(entry.getKey(), myroad.updateDensity(delta_ncars)); // update & collect all densities
+    		ncars.put(entry.getKey(), delta_ncars + myroad.ncars); // collect all densities
     	}
     	
     	return ncars; // return list of the new densities in the network
@@ -300,7 +300,12 @@ public class network {
 		// iteratively build the freeway
 		for (int ii=0; ii<n; ii++) {
 			Ctm freewayCtm = new Ctm("freeway",length[ii]);
-			Road cell = new RoadCtm(ii+offset-1, ii+offset, sens_in[ii], sens_ou[ii], "freeway", freewayCtm); // Hack: "-1" in the first iteration to show begin
+			Road cell; // allocate
+			if (ii == 0) {
+				cell = new RoadCtm(-1, ii+offset, sens_in[ii], sens_ou[ii], "freeway", freewayCtm); // "-1" indicates beginning of freeway
+			} else {
+				cell = new RoadCtm(ii+offset-1, ii+offset, sens_in[ii], sens_ou[ii], "freeway", freewayCtm);
+			}
 			roads.put(ii+offset, cell);
 			
 			// determine type of intersection. Assumption: no onramp and offramp at the same place!

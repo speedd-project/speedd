@@ -33,11 +33,9 @@ public class TrafficDecisionMakerBolt extends BaseRichBolt {
 	
 	Map<String, network> networkMap = new HashMap<String, network>();
 	Map<String, DistributedRM> distRMmap = new HashMap<String, DistributedRM>();
-    Map<String, subnetData> subnetDataMap = new HashMap<String, subnetData>();
+    Map<String, eventDrivenObserver> observerMap = new HashMap<String, eventDrivenObserver>();
     
-    public final double dt = 15/3600;
-    public final double tperiod = 60/3600;
-
+    final Boolean DEBUG = false;
 
 	@SuppressWarnings("rawtypes")
 	@Override
@@ -46,155 +44,213 @@ public class TrafficDecisionMakerBolt extends BaseRichBolt {
 		this.collector = collector;
 	}
 
+	/**
+	 * Wrapper function for main routine, executed whenever an event arrives.
+	 * @param input: contains the event
+	 */
 	@Override
 	public void execute(Tuple input) {
 		Event event = (Event)input.getValueByField("message");
+		execute(event);
+	}
+	
+	/**
+	 * Main routine, separated for testing purposes
+	 * @param event
+	 */
+	public void execute(Event event) {	
+		if (event == null) {
+			return; // do nothing
+		}
 		
 		// read event
 		String eventName = event.getEventName();
 		long timestamp = event.getTimestamp();
 		Map<String, Object> attributes = event.getAttributes();
-		// attribute "dm_sensorId" needs to be present, since partitioning is done according to it
-		String dmPartition = (String) attributes.get("dmPartition");
-		// attribute "sensorId" needs to be present, since that is also required
-		Integer sensorId = Integer.parseInt((String) attributes.get("sensorId")); // FIXME: there should be a check.
+		String dmPartition = (String) attributes.get("dmPartition"); // attribute "dm_sensorId" needs to be present
+		Integer sensorId;
+		try {
+			sensorId = Integer.parseInt((String) attributes.get("sensorId")); // attribute "sensorId" needs to be present
+		} catch (NumberFormatException e) {
+			sensorId = null; // will make the event being ignored
+		}
 		
 		
-		if (dmPartition != null)
+		if ((dmPartition != null) && (sensorId != null))
 		{
-            
+			// ============================================================== //
+			// INTERNAL status update --> create controller and observer instance, if necessary
 			network freeway = networkMap.get(dmPartition); // read sub-network data
             if (freeway == null) {
                 // create instance of subnetwork if not yet created
-                freeway = new network(dmPartition);
+            	try {
+            		freeway = new network(dmPartition);
+            	} catch(IllegalArgumentException e) {
+            		return; // if name of dmPartition is not known, do nothing
+            	}
                 // save instance
-                networkMap.put(dmPartition,freeway);
-
+                networkMap.put(dmPartition, freeway);
             }
-            DistributedRM distController = distRMmap.get(dmPartition);
-            if (distController == null) {
+            DistributedRM controller = distRMmap.get(dmPartition);
+            if (controller == null) {
                 // create instance of controller if not yet created
-                distController = new DistributedRM(freeway);
+                controller = new DistributedRM(freeway);
                 // save instance
-                distRMmap.put(dmPartition,distController);
+                distRMmap.put(dmPartition, controller);
             }
-            subnetData localData = subnetDataMap.get(dmPartition);
-            if (localData == null) {
+            eventDrivenObserver observer = observerMap.get(dmPartition);
+            if (observer == null) {
                 // create instance of data if not yet created
-                localData = new subnetData(timestamp);
+                observer = new eventDrivenObserver(freeway);
                 // save instance
-                subnetDataMap.put(dmPartition,localData);
+                observerMap.put(dmPartition, observer);
             }  
             // now everything is present ...
             
+            // ============================================================== //
+            // MEASUREMENT event --> hand over to OBSERVER
             if (eventName.equals("AverageDensityAndSpeedPersensorIdOverInterval") || eventName.equals("AverageOnRampValuesOverInterval"))
             {
-            	// check if external inflow
-            	//int roadId = distController.findRoadId(sensorId);
-            	Integer roadId = freeway.sensor2road.get(sensorId);
-	            if (roadId != null) {
-	            	// FIXME: Some implicit assumptions about a sensor being on the road entering a subnetwork here...
-	            	if (freeway.Roads.get(roadId).intersection_begin == -1) {
-	            		// external inflow
-	            		// just save value
-	            		Double inflow = (Double) attributes.get("average_flow");
-	                    localData.externalDemand.put(sensorId, inflow);
-	            	} else {
-	            		// internal measurement
-	            		Double density = (Double) attributes.get("average_occupancy");
-	            		density = density * 100; // FIXME: Check conversion factor.
-	                    localData.densityMeasurements.put(freeway.sensor2road.get(sensorId), density); // FIXME: What if two sensors on one road?
-	                    // sDouble flow = (Double) attributes.get("average_flow");
-	                    // localData.flowMeasurements.put(sensorId,  flow); // FIXME translation of sensor id required
-	            	}
-	            	// Update system state
-                    if ((timestamp - localData.tUpdate) > dt) {
-                    	double T = timestamp - localData.tUpdate;
-                        // predict flows
-                    	Map<Integer,Double> flows = freeway.predictFlows(localData.iTLPmap, T);
-                    	// Flow correction step
-                    	// flows = this.updateData(flows, localData.flowMeasurements, 1.); // FIXME: Magic number --> estimate variance instead?
-                    	// FIXME: Flow correction won't work yet, flow measurements have to be translated to correct IDs
-                    	// predict densities
-                    	Map<Integer,Double> densities = freeway.predictDensity(flows, localData.externalDemand);  	
-                    	// Density correction step
-                    	densities = this.updateData(densities, localData.densityMeasurements, 1.); // FIXME: Magic number --> estimate variance instead?
-                    	// saveback
-                    	freeway.initDensitites(densities);
-                    	
-                    	// clear measurement structs
-                    	localData.densityMeasurements.clear();
-                    	localData.flowMeasurements.clear();
-                    	localData.externalDemand.clear();
-                    	// reset time of last measurement
-                    	localData.tUpdate = timestamp;
-                    }
+            	observer.processEvent(event);
+            	// ADDITIONAL functionality: check onramp queue lengths
+            	if (eventName.equals("AverageOnRampValuesOverInterval")) {
+            		if (freeway.sensor2road.get(sensorId) != null) { // check if valid sensor id
+            			if (freeway.Roads.get(freeway.sensor2road.get(sensorId)).sensor_begin == sensorId) {
+    	            		int roadId = freeway.sensor2road.get(sensorId);
+    	            		double maxQueueLength = freeway.Roads.get(roadId).params.l * 1000; // conversion km --> m
+    	            		double queueLength = freeway.Roads.get(roadId).ncars * 8; // conversion [cars] --> m
+    	            		Event outEvent = makeOnrampEvent(dmPartition, sensorId, queueLength, maxQueueLength, timestamp);
+    	            		
+    	            		// Emit event: Use DM partition for partitioning by kafka
+    	                	outEvent = addLocation(outEvent);
+    	                	if (DEBUG) {
+    	                		System.out.println(outEvent.getEventName());
+    	                	} else {
+    	                		collector.emit(new Values(dmPartition, outEvent));
+    	                	}
+            			}
+            		}
             	}
             }
  
-			
+            // ============================================================== //
+			// COMPLEX event --> hand over to CONTROLLER
 			if (eventName.equals("PredictedCongestion") || eventName.equals("Congestion") || eventName.equals("ClearCongestion") ||
 					eventName.equals("setMeteringRateLimits") || eventName.equals("RampCooperation") || eventName.equals("PredictedRampOverflow") ||
 					eventName.equals("ClearRampOverflow") || eventName.equals("AverageOnRampValuesOverInterval")) {	
 				// Call ProcessEvent to deal with the event
-				Event outEvent = distController.processEvent2(event);
+				Event[] outEvents = controller.processEvent(event);
 				
-				if (outEvent != null) {
-	                // Use sensor labels for partitioning by kafka
-	                collector.emit(new Values(sensorId, outEvent));
-	                // Save decision also locally - FIXME: Move this functionality to other function
-					if (outEvent.getEventName().equals("newMeteringRate")) {
-						// FIXME: move functionality
-					}
-					
+				if (outEvents != null) {
+	                for (int ii=0; ii<outEvents.length; ii++) {
+	                	Event outEvent = addLocation(outEvents[ii]);
+						// Use DM partition for partitioning by kafka
+	                	if (DEBUG) {
+	                		System.out.println(outEvent.getEventName());
+	                	} else {
+	                		collector.emit(new Values("message", outEvent));	
+	                	}
+	                }
+	                
 				}
-
 
 			}
 			
-			// Events "AverageDensityAndSpeedPersensorId" are not used, we use the 2minsAverage... instead.
-			networkMap.put(dmPartition, freeway); // saveback local network state
 		} else {
-			logger.warn("sensorId is null for tuple " + input);
+			logger.warn("dmPartition and/or sensorId is null or invalid for tuple " + event);
 			// Discard event and do nothing. Could throw an exception, report an error etc.
 		}
 				
 	}
 
-
 	@Override
 	public void declareOutputFields(OutputFieldsDeclarer declarer) {
-		declarer.declare(new Fields("key", "message"));
+		declarer.declare(new Fields("message", "event"));
+	}
+	
+    /**
+     * Create an aggregatedQueueLengthEvent.
+     * @param dmPartition
+     * @param sensorId
+     * @param queueLength
+     * @param maxQueueLength
+     * @param timestamp
+     * @return
+     */
+	private Event makeOnrampEvent(String dmPartition, int sensorId, Double queueLength, Double maxQueueLength, long timestamp) {
+		Map<String, Object> attrs = new HashMap<String, Object>();
+		attrs.put("certainty", 1.0); // FIXME: Use variance as a proxy.
+		attrs.put("sensorId", Integer.toString(sensorId));
+		attrs.put("dmPartition", dmPartition);
+		attrs.put("queueLength", queueLength);
+		attrs.put("maxQueueLength", maxQueueLength);
+		return eventFactory.createEvent("AggregatedQueueRampLength", timestamp, attrs);
 	}
     
-    private class subnetData {
-    	public Map<Integer,Double[]> iTLPmap = new HashMap<Integer,Double[]>();
-    	public Map<Integer,Double> externalDemand = new HashMap<Integer,Double>();
-        public Map<Integer,Double> flowMeasurements = new HashMap<Integer,Double>();
-        public Map<Integer,Double> densityMeasurements = new HashMap<Integer,Double>();
-        public long tUpdate;
-        
-        public subnetData(long t_init) {
-        	this.tUpdate = t_init;
-        }
-    }
-    
-    private Map<Integer,Double> updateData(Map<Integer,Double> estimate, Map<Integer,Double> measurement, double lambda) {
-    	if ((lambda > 1) || (lambda < 0)) {
-    		throw(new IllegalArgumentException("Expect 0 <= lambda <= 1, but lambda = "+lambda));
-    	}
-    	// iterate over entries
-    	Map<Integer,Double> update = new HashMap<Integer,Double>();
-    	for (Map.Entry<Integer,Double> entry : estimate.entrySet()) {
-    		Integer key = entry.getKey();
-    		if (measurement.get(key) != null) {
-    			// corresponding measurement exists
-    			update.put(key, (1-lambda)*entry.getValue() + lambda*measurement.get(key));
-    		} else {
-    			update.put(key, entry.getValue());
-    		}
-    	}
-    	return update;
-    }
-
+	/**
+	 * Function to add "location" attribute to events.
+	 * TO BE REMOVED LATER.
+	 */
+	private Event addLocation(Event event) {
+		String eventName = event.getEventName();
+		long timestamp = event.getTimestamp();
+		Map<String, Object> attributes = event.getAttributes();
+		
+		String sensorId = (String) attributes.get("sensorId");
+		if (sensorId == null) {
+			sensorId = (String) attributes.get("junction_id");
+		}
+		attributes.put("location", lookupLocation(sensorId));
+		return eventFactory.createEvent(eventName, timestamp, attributes);
+	}
+	
+	/**
+	 * Lookup table for "old" location id.
+	 * TO BE REMOVED LATER.
+	 */
+	private String lookupLocation(String s) {
+		if (s.equals("4078") || s.equals("1708")) {
+			return new String("0024a4dc00003356");
+		} else 		if (s.equals("4048") || s.equals("1703") || s.equals("4085")) {
+			return new String("0024a4dc00003354");
+		} else 		if (s.equals("4244")) {
+			return new String("0024a4dc0000343c");
+		} else 		if (s.equals("1687") || s.equals("1691") || s.equals("3813") || s.equals("3814")) {
+			return new String("0024a4dc0000343b");
+		} else 		if (s.equals("1679") || s.equals("1683") || s.equals("3811") || s.equals("4132") || s.equals("3812")) {
+			return new String("0024a4dc00003445");
+		} else 		if (s.equals("3810") || s.equals("1675") || s.equals("3810")) {
+			return new String("0024a4dc00001b67");
+		} else 		if (s.equals("4355")) {
+			return new String("0024a4dc00003357");
+		} else 		if (s.equals("4061") || s.equals("1670") || s.equals("4134")) {
+			return new String("0024a4dc00000ddd");
+		} else 			if (s.equals("4381") || s.equals("1666") || s.equals("4391")) {
+			return new String("0024a4dc00003355");
+		} else 			if (s.equals("4375") || s.equals("1662") || s.equals("4135")) {
+			return new String("0024a4dc000021d1");
+		} else 			if (s.equals("4058") || s.equals("1658")) {
+			return new String("0024a4dc0000343f");
+		} else 			if (s.equals("4057") || s.equals("1654") || s.equals("4136")) {
+			return new String("0024a4dc00001b5c");
+		} else 			if (s.equals("4056") || s.equals("1650") || s.equals("4166")) {
+			return new String("0024a4dc000025eb");
+		} else 			if (s.equals("4055") || s.equals("1646")) {
+			return new String("0024a4dc000025ea");
+		} else 			if (s.equals("4138")) {
+			return new String("0024a4dc00001c99");
+		} else 			if (s.equals("4054") || s.equals("1642")) {
+			return new String("0024a4dc000013c6");
+		} else 			if (s.equals("4053") || s.equals("1638")) {
+			return new String("0024a4dc00003444");
+		} else 			if (s.equals("4052") || s.equals("1634")) {
+			return new String("0024a4dc000025ec");
+		} else 			if (s.equals("1629") || s.equals("1630") || s.equals("1628")) {
+			return new String("0024a4dc0000343e");
+		} else {
+			return new String("locationIdNotFound");
+		}
+	}
 }
+
+

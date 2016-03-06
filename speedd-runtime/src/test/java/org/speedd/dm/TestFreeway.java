@@ -55,31 +55,31 @@ public class TestFreeway {
 		// test "processEvent"
 		Map<String, Object> attributes = new HashMap<String, Object>();
 		attributes.put("sensorId", "403");
-		onrampStruct result = controller.processEvent("Congestion", 0, attributes);
+		onrampStruct result = controller.processEventDebug("Congestion", 0, attributes);
 		assertEquals(1, result.ramp);
 		assertEquals(1, result.operationMode);
 		
 		attributes.put("sensorId", "3");
 		attributes.put("lowerLimit",(Double) 100.);
-		result = controller.processEvent("setMeteringRateLimits", 0, attributes);
+		result = controller.processEventDebug("setMeteringRateLimits", 0, attributes);
 		assertEquals(1, result.ramp); // should remain from before
 		assertEquals(1, result.operationMode);
 		assertEquals((Double) 100., result.minFlow);
 		
 		attributes.put("sensorId", "3");
-		result = controller.processEvent("ClearCongestion", 0, attributes);
+		result = controller.processEventDebug("ClearCongestion", 0, attributes);
 		assertEquals(1, result.ramp);
 		assertEquals(0, result.operationMode);
 		
 		attributes.put("sensorId", "5");
 		attributes.put("upperLimit", 2000.);
-		result = controller.processEvent("setMeteringRateLimits", 0, attributes);
+		result = controller.processEventDebug("setMeteringRateLimits", 0, attributes);
 		assertEquals(5, result.ramp);
 		assertEquals(0, result.operationMode);
 		assertEquals((Double) 2000., result.maxFlow); // FIXME: Disallow values > 1800
 		
 		attributes.put("upperLimit", -100.); // invalid
-		result = controller.processEvent("setMeteringRateLimits", 0, attributes);
+		result = controller.processEventDebug("setMeteringRateLimits", 0, attributes);
 		assertEquals(5, result.ramp);
 		assertEquals(0, result.operationMode);
 		assertEquals((Double) 1800., result.maxFlow); // note: 1800 is the upper bound, so no artifical limit
@@ -101,10 +101,10 @@ public class TestFreeway {
 		double eps = 1e-6;
 		attributes.put("sensorId", "2");
 		attributes.put("lowerLimit", -1.); // disable lower limit
-		controller.processEvent("setMeteringRateLimits", 0, attributes);
+		controller.processEventDebug("setMeteringRateLimits", 0, attributes);
 		assertEquals(-1., controller.computeDutyCycle(101, 0, 120./3600), eps); // controller not active 
 		attributes.put("sensorId", "2");
-		controller.processEvent("Congestion", 0, attributes);
+		controller.processEventDebug("Congestion", 0, attributes);
 		assertEquals(10/60., controller.computeDutyCycle(101, 0, 120./3600), eps); // active
 		init_cars.put(1, 50.);
 		freeway.initDensitites(init_cars); // initialize densities
@@ -114,7 +114,7 @@ public class TestFreeway {
 		assertEquals(0., controller.computeDutyCycle(101, 0, 120./3600), eps); // above critical density
 		attributes.put("sensorId", "2");
 		attributes.put("lowerLimit", 100.); // disable lower limit
-		controller.processEvent("setMeteringRateLimits", 0, attributes);
+		controller.processEventDebug("setMeteringRateLimits", 0, attributes);
 		assertEquals(100./1800, controller.computeDutyCycle(101, 0, 120./3600), eps); // above critical density, but lower limit active
 		init_cars.put(101, 0.5*125.);
 		freeway.initDensitites(init_cars); // initialize densities
