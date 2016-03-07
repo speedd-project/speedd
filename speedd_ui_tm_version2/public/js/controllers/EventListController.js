@@ -30,6 +30,7 @@ app.controller('EventListController', ['$scope','$interval','$window','dataServi
 	$scope.$on("broadcastUserEvent", function(){
 		var event = clone(dataService.rawEventList[dataService.rawEventList.length-1]);
 		$scope.eventList.push(event);
+        
 		formatEvent(event);
 	});
 
@@ -45,7 +46,9 @@ app.controller('EventListController', ['$scope','$interval','$window','dataServi
 		event.density = (dataToFormat.attributes.density != undefined)? dataToFormat.attributes.density.toFixed(2) : (dataToFormat.attributes.average_density != undefined)? dataToFormat.attributes.average_density.toFixed(2) : "";
 		event.problem_id = (dataToFormat.attributes.problem_id != undefined)? dataToFormat.attributes.problem_id : "";
 		
-		$scope.formattedEventList.push(event);
+         // show only derived events -- no sensor readings
+        if(dataToFormat.name == "PredictedCongestion" || dataToFormat.name == "Congestion" || dataToFormat.name == "ClearCongestion" || dataToFormat.name == "ClearRampOverflow" || dataToFormat.name == "PredictedRampOverflow")
+		  $scope.formattedEventList.push(event);
 	}
 	function formatEventList(dataToFormat){
 		for(var i=0; i<dataToFormat.length;i++)
