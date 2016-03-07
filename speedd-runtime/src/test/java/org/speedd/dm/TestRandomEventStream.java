@@ -1,6 +1,7 @@
 package org.speedd.dm;
 
 import static org.junit.Assert.*;
+import backtype.storm.task.IOutputCollector;
 import backtype.storm.task.OutputCollector;
 import backtype.storm.task.TopologyContext;
 import backtype.storm.topology.OutputFieldsDeclarer;
@@ -22,7 +23,23 @@ import java.util.Map;
 import java.util.Random;
 
 public class TestRandomEventStream {
-	
+	public class TestCollector extends OutputCollector {
+
+		public List<Object> tuple;
+		
+		public TestCollector(IOutputCollector delegate) {
+			super(delegate);
+		}
+		
+		@Override
+		public List<Integer> emit(List<Object> tuple) {
+			this.tuple = tuple;
+			
+			return null;
+		}
+		
+	}
+
 	Random randGen = new Random();
 
 	@Test
@@ -37,7 +54,7 @@ public class TestRandomEventStream {
 		final int p_onramp = 20;
 		final int p_limits = 10;
 		
-		OutputCollector collector = new OutputCollector(null);
+		OutputCollector collector = new TestCollector(null);
 		
 		TrafficDecisionMakerBolt myBolt = new TrafficDecisionMakerBolt();
 		myBolt.prepare(null,null,collector);

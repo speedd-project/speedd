@@ -37,7 +37,7 @@ public class JsonEventEncoder implements Encoder<Object>, Fields {
 			return eventToBytes((Event)object);
 		}
 
-		throw new RuntimeException("Unsupported data type for encoding: " + object.getClass().getName());
+		throw new RuntimeException(String.format("Unsupported data type %s for encoding of object: %s", object.getClass().getName(), object.toString()));
 	}
 	
 	public byte[] eventToBytes(Event event) {

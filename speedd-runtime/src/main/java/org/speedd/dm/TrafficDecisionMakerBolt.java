@@ -148,7 +148,7 @@ public class TrafficDecisionMakerBolt extends BaseRichBolt {
 	                	if (DEBUG) {
 	                		System.out.println(outEvent.getEventName());
 	                	} else {
-	                		collector.emit(new Values("message", outEvent));	
+	                		collector.emit(new Values("1", outEvent));	
 	                	}
 	                }
 	                
@@ -165,7 +165,7 @@ public class TrafficDecisionMakerBolt extends BaseRichBolt {
 
 	@Override
 	public void declareOutputFields(OutputFieldsDeclarer declarer) {
-		declarer.declare(new Fields("message", "event"));
+		declarer.declare(new Fields("key", "message"));
 	}
 	
     /**
