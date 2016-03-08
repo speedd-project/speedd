@@ -13,6 +13,8 @@ import org.speedd.data.EventFactory;
 public class TrafficAggregatedReadingCsv2Event implements EventParser, Constants {
 	public static final String ATTR_LOCATION = "location";
 	public static final String ATTR_LANE = "lane";
+	public static final String ATTR_OCCURRENCE_TIME           = "OccurrenceTime";
+	public static final String ATTR_DETECTION_TIME       = "DetectionTime";
 	public static final String ATTR_SPEED_HISTOGRAM = "speed_histogram";
 	public static final String ATTR_OCCUPANCY = "occupancy";
 	public static final String ATTR_VEHICLES = "vehicles";
@@ -69,10 +71,13 @@ public class TrafficAggregatedReadingCsv2Event implements EventParser, Constants
 			long timestamp;
 
 			timestamp = dateTimeFormat.parse(dateTimeStr).getTime();
+			long detectionTime = System.currentTimeMillis();
 
 			HashMap<String, Object> attrMap = new HashMap<String, Object>();
 			
 			attrMap.put(ATTR_TIMESTAMP, Long.valueOf(timestamp));
+			attrMap.put(ATTR_OCCURRENCE_TIME, timestamp);
+			attrMap.put(ATTR_DETECTION_TIME, Long.valueOf(detectionTime));
 			attrMap.put(ATTR_LOCATION, tuple[ATTR_LOCATION_INDEX]);
 			attrMap.put(ATTR_LANE, tuple[ATTR_LANE_INDEX]);
 			attrMap.put(ATTR_OCCUPANCY, Double.parseDouble(tuple[ATTR_OCCUPANCY_INDEX]));
