@@ -37,7 +37,7 @@ public class FraudAggregatedReadingCsv2EventTest {
 		assertEquals(Constants.TRANSACTION, event.getEventName());
 
 		Map<String, Object> attrs = event.getAttributes();
-        assertEquals(new Date(1423150200000L), attrs.get("OccurrenceTime"));
+        assertEquals(1423150200000L, attrs.get("OccurrenceTime"));
         assertEquals("TXN_ID", attrs.get("transaction_id"));
         assertEquals(true, attrs.get("is_cnp"));
         assertEquals(250.0, attrs.get("amount_eur"));
