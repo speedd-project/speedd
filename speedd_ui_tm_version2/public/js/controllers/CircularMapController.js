@@ -116,7 +116,7 @@ app.controller('CircularMapController', ['$scope','$interval','$window','dataSer
 	        var node = dataService.locationToNode(event.attributes.location);
             
             if(node){
-                $scope.currentRate(node, event.attributes.newMeteringRate);
+                $scope.currentRate(node, event.attributes.phase_time);
                 $scope.currentOccupancy(node, event.attributes.density);
                 
                 console.log(event);
