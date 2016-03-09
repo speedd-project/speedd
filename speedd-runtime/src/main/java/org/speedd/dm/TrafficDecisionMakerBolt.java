@@ -115,10 +115,11 @@ public class TrafficDecisionMakerBolt extends BaseRichBolt {
             	// ADDITIONAL functionality: check onramp queue lengths
             	if (eventName.equals("AverageOnRampValuesOverInterval")) {
             		if (freeway.sensor2road.get(sensorId) != null) { // check if valid sensor id
-            			if (freeway.Roads.get(freeway.sensor2road.get(sensorId)).sensor_begin == sensorId) {
+            			if ((freeway.Roads.get(freeway.sensor2road.get(sensorId)).sensor_begin == sensorId) && (freeway.Roads.get(freeway.sensor2road.get(sensorId)).type.equals("onramp"))) {
     	            		int roadId = freeway.sensor2road.get(sensorId);
     	            		double maxQueueLength = freeway.Roads.get(roadId).params.l * 1000; // conversion km --> m
-    	            		double queueLength = freeway.Roads.get(roadId).ncars * 8; // conversion [cars] --> m
+    	            		double queueLength = freeway.Roads.get(roadId).ncars * 8; // conversion [cars] --> m  	         
+    	            		
     	            		Event outEvent = makeOnrampEvent(dmPartition, sensorId, queueLength, maxQueueLength, timestamp);
     	            		
     	            		// Emit event: Use DM partition for partitioning by kafka
@@ -211,13 +212,13 @@ public class TrafficDecisionMakerBolt extends BaseRichBolt {
 	private String lookupLocation(String s) {
 		if (s.equals("4078") || s.equals("1708")) {
 			return new String("0024a4dc00003356");
-		} else 		if (s.equals("4048") || s.equals("1703") || s.equals("4085")) {
+		} else 		if (s.equals("4048") || s.equals("1703") || s.equals("4085") || s.equals("4489")) {
 			return new String("0024a4dc00003354");
 		} else 		if (s.equals("4244")) {
 			return new String("0024a4dc0000343c");
 		} else 		if (s.equals("1687") || s.equals("1691") || s.equals("3813") || s.equals("3814")) {
 			return new String("0024a4dc0000343b");
-		} else 		if (s.equals("1679") || s.equals("1683") || s.equals("3811") || s.equals("4132") || s.equals("3812")) {
+		} else 		if (s.equals("1679") || s.equals("1683") || s.equals("3811") || s.equals("4132") || s.equals("3812") || s.equals("4488")) {
 			return new String("0024a4dc00003445");
 		} else 		if (s.equals("3810") || s.equals("1675") || s.equals("3810")) {
 			return new String("0024a4dc00001b67");
@@ -225,21 +226,21 @@ public class TrafficDecisionMakerBolt extends BaseRichBolt {
 			return new String("0024a4dc00003357");
 		} else 		if (s.equals("4061") || s.equals("1670") || s.equals("4134")) {
 			return new String("0024a4dc00000ddd");
-		} else 			if (s.equals("4381") || s.equals("1666") || s.equals("4391")) {
+		} else 			if (s.equals("4381") || s.equals("1666") || s.equals("4391") || s.equals("4487")) {
 			return new String("0024a4dc00003355");
-		} else 			if (s.equals("4375") || s.equals("1662") || s.equals("4135")) {
+		} else 			if (s.equals("4375") || s.equals("1662") || s.equals("4135") || s.equals("4486")) {
 			return new String("0024a4dc000021d1");
 		} else 			if (s.equals("4058") || s.equals("1658")) {
 			return new String("0024a4dc0000343f");
 		} else 			if (s.equals("4057") || s.equals("1654") || s.equals("4136")) {
 			return new String("0024a4dc00001b5c");
-		} else 			if (s.equals("4056") || s.equals("1650") || s.equals("4166")) {
+		} else 			if (s.equals("4056") || s.equals("1650") || s.equals("4166") || s.equals("4453")) {
 			return new String("0024a4dc000025eb");
 		} else 			if (s.equals("4055") || s.equals("1646")) {
 			return new String("0024a4dc000025ea");
 		} else 			if (s.equals("4138")) {
 			return new String("0024a4dc00001c99");
-		} else 			if (s.equals("4054") || s.equals("1642")) {
+		} else 			if (s.equals("4054") || s.equals("1642") || s.equals("4490")) {
 			return new String("0024a4dc000013c6");
 		} else 			if (s.equals("4053") || s.equals("1638")) {
 			return new String("0024a4dc00003444");

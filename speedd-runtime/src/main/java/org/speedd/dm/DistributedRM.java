@@ -14,7 +14,7 @@ public class DistributedRM {
 	private Map<Integer,onrampStruct> sensor2onramp; // map congestion events to onramps
 	private Map<Integer,onrampStruct> intersection2onramp; // 1-to-1 map of intersections to onramp
 	private final network freeway;
-	private final double dt = 60./3600.; // FIXME: 1min period length. Make parameter
+	private final double dt = 15./3600.; // FIXME: 1min period length. Make parameter
 
 	/** 
 	 * Constructor, storing a reference to the network to be controlled.
@@ -87,9 +87,8 @@ public class DistributedRM {
 						else localOnramp.maxFlow = 1800.; // disable upper limit
 					}
 				}
-//				else if (eventName.equals("AverageOnRampValuesOverInterval") && (localOnramp.operationMode >= 1) &&
-//						(freeway.Roads.get(onrampId).sensor_begin == sensor_Id)) {
-				else if (eventName.equals("AverageOnRampValuesOverInterval")) {
+				else if (eventName.equals("AverageOnRampValuesOverInterval") && (localOnramp.operationMode >= 1) &&
+						(freeway.Roads.get(onrampId).sensor_begin == (int)sensor_Id)) {
 					// ACTION iff: - ramp metering on onramp is active
 					//   	       - event regarding the external inflow is received
 					
@@ -159,20 +158,24 @@ public class DistributedRM {
 				}
 				
 				// obtain local parameters		
-				double ncars = Math.max(upstream.ncars * (downstream.params.l/upstream.params.l), downstream.ncars); // FIXME: Add term for inflow of previous step.
+				double ncars = Math.max(upstream.ncars * (downstream.params.l/upstream.params.l), downstream.ncars);
 				double ncars_c = downstream.params.rhoc * downstream.params.l;
 				double qmax = onramp.params.rhom * onramp.params.l;
 				double q = onramp.ncars;
-				double phi_out = 0; // FIXME: predict internally
-				double phi_in = 0; // FIXME: predict internally
+				
+				Intersection InterDown = freeway.Intersections.get(downstream.intersection_end);
+				Map<Integer,Double> flowsDownstream = InterDown.computeFlows(InterDown.activeAction, dt);
+				double phi_out = flowsDownstream.get(-downstream_id); // need OUTflow: negative road ID
+				Map<Integer,Double> flowsUpstream = ramp.computeFlows(ramp.activeAction, dt);
+				double phi_in = flowsUpstream.get(-upstream_id); // again, need OUTFLOW: negative road ID
 				
 				// compute inflow
 				double rmax = Math.min(1., localOnramp.maxFlow/1800.);	// (cars/h) : one car every two seconds
 				double rmin = Math.max(0., localOnramp.minFlow/1800.);	// (cars/h) : assume trivial lower bound
 				
-				double delta_n = ncars_c - (ncars + dt*(phi_in-phi_out));
-				double r = delta_n/(dt*1800);          					// conversion: # of cars --> dutycycle
-				rmin = Math.max(rmin, ((demand*dt)-(qmax-q))/(dt*1800));  	// conversion: # of cars --> dutycycle
+				double delta_n = ncars_c - (ncars + (phi_in-phi_out)); // note: unit of flows is [cars]
+				double r = delta_n / ((4*dt) * 1800);          					// conversion: # of cars --> dutycycle
+				rmin = Math.max(rmin, ((demand*dt)-(qmax-q))/((4*dt)*1800));  	// conversion: # of cars --> dutycycle
 
 				return Math.min(rmax, Math.max(rmin, r));
 			}

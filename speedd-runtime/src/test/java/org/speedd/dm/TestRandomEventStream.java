@@ -15,6 +15,7 @@ import org.junit.Test;
 import org.speedd.data.Event;
 import org.speedd.data.EventFactory;
 import org.speedd.data.impl.SpeeddEventFactory;
+import org.speedd.dm.TestEventProcessing.TestCollector;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -54,12 +55,15 @@ public class TestRandomEventStream {
 		final int p_onramp = 20;
 		final int p_limits = 10;
 		
-		OutputCollector collector = new TestCollector(null);
+		TestCollector  collector = new TestCollector(null);
 		
 		TrafficDecisionMakerBolt myBolt = new TrafficDecisionMakerBolt();
 		myBolt.prepare(null,null,collector);
 		
 		long timestamp = randGen.nextInt(1000000);
+		
+		int N_setTrafficLightPhases = 0;
+		int N_aggregatedQueueRampLength = 0;
 		
 		for (int ii=0;ii<N;ii++) {
 			
@@ -85,16 +89,42 @@ public class TestRandomEventStream {
 			}
 			
 			if (newEvent != null) {
-				System.out.println(newEvent.getEventName());
+				// System.out.println(newEvent.getEventName());
 			}
 			
 			// send to "bolt"
 			 myBolt.execute(newEvent);
+			 List<Object> outTuple = collector.tuple;
+			 if (outTuple != null) {
+				 Event outEvent = (Event)outTuple.get(1);
+				 if (outEvent.getEventName() == "SetTrafficLightPhases") {
+					 double phase_time = (double)((int)outEvent.getAttributes().get("phase_time"));
+					 String junction_id = (String) outEvent.getAttributes().get("junction_id");
+					 assertTrue(phase_time >= 0);
+					 assertTrue(phase_time <= 60);
+					 assertTrue(junction_id.equals("4489") || junction_id.equals("4488") || junction_id.equals("4487") || 
+							 junction_id.equals("4486") || junction_id.equals("4453") || junction_id.equals("4490"));
+					 N_setTrafficLightPhases += 1;
+				 } else if (outEvent.getEventName() == "AggregatedQueueRampLength") {
+					 double queueLength = (Double)(outEvent.getAttributes().get("queueLength"));
+					 double maxQueueLength = (Double)(outEvent.getAttributes().get("maxQueueLength"));
+					 String sensor_id = (String) outEvent.getAttributes().get("sensorId");
+					 assertTrue(queueLength >= 0);
+					 assertTrue(maxQueueLength >= queueLength);
+					 assertTrue(sensor_id.equals("4085") || sensor_id.equals("4132") || sensor_id.equals("4134") || 
+							 sensor_id.equals("4135") || sensor_id.equals("4136") || sensor_id.equals("4138"));
+					 N_aggregatedQueueRampLength += 1;
+				 }
+				 
+			 }
+			 	
 			 
 			
 		}
 		
 		System.out.println("Finished!");
+		System.out.println("Processed " + N_setTrafficLightPhases + " setTrafficLightPhases events");
+		System.out.println("Processed " + N_aggregatedQueueRampLength + " aggregatedQueueRampLength events");
 
 		
 		
