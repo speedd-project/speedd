@@ -47,9 +47,7 @@ public class TestEventProcessing {
 	
 	@Test
 	public void testDMBolt() {
-		
 
-		
 		TrafficDecisionMakerBolt dmBolt = new TrafficDecisionMakerBolt();
 		
 		TestCollector collector = new TestCollector(null);
@@ -73,8 +71,8 @@ public class TestEventProcessing {
 		List<Object> outTuple = collector.tuple;
 		assertNotNull(outTuple);
 		Event actionEvent = (Event)outTuple.get(1);
-		double new_rate = 1.; // FIXME: Add correct value
-		// verifyAction(actionEvent, "4453", new_rate);
+		double new_rate = 1.; // upper limit, freeway is empty
+		verifyAction(actionEvent, "4453", new_rate);
 		
 		
 		// (b) upper limit
@@ -88,7 +86,7 @@ public class TestEventProcessing {
 		outTuple = collector.tuple;
 		assertNotNull(outTuple);
 		actionEvent = (Event)outTuple.get(1);
-		// verifyAction(actionEvent, "4453", upperLimit/1800); // upper limit
+		verifyAction(actionEvent, "4453", upperLimit/1800); // upper limit
 		
 		// (c) nonsensical identifier "sensorId"
 		collector.tuple = null;
@@ -121,7 +119,7 @@ public class TestEventProcessing {
 		outTuple = collector.tuple;
 		assertNotNull(outTuple);
 		actionEvent = (Event)outTuple.get(1);
-		// verifyAction(actionEvent, "4453", lowerLimit/1800); // upper limit
+		verifyAction(actionEvent, "4453", lowerLimit/1800); // lower limit limit
 		
 		// get some references that will be useful for writing robust tests
 		network freeway = dmBolt.networkMap.get("section4");
@@ -136,7 +134,7 @@ public class TestEventProcessing {
 		outTuple = collector.tuple;
 		assertNotNull(outTuple);
 		actionEvent = (Event)outTuple.get(1);
-		// verifyAction(actionEvent, "4453", 0.); // upper limit
+		verifyAction(actionEvent, "4453", 0.); // limits disabled
 		
 		// (f) disable ramp metering
 		collector.tuple = null;
@@ -145,16 +143,7 @@ public class TestEventProcessing {
 		outTuple = collector.tuple;
 		// assertNull(outTuple);
 		
-//		// (i) Reactivate ramp metering: old limits should still be in place
-//		dmBolt.execute(mockTuple(new Values("1", createCongestion("0024a4dc00003354"))));
-//		dmBolt.execute(mockTuple(new Values("1", createOnRampFlow("0024a4dc00003354",300) )));
-//		dmBolt.execute(mockTuple(new Values("1", createDensity("0024a4dc00003354",188))));
-//		outTuple = collector.tuple;
-//		assertNotNull(outTuple);
-//		actionEvent = (Event)outTuple.get(1);
-//		verifyAction(actionEvent, "0024a4dc00003354", 0); // lower limit removed: zero is absolut lower limit
-		
-		// dmBolt.execute(mockTuple(new Values("",  )));
+
 		
 	}
 	
@@ -213,12 +202,19 @@ public class TestEventProcessing {
 	// function to verify actions
 	private void verifyAction(Event actionEvent, String expected_actu_id, double expectedMeterRate) {
 		// read attributes
-		Double meterRate = (Double)actionEvent.getAttributes().get("newMeteringRate");
-		String actuator_id = (String) actionEvent.getAttributes().get("sensorId");
+		int phase_id = (int)actionEvent.getAttributes().get("phase_id");
+		Double phase_time = (double)((int)actionEvent.getAttributes().get("phase_time"));
+		String actuator_id = (String) actionEvent.getAttributes().get("junction_id");
 		// String dmPartition = (String)actionEvent.getAttributes().get("dmPartition");
 		// compare
+		
+		if (phase_id == 1) {
+			assertEquals(expectedMeterRate * 60., phase_time, 1e-3);
+		} else {
+			assertEquals(phase_id, 2);
+			assertEquals(((1.-expectedMeterRate) * 60.), phase_time, 1e-3);
+		}
 		assertEquals(expected_actu_id, actuator_id);
-		assertEquals(expectedMeterRate, meterRate, 1e-3);
 	}
 	
 }
