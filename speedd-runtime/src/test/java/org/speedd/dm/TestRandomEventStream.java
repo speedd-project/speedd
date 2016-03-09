@@ -195,7 +195,7 @@ public class TestRandomEventStream {
 		attrs.put("dmPartition", newSensor.dmPartition);
 		attrs.put("average_occupancy", randGen.nextDouble() * 125.);
 		attrs.put("average_flow", randGen.nextDouble() * 2000);
-		return SpeeddEventFactory.getInstance().createEvent("AverageOnRampValuesOverInterval", timestamp, attrs);
+		return SpeeddEventFactory.getInstance().createEvent("AverageDensityAndSpeedPersensorIdOverInterval", timestamp, attrs);
 	}
 	private Event createLimits(long timestamp) {
 			// Create a limit event

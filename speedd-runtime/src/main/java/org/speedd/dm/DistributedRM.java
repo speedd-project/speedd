@@ -87,7 +87,7 @@ public class DistributedRM {
 						else localOnramp.maxFlow = 1800.; // disable upper limit
 					}
 				}
-				else if (eventName.equals("AverageOnRampValuesOverInterval") && (localOnramp.operationMode >= 1) &&
+				else if ((eventName.equals("AverageOnRampValuesOverInterval") || eventName.equals("AverageDensityAndSpeedPersensorIdOverInterval")) && (localOnramp.operationMode >= 1) &&
 						(freeway.Roads.get(onrampId).sensor_begin == (int)sensor_Id)) {
 					// ACTION iff: - ramp metering on onramp is active
 					//   	       - event regarding the external inflow is received
