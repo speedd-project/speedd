@@ -112,33 +112,27 @@ public class TrafficDecisionMakerBolt extends BaseRichBolt {
             if (eventName.equals("AverageDensityAndSpeedPersensorIdOverInterval") || eventName.equals("AverageOnRampValuesOverInterval"))
             {
             	observer.processEvent(event);
-            	// ADDITIONAL functionality: check onramp queue lengths
-            	if (eventName.equals("AverageOnRampValuesOverInterval")) {
-            		if (freeway.sensor2road.get(sensorId) != null) { // check if valid sensor id
-            			if ((freeway.Roads.get(freeway.sensor2road.get(sensorId)).sensor_begin == sensorId) && (freeway.Roads.get(freeway.sensor2road.get(sensorId)).type.equals("onramp"))) {
-    	            		int roadId = freeway.sensor2road.get(sensorId);
-    	            		double maxQueueLength = freeway.Roads.get(roadId).params.l * 1000; // conversion km --> m
-    	            		double queueLength = freeway.Roads.get(roadId).ncars * 8; // conversion [cars] --> m  	         
-    	            		
-    	            		Event outEvent = makeOnrampEvent(dmPartition, sensorId, queueLength, maxQueueLength, timestamp);
-    	            		
-    	            		// Emit event: Use DM partition for partitioning by kafka
-    	                	outEvent = addLocation(outEvent);
-    	                	if (DEBUG) {
-    	                		System.out.println(outEvent.getEventName());
-    	                	} else {
-    	                		collector.emit(new Values(dmPartition, outEvent));
-    	                	}
-            			}
-            		}
-            	}
+        		if (freeway.sensor2road.get(sensorId) != null) { // check if valid sensor id
+        			if ((freeway.Roads.get(freeway.sensor2road.get(sensorId)).sensor_begin == sensorId) && (freeway.Roads.get(freeway.sensor2road.get(sensorId)).type.equals("onramp"))) {
+	            		int roadId = freeway.sensor2road.get(sensorId);
+	            		double maxQueueLength = freeway.Roads.get(roadId).params.l * 1000; // conversion km --> m
+	            		double queueLength = freeway.Roads.get(roadId).ncars * 8; // conversion [cars] --> m  	         
+	            		
+	            		Event outEvent = makeOnrampEvent(dmPartition, sensorId, queueLength, maxQueueLength, timestamp);
+	            		
+	            		// Emit event: Use DM partition for partitioning by kafka
+	                	outEvent = addLocation(outEvent);
+	                	collector.emit(new Values(dmPartition, outEvent));
+        			}
+        		}
+            	
             }
  
             // ============================================================== //
 			// COMPLEX event --> hand over to CONTROLLER
 			if (eventName.equals("PredictedCongestion") || eventName.equals("Congestion") || eventName.equals("ClearCongestion") ||
 					eventName.equals("setMeteringRateLimits") || eventName.equals("RampCooperation") || eventName.equals("PredictedRampOverflow") ||
-					eventName.equals("ClearRampOverflow") || eventName.equals("AverageOnRampValuesOverInterval")) {	
+					eventName.equals("ClearRampOverflow") || eventName.equals("AverageOnRampValuesOverInterval") || eventName.equals("AverageDensityAndSpeedPersensorIdOverInterval")) {	
 				// Call ProcessEvent to deal with the event
 				Event[] outEvents = controller.processEvent(event);
 				
@@ -146,12 +140,8 @@ public class TrafficDecisionMakerBolt extends BaseRichBolt {
 	                for (int ii=0; ii<outEvents.length; ii++) {
 	                	Event outEvent = addLocation(outEvents[ii]);
 						// Use DM partition for partitioning by kafka
-	                	if (DEBUG) {
-	                		System.out.println(outEvent.getEventName());
-	                	} else {
-	                		collector.emit(new Values("1", outEvent));	
-	                	}
-	                }
+	                	collector.emit(new Values("1", outEvent));	
+	                } 
 	                
 				}
 

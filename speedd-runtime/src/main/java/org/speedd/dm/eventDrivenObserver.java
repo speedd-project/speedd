@@ -93,9 +93,9 @@ public class eventDrivenObserver {
                 		// INTERNAL MEASUREMENT
                 		
                 		// DENSITY UPDATE
-                		if (eventName.equals("AverageDensityAndSpeedPersensorIdOverInterval")) {
+                		if (!road.type.equals("onramp")) {
                 			road.updateDensity(L_DENS * (ncars - ncarsMap.get(roadId)));
-                		} else if (eventName.equals("AverageOnRampValuesOverInterval") && (road.sensor_begin == sensorId)) {
+                		} else if (road.type.equals("onramp") && (road.sensor_begin == sensorId)) {
                 			// queue sensor: can only be used to correct density which is too small
                 			if (ncars > ncarsMap.get(roadId)) {
                 				road.updateDensity(L_DENS * (ncars - ncarsMap.get(roadId)));
