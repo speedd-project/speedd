@@ -169,7 +169,7 @@ public class TestEventProcessing {
 		attrs.put("dmPartition", dmsensorId);
 		attrs.put("average_occupancy", density/OCCU_DENS_CONVERSION);
 		attrs.put("average_flow", flow);
-		return SpeeddEventFactory.getInstance().createEvent("AverageDensityAndSpeedPersensorIdOverInterval", timestamp, attrs);
+		return SpeeddEventFactory.getInstance().createEvent("AverageDensityAndSpeedPerLocation", timestamp, attrs);
 	}
 	private Event createOnramp(long timestamp, int sensorId, String dmsensorId, double density, double flow) {
 		// Create a mainline measurement event

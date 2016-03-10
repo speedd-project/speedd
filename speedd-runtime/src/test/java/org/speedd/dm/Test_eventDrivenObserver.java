@@ -186,7 +186,7 @@ public class Test_eventDrivenObserver {
 		attrs.put("dmPartition", "not needed");
 		attrs.put("average_occupancy", ncars/OCCU_NCARS_CONVERSION);
 		attrs.put("average_flow", flow);
-		return SpeeddEventFactory.getInstance().createEvent("AverageDensityAndSpeedPersensorIdOverInterval", timestamp, attrs);
+		return SpeeddEventFactory.getInstance().createEvent("AverageDensityAndSpeedPerLocation", timestamp, attrs);
 	}
 	private Event onrampMeasurement(long timestamp, int sensorId, double ncars, double flow) {
 		// Create a mainline measurement event
@@ -195,7 +195,7 @@ public class Test_eventDrivenObserver {
 		attrs.put("dmPartition", "not needed");
 		attrs.put("average_occupancy", ncars/OCCU_NCARS_CONVERSION);
 		attrs.put("average_flow", flow);
-		return SpeeddEventFactory.getInstance().createEvent("AverageDensityAndSpeedPersensorIdOverInterval", timestamp, attrs);
+		return SpeeddEventFactory.getInstance().createEvent("AverageDensityAndSpeedPerLocation", timestamp, attrs);
 	}
 
 	private <T> void PlotMap(Map<Integer,T> map) {

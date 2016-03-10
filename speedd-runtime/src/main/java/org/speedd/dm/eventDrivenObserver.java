@@ -39,7 +39,7 @@ public class eventDrivenObserver {
 		
 		String eventName = event.getEventName();
 		
-        if (eventName.equals("AverageDensityAndSpeedPersensorIdOverInterval") || eventName.equals("AverageOnRampValuesOverInterval"))
+        if (eventName.equals("AverageDensityAndSpeedPerLocation") || eventName.equals("AverageOnRampValuesOverInterval"))
         {
         	// read attributes
     		long timestamp = event.getTimestamp();

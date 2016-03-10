@@ -185,7 +185,7 @@ public class TestRandomEventStream {
 		attrs.put("dmPartition", newSensor.dmPartition);
 		attrs.put("average_occupancy", 50 + randGen.nextDouble() * 200.);
 		attrs.put("average_flow", randGen.nextDouble() * 4000);
-		return SpeeddEventFactory.getInstance().createEvent("AverageDensityAndSpeedPersensorIdOverInterval", timestamp, attrs);
+		return SpeeddEventFactory.getInstance().createEvent("AverageDensityAndSpeedPerLocation", timestamp, attrs);
 	}
 	private Event createOnramp(long timestamp) {
 		// Create a mainline measurement event
@@ -195,7 +195,7 @@ public class TestRandomEventStream {
 		attrs.put("dmPartition", newSensor.dmPartition);
 		attrs.put("average_occupancy", randGen.nextDouble() * 125.);
 		attrs.put("average_flow", randGen.nextDouble() * 2000);
-		return SpeeddEventFactory.getInstance().createEvent("AverageDensityAndSpeedPersensorIdOverInterval", timestamp, attrs);
+		return SpeeddEventFactory.getInstance().createEvent("AverageDensityAndSpeedPerLocation", timestamp, attrs);
 	}
 	private Event createLimits(long timestamp) {
 			// Create a limit event

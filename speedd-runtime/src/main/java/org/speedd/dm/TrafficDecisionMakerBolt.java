@@ -109,7 +109,7 @@ public class TrafficDecisionMakerBolt extends BaseRichBolt {
             
             // ============================================================== //
             // MEASUREMENT event --> hand over to OBSERVER
-            if (eventName.equals("AverageDensityAndSpeedPersensorIdOverInterval") || eventName.equals("AverageOnRampValuesOverInterval"))
+            if (eventName.equals("AverageDensityAndSpeedPerLocation") || eventName.equals("AverageOnRampValuesOverInterval"))
             {
             	observer.processEvent(event);
         		if (freeway.sensor2road.get(sensorId) != null) { // check if valid sensor id
@@ -132,7 +132,7 @@ public class TrafficDecisionMakerBolt extends BaseRichBolt {
 			// COMPLEX event --> hand over to CONTROLLER
 			if (eventName.equals("PredictedCongestion") || eventName.equals("Congestion") || eventName.equals("ClearCongestion") ||
 					eventName.equals("setMeteringRateLimits") || eventName.equals("RampCooperation") || eventName.equals("PredictedRampOverflow") ||
-					eventName.equals("ClearRampOverflow") || eventName.equals("AverageOnRampValuesOverInterval") || eventName.equals("AverageDensityAndSpeedPersensorIdOverInterval")) {	
+					eventName.equals("ClearRampOverflow") || eventName.equals("AverageOnRampValuesOverInterval") || eventName.equals("AverageDensityAndSpeedPerLocation")) {	
 				// Call ProcessEvent to deal with the event
 				Event[] outEvents = controller.processEvent(event);
 				
