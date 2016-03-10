@@ -1,0 +1,44 @@
+#!/bin/bash
+source ../setup-env-mesos
+
+cd $KAFKA_MESOS_HOME
+brokerlist=`./kafka-mesos.sh status|grep endpoint|cut -d':' -f2,3`
+brokerlist=`echo $brokerlist |tr ' ' ','`
+
+cat $SPEEDD_RUNTIME_HOME/scripts/producer-mesos.properties.template|sed -e "s/__BROKERLIST__/${brokerlist}/g" > $SPEEDD_RUNTIME_HOME/scripts/producer-mesos.properties
+
+cd $SPEEDD_RUNTIME_HOME/scripts/ccf
+
+# A POSIX variable
+OPTIND=1         # Reset in case getopts has been used previously in the shell.
+
+# Initialize our own variables:
+rate=0 # maximal possible event rate
+
+while getopts "a:" opt; do
+    case "$opt" in
+    a)
+        rate=$OPTARG
+        ;;
+    esac
+done
+
+shift $((OPTIND-1))
+
+if [ -z $1 ]
+then
+	echo "USAGE: $0 [-a <event rate>] <event file>"
+	exit 1
+fi
+
+in_event_file=$1
+
+
+[ "$1" = "--" ] && shift
+
+CLASSPATH=$SPEEDD_RUNTIME_LIB/speedd-runtime-0.0.1-SNAPSHOT-jar-with-dependencies.jar:$KAFKA_HOME/libs/log4j-1.2.15.jar
+
+echo "Running stress test with target rate $rate events/sec using events from $in_event_file"
+
+java -cp $CLASSPATH org.speedd.util.EventPlayer -c ../producer-mesos.properties -t speedd-fraud-in-events -p org.speedd.fraud.FraudAggregatedReadingCsv2Event -s -k card_pan -r 1 -a $rate $in_event_file
+

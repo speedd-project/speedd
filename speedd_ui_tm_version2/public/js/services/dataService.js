@@ -142,15 +142,6 @@ app.factory('dataService', function ($rootScope,socket) { // this service broadc
   data.fullSensorList = [];
  
   
-   socket.on('ramp-list', function (socketData) {
-			data.rampList=socketData.rampLoc;
-			data.formatRamps();
-//			console.log(data.rampList);
-			data.mainRoadSensors = socketData.mainRoadSensors;
-			data.formatRoadSensors();
-			data.broadcastItem();
-	});
-	
 	socket.on('event-list', function (socketData) {
 			var events = JSON.parse(socketData.eventList);
 			data.rawEventList=events;

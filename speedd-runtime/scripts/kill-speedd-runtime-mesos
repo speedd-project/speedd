@@ -1,0 +1,6 @@
+#!/bin/bash
+source ./setup-env-mesos
+
+STORM_CMD=$STORM_HOME/bin/storm
+
+$STORM_CMD kill speedd-runtime -w 0

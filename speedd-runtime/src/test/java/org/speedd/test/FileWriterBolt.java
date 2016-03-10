@@ -11,6 +11,11 @@ import org.speedd.data.EventFactory;
 import org.speedd.data.impl.SpeeddEventFactory;
 import org.speedd.kafka.JsonEventEncoder;
 
+import com.ibm.hrl.proton.metadata.event.EventHeader;
+
+
+import com.ibm.hrl.proton.routing.STORMMetadataFacade;
+
 import backtype.storm.task.OutputCollector;
 import backtype.storm.task.TopologyContext;
 import backtype.storm.topology.OutputFieldsDeclarer;
@@ -50,15 +55,15 @@ public class FileWriterBolt extends BaseRichBolt {
 	@Override
 	public void execute(Tuple input) {
 		String eventName = (String) input
-				.getValueByField(Fields.FIELD_NAME);
+				.getValueByField(EventHeader.NAME_ATTRIBUTE);
 
 		Map<String, Object> inAttrs = (Map<String, Object>) input
-				.getValueByField(Fields.FIELD_ATTRIBUTES);
+				.getValueByField(STORMMetadataFacade.ATTRIBUTES_FIELD);
 
 		long timestamp = 0;
 
-		if (inAttrs.containsKey(Fields.FIELD_DETECTION_TIME)) {
-			timestamp = (Long) inAttrs.get(Fields.FIELD_DETECTION_TIME);
+		if (inAttrs.containsKey(EventHeader.DETECTION_TIME_ATTRIBUTE)) {
+			timestamp = (Long) inAttrs.get(EventHeader.DETECTION_TIME_ATTRIBUTE);
 		}
 
 		Event outEvent = eventFactory.createEvent(eventName, timestamp,

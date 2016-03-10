@@ -1,12 +1,13 @@
 package org.speedd.data.impl;
 
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
 import org.speedd.data.Event;
 import org.speedd.kafka.JsonEventEncoder;
 
-public class DefaultEvent implements Event {
+public class DefaultEvent implements Event, Serializable {
 	private String eventName;
 	private long timestamp;
 	private Map<String, Object> attrMap;

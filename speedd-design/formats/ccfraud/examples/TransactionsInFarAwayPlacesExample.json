@@ -1,0 +1,31 @@
+{
+  "timestamp": 1457011685599,
+  "name": "TransactionsInFarAwayPlaces",
+  "attributes": {
+    "timestamps": [
+      "2224699201000",
+      "2224699204000"
+    ],
+    "transaction_ids": [
+      "755efd3a1d9049158cb4340d9ca97bb7",
+      "4017b70b1d0f4b36a77078ed4c620ed9"
+    ],
+    "EventId": "f23c53fa-85ba-4815-82cd-852c61b35809",
+    "Chronon": null,
+    "DetectionTime": 1457011685599,
+    "Name": "TransactionsInFarAwayPlaces",
+    "Certainty": 1,
+    "Cost": 0,
+    "EventSource": "",
+    "OccurrenceTime": 2224699204000,
+    "Annotation": "",
+    "Duration": 0,
+    "card_country": 5430,
+    "ExpirationTime": null,
+    "acquirer_country": [
+      "994",
+      "49"
+    ],
+    "card_pan": "926653643724413fbc28b896f799985d"
+  }
+}

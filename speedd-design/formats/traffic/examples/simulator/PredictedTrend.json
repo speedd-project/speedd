@@ -1,0 +1,20 @@
+{
+  "problem_id": "4166",
+  "count": 5,
+  "location": "0024a4dc000025eb",
+  "dmPartition": "section4",
+  "EventId": "e669cb29-a1ce-436c-9c13-9658836c89fa",
+  "Chronon": null,
+  "DetectionTime": 1457601254262,
+  "Name": "PredictedTrend",
+  "Certainty": 0.762936230536989,
+  "Cost": 0,
+  "EventSource": "",
+  "OccurrenceTime": 1450290765000,
+  "sensorId": "4166",
+  "Annotation": "",
+  "Duration": 0,
+  "average_density": 1356.071228,
+  "ExpirationTime": null
+}
+

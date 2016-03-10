@@ -1,0 +1,9 @@
+{
+	"name": "SetTrafficLightPhases",
+	"timestamp": 1454492958928,
+	"attributes": {
+		"junction_id": 1558,
+		"phase_id": 1,
+		"phase_time": integer (<=60)		
+	}
+}

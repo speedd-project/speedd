@@ -1,6 +1,5 @@
 package org.speedd.cep;
 
-import java.util.HashMap;
 import java.util.Map;
 
 import org.slf4j.Logger;
@@ -16,6 +15,9 @@ import backtype.storm.topology.base.BaseRichBolt;
 import backtype.storm.tuple.Fields;
 import backtype.storm.tuple.Tuple;
 import backtype.storm.tuple.Values;
+
+import com.ibm.hrl.proton.metadata.event.EventHeader;
+import com.ibm.hrl.proton.routing.STORMMetadataFacade;
 
 public class ProtonOutputConsumerBolt extends BaseRichBolt implements org.speedd.Fields {
 	private static final long serialVersionUID = 1L;
@@ -34,14 +36,14 @@ public class ProtonOutputConsumerBolt extends BaseRichBolt implements org.speedd
 	public void execute(Tuple input) {
 		logger.debug("Processing tuple " + input.toString());
 		
-		String eventName = (String)input.getValueByField(FIELD_NAME);
+		String eventName = (String)input.getValueByField(EventHeader.NAME_ATTRIBUTE);
 
-		Map<String, Object> inAttrs = (Map<String, Object>)input.getValueByField(FIELD_ATTRIBUTES);
+		Map<String, Object> inAttrs = (Map<String, Object>)input.getValueByField(STORMMetadataFacade.ATTRIBUTES_FIELD);
 		
 		long timestamp = 0;
 		
-		if(inAttrs.containsKey(FIELD_DETECTION_TIME)){
-			timestamp = (Long)inAttrs.get(FIELD_DETECTION_TIME);
+		if(inAttrs.containsKey(EventHeader.DETECTION_TIME_ATTRIBUTE)){
+			timestamp = (Long)inAttrs.get(EventHeader.DETECTION_TIME_ATTRIBUTE);
 		}
 		
 		Event outEvent = eventFactory.createEvent(eventName, timestamp, inAttrs);
@@ -50,6 +52,7 @@ public class ProtonOutputConsumerBolt extends BaseRichBolt implements org.speedd
 		
 		//FIXME use meaningful value for the 'key' field. It'll be used by kafka for partitioning
 		collector.emit(new Values("1", outEvent));
+		collector.ack(input);
 	}
 
 	@Override

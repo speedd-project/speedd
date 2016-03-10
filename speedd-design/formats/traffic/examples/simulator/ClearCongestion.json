@@ -1,0 +1,15 @@
+{
+  "problem_id": "3810",
+  "location": "0024a4dc00001b67",
+  "EventId": "1fcc669f-7409-4736-a505-31d475054b98",
+  "dmPartition": "section2",
+  "DetectionTime": "11/02/2016 15:43:14",
+  "Name": "ClearCongestion",
+  "Cost": "0.0",
+  "Certainty": "1",
+  "EventSource": "",
+  "OccurrenceTime": "11/02/2016 15:43:14",
+  "Duration": "0",
+  "sensorId": "3810",
+  "Annotation": ""
+ }

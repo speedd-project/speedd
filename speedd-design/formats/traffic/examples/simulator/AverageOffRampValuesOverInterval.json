@@ -1,0 +1,17 @@
+{
+  "location": "0024a4dc000021d1",
+  "average_flow": "2.0",
+  "EventId": "ce174add-aa28-4b26-89f6-f16f0cd0916b",
+  "dmPartition": "section4",
+  "DetectionTime": "11/02/2016 15:13:52",
+  "Name": "AverageOffRampValuesOverInterval",
+  "Cost": "0.0",
+  "Certainty": "1",
+  "EventSource": "",
+  "OccurrenceTime": "11/02/2016 15:13:52",
+  "average_occupancy": "0.5092",
+  "Duration": "0",
+  "Annotation": "",
+  "sensorId": "1662",
+  "average_speed": "17.1237744"
+}

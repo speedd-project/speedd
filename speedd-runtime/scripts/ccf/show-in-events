@@ -1,0 +1,4 @@
+#!/bin/bash
+source ../setup-env
+
+$KAFKA_HOME/bin/kafka-console-consumer.sh --zookeeper localhost:2181 --topic speedd-fraud-in-events --from-beginning

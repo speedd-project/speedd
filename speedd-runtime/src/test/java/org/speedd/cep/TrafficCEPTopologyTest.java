@@ -1,6 +1,7 @@
 package org.speedd.cep;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -11,7 +12,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.fest.util.Files;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.speedd.data.Event;
 import org.speedd.kafka.JsonEventDecoder;
@@ -26,6 +26,8 @@ import backtype.storm.spout.Scheme;
 import backtype.storm.topology.TopologyBuilder;
 
 import com.ibm.hrl.proton.ProtonTopologyBuilder;
+import com.ibm.hrl.proton.metadata.parser.ParsingException;
+import com.ibm.hrl.proton.utilities.containers.Pair;
 
 @SuppressWarnings("serial")
 public class TrafficCEPTopologyTest implements Serializable {
@@ -39,14 +41,23 @@ public class TrafficCEPTopologyTest implements Serializable {
 		Scheme eventScheme = new TrafficAggregatedReadingScheme();
 		
 		FileReaderSpout fileReaderSpout = new FileReaderSpout(inEventsFile, eventScheme);
+		builder.setSpout("inputSpout",fileReaderSpout);
+		
 
 		ProtonTopologyBuilder protonTopologyBuilder = new ProtonTopologyBuilder();
 
 		String epnPath = this.getClass().getClassLoader()
 				.getResource("cnrsUnitTest.json").getPath();
 
-		protonTopologyBuilder.buildProtonTopology(builder, fileReaderSpout,
-				eventConsumer, "event-consumer", epnPath);
+		int parallelismHint = 3;
+		try {
+			Pair<String,String> boltRoutingInformation = protonTopologyBuilder.buildProtonTopology(builder, "inputSpout",
+					 epnPath,parallelismHint);
+			builder.setBolt("event-consumer", eventConsumer).shuffleGrouping(boltRoutingInformation.getFirstValue(), boltRoutingInformation.getSecondValue());
+		} catch (ParsingException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 
 		return builder.createTopology();
 	}

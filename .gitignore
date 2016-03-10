@@ -1,4 +1,68 @@
-speedd-ui/node_modules/socket.io/node_modules/socket.io-client/node_modules/engine.io-client/node_modules/engine.io-parser/node_modules/base64-arraybuffer/README.md~
-speedd-ui/node_modules/socket.io/node_modules/engine.io/node_modules/engine.io-parser/node_modules/base64-arraybuffer/README.md~
-speedd-ui/node_modules/socket.io/node_modules/engine.io/node_modules/engine.io-parser/node_modules/base64-arraybuffer/package.json~
-speedd-ui/node_modules/socket.io/node_modules/socket.io-client/node_modules/engine.io-client/node_modules/engine.io-parser/node_modules/base64-arraybuffer/package.json~
+# use glob syntax.
+syntax: glob
+
+*.ser
+*.class
+*~
+*.bak
+*.old
+
+
+# eclipse conf file
+.settings
+.classpath
+.project
+.manager
+.scala_dependencies
+
+# idea
+.idea
+*.iml
+*.ipr
+*.iws
+
+# building
+target
+build
+null
+tmp*
+temp*
+test-output
+build.log
+
+# other scm
+.svn
+.CVS
+.hg*
+
+
+# other
+tmp
+*.swp
+! .gitkeep
+*.log
+.directory
+*.result
+*.counts
+*.fg
+*.description
+
+
+# sbt specific
+.cache/
+.history/
+.lib/
+dist/*
+target/
+*/lib_managed/
+*/src_managed/
+*/project/boot/
+*/project/plugins/project/
+*/project/project/
+*/project/target/
+
+# ignore scala worksheet files
+*.sc
+
+# node specific
+*/node_modules/

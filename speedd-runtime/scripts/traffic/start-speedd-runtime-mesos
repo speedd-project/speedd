@@ -1,0 +1,16 @@
+#!/bin/bash
+source ../setup-env-mesos
+
+cd $KAFKA_MESOS_HOME
+brokerlist=`./kafka-mesos.sh status|grep endpoint|cut -d':' -f2,3`
+brokerlist=`echo $brokerlist |tr ' ' ','`
+
+cat $SPEEDD_RUNTIME_HOME/scripts/traffic/speedd-traffic-mesos.properties.template|sed -e "s/__BROKERLIST__/${brokerlist}/g" > $SPEEDD_RUNTIME_HOME/scripts/traffic/speedd-traffic-mesos.properties
+
+PROPS=speedd-traffic-mesos.properties
+
+MODE=remote
+
+cd $SPEEDD_RUNTIME_HOME/scripts/traffic
+
+$STORM_CMD jar $SPEEDD_RUNTIME_LIB/speedd-runtime-0.0.1-SNAPSHOT-jar-with-dependencies.jar org.speedd.SpeeddRunner -f $PROPS -m $MODE &

@@ -1,5 +1,6 @@
 package org.speedd.traffic;
 
+import java.nio.charset.Charset;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -10,35 +11,35 @@ import org.speedd.data.Event;
 import org.speedd.data.EventFactory;
 
 public class TrafficAggregatedReadingCsv2Event implements EventParser, Constants {
-	private static final String ATTR_LOCATION = "location";
-	private static final String ATTR_LANE = "lane";
-	private static final String ATTR_SPEED_HISTOGRAM = "speed_histogram";
-	private static final String ATTR_OCCUPANCY = "occupancy";
-	private static final String ATTR_VEHICLES = "vehicles";
-	private static final String ATTR_LENGTH_HISTOGRAM = "length_histogram";
-	private static final String ATTR_TIMESTAMP = "timestamp";
-	private static final String ATTR_AVG_SPEED = "average_speed";
-	private static final String ATTR_MEDIAN_SPEED = "median_speed";
+	public static final String ATTR_LOCATION = "location";
+	public static final String ATTR_LANE = "lane";
+	public static final String ATTR_OCCURRENCE_TIME           = "OccurrenceTime";
+	public static final String ATTR_DETECTION_TIME       = "DetectionTime";
+	public static final String ATTR_SPEED_HISTOGRAM = "speed_histogram";
+	public static final String ATTR_OCCUPANCY = "occupancy";
+	public static final String ATTR_VEHICLES = "vehicles";
+	public static final String ATTR_LENGTH_HISTOGRAM = "length_histogram";
+	public static final String ATTR_TIMESTAMP = "timestamp";
+	public static final String ATTR_AVG_SPEED = "average_speed";
+	public static final String ATTR_MEDIAN_SPEED = "median_speed";
 
 	
-	private static final int ATTR_DATE_INDEX = 0;
-	private static final int ATTR_TIME_INDEX = 1;
-	private static final int ATTR_LOCATION_INDEX = 2;
-	private static final int ATTR_LANE_INDEX = 3;
-	private static final int ATTR_OCCUPANCY_INDEX = 4;
-	private static final int ATTR_VEHICLES_INDEX = 5;
-	private static final int ATTR_MEDIAN_SPEED_INDEX = 6;
-	private static final int ATTR_AVG_SPEED_INDEX = 7;
-	private static final int ATTR_SPEED_INDEX = 8;
-	private static final int ATTR_LENGTH_INDEX = 28;
+	public static final int ATTR_DATE_INDEX = 0;
+	public static final int ATTR_TIME_INDEX = 1;
+	public static final int ATTR_LOCATION_INDEX = 2;
+	public static final int ATTR_LANE_INDEX = 3;
+	public static final int ATTR_OCCUPANCY_INDEX = 4;
+	public static final int ATTR_VEHICLES_INDEX = 5;
+	public static final int ATTR_MEDIAN_SPEED_INDEX = 6;
+	public static final int ATTR_AVG_SPEED_INDEX = 7;
+	public static final int ATTR_SPEED_INDEX = 8;
+	public static final int ATTR_LENGTH_INDEX = 28;
 	
-	private static final int SPEED_HISTOGRAM_BINCOUNT = 20;
-	private static final int LENGTH_HISTOGRAM_BINCOUNT = 100;
+	public static final int SPEED_HISTOGRAM_BINCOUNT = 20;
+	public static final int LENGTH_HISTOGRAM_BINCOUNT = 100;
 	
 	//total expected number of fields in a csv line. Assuming here that the length histogram is the ending part of csv
-	private static final int NUM_FIELDS = ATTR_LENGTH_INDEX + SPEED_HISTOGRAM_BINCOUNT + LENGTH_HISTOGRAM_BINCOUNT;
-	
-	private static final SimpleDateFormat dateTimeFormat = new SimpleDateFormat("yyyy-MM-dd,HH:mm:ss"); 
+	public static final int NUM_FIELDS = ATTR_LENGTH_INDEX + SPEED_HISTOGRAM_BINCOUNT + LENGTH_HISTOGRAM_BINCOUNT;
 	
 	private EventFactory eventFactory;
 
@@ -50,8 +51,9 @@ public class TrafficAggregatedReadingCsv2Event implements EventParser, Constants
 		String name = TRAFFIC_SENSOR_READING_AGGREGATED;
 
 		try {
+			SimpleDateFormat dateTimeFormat = new SimpleDateFormat("yyyy-MM-dd,HH:mm:ss");
 			
-			String[] tuple = new String(bytes).split(",");
+			String[] tuple = new String(bytes, Charset.forName("UTF-8")).split(",");
 			
 			int tupleLength = tuple.length;
 			
@@ -69,10 +71,13 @@ public class TrafficAggregatedReadingCsv2Event implements EventParser, Constants
 			long timestamp;
 
 			timestamp = dateTimeFormat.parse(dateTimeStr).getTime();
+			long detectionTime = System.currentTimeMillis();
 
 			HashMap<String, Object> attrMap = new HashMap<String, Object>();
 			
 			attrMap.put(ATTR_TIMESTAMP, Long.valueOf(timestamp));
+			attrMap.put(ATTR_OCCURRENCE_TIME, timestamp);
+			attrMap.put(ATTR_DETECTION_TIME, Long.valueOf(detectionTime));
 			attrMap.put(ATTR_LOCATION, tuple[ATTR_LOCATION_INDEX]);
 			attrMap.put(ATTR_LANE, tuple[ATTR_LANE_INDEX]);
 			attrMap.put(ATTR_OCCUPANCY, Double.parseDouble(tuple[ATTR_OCCUPANCY_INDEX]));

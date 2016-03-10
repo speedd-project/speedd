@@ -1,6 +1,7 @@
 package org.speedd;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.util.Arrays;
@@ -11,13 +12,13 @@ import java.util.Properties;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import kafka.consumer.Consumer;
 import kafka.consumer.ConsumerConfig;
 import kafka.consumer.ConsumerIterator;
 import kafka.consumer.KafkaStream;
 import kafka.javaapi.consumer.ConsumerConnector;
-import kafka.producer.ProducerConfig;
 import kafka.server.KafkaServer;
 import kafka.utils.TestUtils;
 
@@ -25,11 +26,10 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.speedd.EventFileReader.EventMessageRecord;
+import org.speedd.EventFileReader.Statistics;
 import org.speedd.data.impl.SpeeddEventFactory;
 import org.speedd.test.TestUtil;
 import org.speedd.traffic.TrafficAggregatedReadingCsv2Event;
-
-import scala.actors.threadpool.AtomicInteger;
 
 import com.netflix.curator.test.TestingServer;
 
@@ -60,8 +60,8 @@ public class TimedEventFileReaderTest {
 			}
 		}
 
-		public boolean isPassed() {
-			return count.intValue() == 10;
+		public void verify() {
+			assertEquals(10, count.intValue());
 		}
 	}
 	
@@ -79,7 +79,7 @@ public class TimedEventFileReaderTest {
 		
 		@Override
 		public void onEvent(EventMessageRecord eventMessageRecord) {
-			actualDelays[i++] = eventMessageRecord.sendDelayMillis;
+			actualDelays[i++] = eventMessageRecord.sendDelayMicroseconds;
 		}
 		
 		public void verifyDelays(){
@@ -106,21 +106,33 @@ public class TimedEventFileReaderTest {
 		KafkaServer kafkaServer = TestUtil.setupKafkaServer(brokerId, kafkaBrokerPort, zkServer, new String[]{"test"});
 
 		// setup producer
-		Properties producerProperties = TestUtils.getProducerConfig(
-				"localhost:" + kafkaBrokerPort, "kafka.producer.DefaultPartitioner");
+		Properties producerProperties = TestUtils.getProducerConfig("localhost:" + kafkaBrokerPort);
+		producerProperties.put("bootstrap.servers", "localhost:"
+				+ kafkaBrokerPort);
+		producerProperties.put("key.serializer",
+				"org.apache.kafka.common.serialization.StringSerializer");
+		producerProperties.put("value.serializer",
+				"org.apache.kafka.common.serialization.StringSerializer");
 
-		ProducerConfig pConfig = new ProducerConfig(producerProperties);
-
-		TimedEventFileReader eventFileReader = new TimedEventFileReader(this.getClass().getClassLoader().getResource("test-events.csv").getPath(), topic, pConfig, new TrafficAggregatedReadingCsv2Event(SpeeddEventFactory.getInstance()));
+		TimedEventFileReader eventFileReader = new TimedEventFileReader(this.getClass().getClassLoader().getResource("test-events.csv").getPath(), topic, producerProperties, new TrafficAggregatedReadingCsv2Event(SpeeddEventFactory.getInstance()));
 		
 		TimedEventListener eventListener = new TimedEventListener();
 		
-		eventListener.setExpectedDelays(new long[] {0,2000,0,1000,2000,5000,2000,1000,0,0});
+		eventListener.setExpectedDelays(new long[] {0,2000000,0,1000000,2000000,5000000,2000000,1000000,0,0});
 		
 		eventFileReader.addListener(eventListener);
 
 		eventFileReader.streamEvents();
-
+		
+		Statistics stats = eventFileReader.getStatistics();
+		
+		assertNotNull("Statistics must not be null", stats);
+		assertEquals(10, stats.getNumOfAttempts());
+		assertEquals(10, stats.getNumOfSent());
+		assertEquals(0, stats.getNumOfFailed());
+		assertTrue(stats.isFinished());
+		assertTrue("Elapsed time must be a positive number", stats.getElapsedTimeMilliseconds() > 0);	
+		
 		Properties consumerProperties = TestUtils.createConsumerProperties(zkConnect, "group1", "consumer1", -1);
 		ConsumerConfig consumerConfig = new ConsumerConfig(consumerProperties);
 
@@ -146,7 +158,7 @@ public class TimedEventFileReaderTest {
 
 		executor.shutdown();
 
-		assertTrue("Must pass", c.isPassed());
+		c.verify();
 
 		consumer.shutdown();
 		kafkaServer.shutdown();

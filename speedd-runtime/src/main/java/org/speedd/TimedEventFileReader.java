@@ -2,8 +2,7 @@ package org.speedd;
 
 import java.io.IOException;
 import java.nio.charset.Charset;
-
-import kafka.producer.ProducerConfig;
+import java.util.Properties;
 
 import org.speedd.data.Event;
 
@@ -13,8 +12,8 @@ public class TimedEventFileReader extends EventFileReader {
 	private long prevTimestamp;
 
 	public TimedEventFileReader(String filePath, String topic,
-			ProducerConfig kafkaProducerConfig, EventParser eventParser) {
-		super(filePath, topic, kafkaProducerConfig);
+			Properties kafkaProducerProperties, EventParser eventParser) {
+		super(filePath, topic, kafkaProducerProperties);
 		this.eventParser = eventParser;
 	}
 
@@ -31,20 +30,25 @@ public class TimedEventFileReader extends EventFileReader {
 		if (line != null) {
 			Event event = eventParser.fromBytes(line.getBytes(Charset
 					.forName("UTF-8")));
+			
+			if(event == null){
+				return null;
+			}
+			
 			long timestamp = event.getTimestamp();
 
-			long delayMillis = prevTimestamp > 0 ? timestamp - prevTimestamp : 0;
+			long delayMicroseconds = prevTimestamp > 0 ? 1000 * (timestamp - prevTimestamp) : 0;
 
-			if (delayMillis >= 0) {
+			if (delayMicroseconds >= 0) {
 				prevTimestamp = timestamp;
 			} else {
-				delayMillis = 0;
+				delayMicroseconds = 0;
 				// leave prevTimestamp as its last value - either this
 				// is the 1st event, or the current event has earlier
 				// timestamp than the previous one
 			}
 
-			return new EventMessageRecord(line, delayMillis);
+			return new EventMessageRecord(line, delayMicroseconds);
 		} else {
 			return null;
 		}

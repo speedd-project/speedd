@@ -9,8 +9,23 @@
 		"description": "The certainty that this event happen (value between 0 to 1)"
 	},
 	{
-		"name": "terminal_id",
-		"type": "Double",
-		"dimension": 0
-	}]
+            "name": "acquirer_country",
+            "type": "Integer",
+            "dimension": 0
+        },          
+        {
+           "name": "terminal_id",
+           "type": "Double",
+           "dimension": 0
+        },
+        {
+           "name": "is_cnp",
+           "type": "Integer",
+           "dimension": 0
+        },
+        {
+           "name": "reason",
+           "type": "String",
+           "dimension": 0
+        }]
 }

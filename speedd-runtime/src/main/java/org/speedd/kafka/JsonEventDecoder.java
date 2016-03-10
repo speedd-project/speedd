@@ -54,7 +54,7 @@ public class JsonEventDecoder implements Decoder<Event>, Fields, Serializable {
 				JSONArray jsonArr = (JSONArray)attrVal;
 				Object val = jsonArr.get(0);
 				
-				Long[] arr = (Long[])Array.newInstance(val.getClass(), jsonArr.size());
+				Object[] arr = (Object[])Array.newInstance(val.getClass(), jsonArr.size());
 				for (int i=0,n=jsonArr.size(); i<n; ++i) {
 					Array.set(arr, i, jsonArr.get(i));
 				}

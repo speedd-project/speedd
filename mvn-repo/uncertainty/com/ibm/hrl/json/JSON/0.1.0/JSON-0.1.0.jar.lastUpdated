@@ -1,0 +1,21 @@
+#NOTE: This is an internal implementation file, its format can be changed without prior notice.
+#Tue Oct 13 14:58:52 IDT 2015
+http\://repo1.maven.org/maven2/.lastUpdated=1441268192269
+http\://mordac.es.atos.net\:8080/nexus/content/repositories/Fispace/.lastUpdated=1441268188882
+http\://mordac.es.atos.net\:8080/nexus/content/repositories/Fispace/.error=
+http\://clojars.org/repo/.error=
+http\://mordac.es.atos.net\:8080/nexus/content/repositories/FispaceThirdparty/.lastUpdated=1441268190094
+https\://raw.github.com/ishkin/Proton/master/mvn-repo/.lastUpdated=1441268195734
+http\://oss.sonatype.org/content/repositories/github-releases/.lastUpdated=1441268191738
+http\://maven-mongodb-plugin.googlecode.com/svn/maven/repo/.error=
+http\://repo.maven.apache.org/maven2/.lastUpdated=1441269168746
+http\://repo.maven.apache.org/maven2/.error=
+http\://mordac.es.atos.net\:8080/nexus/content/repositories/FispaceThirdparty/.error=
+http\://mordac.es.atos.net\:8080/nexus/content/repositories/Fispaces/.error=
+http\://clojars.org/repo/.lastUpdated=1441268192106
+https\://raw.github.com/speedd-project/speedd/master/mvn-repo/.error=Could not transfer artifact uncertainty.com.ibm.hrl.json\:JSON\:jar\:0.1.0 from/to speedd-mvn-repo (https\://raw.github.com/speedd-project/speedd/master/mvn-repo/)\: null to https\://raw.github.com/speedd-project/speedd/master/mvn-repo/uncertainty/com/ibm/hrl/json/JSON/0.1.0/JSON-0.1.0.jar
+http\://mordac.es.atos.net\:8080/nexus/content/repositories/Fispaces/.lastUpdated=1441268189524
+http\://oss.sonatype.org/content/repositories/github-releases/.error=
+default-https\://raw.github.com/speedd-project/speedd/master/mvn-repo/.lastUpdated=1444737532068
+http\://maven-mongodb-plugin.googlecode.com/svn/maven/repo/.lastUpdated=1441268190450
+http\://repo1.maven.org/maven2/.error=

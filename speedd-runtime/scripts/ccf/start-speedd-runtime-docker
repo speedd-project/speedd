@@ -1,0 +1,29 @@
+#!/bin/bash
+source ../setup-env
+
+MODE=remote
+
+$STORM_CMD jar $SPEEDD_RUNTIME_LIB/speedd-runtime-0.0.1-SNAPSHOT-jar-with-dependencies.jar org.speedd.SpeeddRunner \
+-D nimbus.host=nimbus -D nimbus.thrift.port=6627 \
+-m remote \
+-Dproducer.type=sync -Dcompression.codec=none -Dserializer.class=org.speedd.kafka.JsonEventEncoder \
+-Dmetadata.broker.list=kafka:9092 \
+-Dzookeeper.connect=zk:2181 \
+-Dzookeeper.connection.timeout.ms=1000000 \
+-Dtopic.in.events=speedd-fraud-in-events \
+-Dtopic.out.events=speedd-fraud-out-events \
+-Dtopic.actions=speedd-fraud-actions \
+-Dtopic.actions.confirmed=speedd-fraud-actions-confirmed \
+-Dtopic.admin=speedd-fraud-admin \
+-Dproton.epnPath=FeedzaiFraudIntegration.json \
+-Dspeedd.inEventScheme=org.speedd.fraud.FraudAggregatedReadingScheme \
+-Dspeedd.topology.class=org.speedd.fraud.CCFTopology \
+-Dspeedd.cepParallelismHint=1 \
+-Dspeedd.inEventReaderParallelismHint=1 \
+-Dspeedd.inEventReaderTaskNum=1 \
+-Dspeedd.outEventWriterParallelismHint=1 \
+-Dspeedd.outEventWriterTaskNum=1 \
+-Dspeedd.cepConsumerParallelismHint=1 \
+-Dspeedd.cepConsumerTaskNum=1 \
+-Dtopology.debug=true \
+&
