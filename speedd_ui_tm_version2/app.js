@@ -81,11 +81,18 @@ function setKafka(){
         { topic: 'speedd-traffic-actions', partition: 0, time: Date.now(), maxNum: 1 },
 		{ topic: 'speedd-traffic-out-events', partition: 0, time: Date.now(), maxNum: 1 }
     ], function (err, data) {
+		if(err != null){
+			console.error("Error: " + JSON.stringify(err));
+			return;
+		}
+			
+		console.log("Offset data: " + JSON.stringify(data));	
+		
 		consumer = new Consumer(
 			client, 
 			// payloads
-				[{ topic: 'speedd-traffic-actions'},
-				 { topic: 'speedd-traffic-out-events'}
+				[{ topic: 'speedd-traffic-actions', offset: data['speedd-traffic-actions']},
+				 { topic: 'speedd-traffic-out-events', offset: data['speedd-traffic-out-events']}
 				 ],
 			// options
 			{
