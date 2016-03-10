@@ -74,35 +74,45 @@ function setKafka(){
 	
 	Consumer = kafka.Consumer;
 	client = new kafka.Client(zk);
-	consumer = new Consumer(
-		client, 
-		// payloads
-			[{ topic: 'speedd-traffic-actions'},
-			 { topic: 'speedd-traffic-out-events'}
-			 ],
-		// options
-		{
-			groupId: 'kafka-node-group',//consumer group id, default `kafka-node-group` 
-			// Auto commit config 
-			autoCommit: true,
-			autoCommitIntervalMs: 1000,
-			// The max wait time is the maximum amount of time in milliseconds to block waiting if insufficient data is available at the time the request is issued, default 100ms 
-			fetchMaxWaitMs: 100,
-			// This is the minimum number of bytes of messages that must be available to give a response, default 1 byte 
-			fetchMinBytes: 1,
-			// The maximum bytes to include in the message set for this partition. This helps bound the size of the response. 
-			fetchMaxBytes: 1024 * 10,
-			// If set true, consumer will fetch message from the given offset in the payloads 
-			fromOffset: false,
-			// If set to 'buffer', values will be returned as raw buffer objects. 
-			encoding: 'utf8'
-		}
-	);
+	
+	offset = new kafka.Offset(client);
+	
+	offset.fetch([
+        { topic: 'speedd-traffic-actions', partition: 0, time: Date.now(), maxNum: 1 },
+		{ topic: 'speedd-traffic-out-events', partition: 0, time: Date.now(), maxNum: 1 }
+    ], function (err, data) {
+		consumer = new Consumer(
+			client, 
+			// payloads
+				[{ topic: 'speedd-traffic-actions'},
+				 { topic: 'speedd-traffic-out-events'}
+				 ],
+			// options
+			{
+				groupId: 'kafka-node-group',//consumer group id, default `kafka-node-group` 
+				// Auto commit config 
+				autoCommit: true,
+				autoCommitIntervalMs: 1000,
+				// The max wait time is the maximum amount of time in milliseconds to block waiting if insufficient data is available at the time the request is issued, default 100ms 
+				fetchMaxWaitMs: 100,
+				// This is the minimum number of bytes of messages that must be available to give a response, default 1 byte 
+				fetchMinBytes: 1,
+				// The maximum bytes to include in the message set for this partition. This helps bound the size of the response. 
+				fetchMaxBytes: 1024 * 10,
+				// If set true, consumer will fetch message from the given offset in the payloads 
+				fromOffset: true,
+				// If set to 'buffer', values will be returned as raw buffer objects. 
+				encoding: 'utf8'
+			}
+		);
+		
+		setConsumerEvents();	
+
+	});
 
 	//consumer.setOffset('speedd-traffic-out-events', 0, 0);
 	//consumer.setOffset('speedd-traffic-actions', 0, 0);
 	
-	setConsumerEvents();	
 }
 
 function setConsumerEvents(){
