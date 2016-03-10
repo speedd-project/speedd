@@ -88,7 +88,7 @@ app.controller('CircularMapController', ['$scope','$interval','$window','dataSer
             else
                 console.log("location " + event.attributes.location + " not found")
         }
-        else if(event.name == "PredictedCongestion"){
+        else if(event.name == "PredictedTrend"){
              var node = dataService.locationToNode(event.attributes.location);
             
             if(node){
