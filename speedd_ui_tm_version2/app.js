@@ -91,8 +91,8 @@ function setKafka(){
 		consumer = new Consumer(
 			client, 
 			// payloads
-				[{ topic: 'speedd-traffic-actions', offset: data['speedd-traffic-actions']},
-				 { topic: 'speedd-traffic-out-events', offset: data['speedd-traffic-out-events']}
+				[{ topic: 'speedd-traffic-actions', offset: data['speedd-traffic-actions'][0][0]},
+				 { topic: 'speedd-traffic-out-events', offset: data['speedd-traffic-out-events'][0][0]}
 				 ],
 			// options
 			{
