@@ -185,7 +185,7 @@ public class Test_eventDrivenObserver {
 		attrs.put("sensorId", Integer.toString(sensorId));
 		attrs.put("dmPartition", "not needed");
 		attrs.put("average_occupancy", ncars/OCCU_NCARS_CONVERSION);
-		attrs.put("average_flow", flow);
+		attrs.put("average_flow", (Integer) ((int) flow));
 		return SpeeddEventFactory.getInstance().createEvent("AverageDensityAndSpeedPerLocation", timestamp, attrs);
 	}
 	private Event onrampMeasurement(long timestamp, int sensorId, double ncars, double flow) {
@@ -194,7 +194,7 @@ public class Test_eventDrivenObserver {
 		attrs.put("sensorId", Integer.toString(sensorId));
 		attrs.put("dmPartition", "not needed");
 		attrs.put("average_occupancy", ncars/OCCU_NCARS_CONVERSION);
-		attrs.put("average_flow", flow);
+		attrs.put("average_flow", (Integer) ((int) flow));
 		return SpeeddEventFactory.getInstance().createEvent("AverageDensityAndSpeedPerLocation", timestamp, attrs);
 	}
 

@@ -65,7 +65,7 @@ public class network {
 			double[] rhom = { 250., 250., 250., 250., 250., 250., 250.};
 			
 			//network buffer = makeFreeway(sens_in,sens_ou,sens_on,sens_qu,sens_of,actu_id,beta,length,ql,4);
-			network buffer = makeFreeway(sens_in,sens_ou,sens_on,sens_qu,sens_of,actu_id,beta,length,ql,v, rhoc, rhom,1);
+			network buffer = makeFreeway(sens_in,sens_ou,sens_on,sens_qu,sens_of,actu_id,beta,length,ql,v, rhoc, rhom,4);
 			
 			this.Intersections = buffer.Intersections;
 			this.Roads = buffer.Roads;
@@ -86,7 +86,7 @@ public class network {
 			double[] rhom = { 250., 250.,       250.};
 			
 			//network buffer = makeFreeway(sens_in,sens_ou,sens_on,sens_qu,sens_of,actu_id,beta,length,ql,10);
-			network buffer = makeFreeway(sens_in,sens_ou,sens_on,sens_qu,sens_of,actu_id,beta,length,ql,v, rhoc, rhom,1);
+			network buffer = makeFreeway(sens_in,sens_ou,sens_on,sens_qu,sens_of,actu_id,beta,length,ql,v, rhoc, rhom,10);
 			
 			this.Intersections = buffer.Intersections;
 			this.Roads = buffer.Roads;
@@ -107,7 +107,7 @@ public class network {
 			double[] rhom = { 250., 250., 250., 250.,       250.};
 			
 			//network buffer = makeFreeway(sens_in,sens_ou,sens_on,sens_qu,sens_of,actu_id,beta,length,ql,13);
-			network buffer = makeFreeway(sens_in,sens_ou,sens_on,sens_qu,sens_of,actu_id,beta,length,ql,v, rhoc, rhom,1);
+			network buffer = makeFreeway(sens_in,sens_ou,sens_on,sens_qu,sens_of,actu_id,beta,length,ql,v, rhoc, rhom,12);
 			
 			this.Intersections = buffer.Intersections;
 			this.Roads = buffer.Roads;
@@ -128,7 +128,7 @@ public class network {
 			double[] rhom = { 250., 250., 250., 250.      };
 			
 			//network buffer = makeFreeway(sens_in,sens_ou,sens_on,sens_qu,sens_of,actu_id,beta,length,ql,18);
-			network buffer = makeFreeway(sens_in,sens_ou,sens_on,sens_qu,sens_of,actu_id,beta,length,ql,v, rhoc, rhom,1);
+			network buffer = makeFreeway(sens_in,sens_ou,sens_on,sens_qu,sens_of,actu_id,beta,length,ql,v, rhoc, rhom,16);
 			
 			this.Intersections = buffer.Intersections;
 			this.Roads = buffer.Roads;

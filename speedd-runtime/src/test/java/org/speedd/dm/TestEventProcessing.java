@@ -66,8 +66,8 @@ public class TestEventProcessing {
 		double dens_ma = 0;
 		
 		dmBolt.execute(mockTuple(new Values("1", createCongestion(0, 4056,"section4")))); // activate ramp metering
-		dmBolt.execute(mockTuple(new Values("1", createMainline(0, 4056,"section4",dens_ma,flow_ma))));
-		dmBolt.execute(mockTuple(new Values("1", createOnramp(0, 4136,"section4",dens_qu,flow_qu))));
+		dmBolt.execute(mockTuple(new Values("1", createMainline(0, 4056,"section4",dens_ma,(int) flow_ma))));
+		dmBolt.execute(mockTuple(new Values("1", createOnramp(0, 4136,"section4",dens_qu,(int) flow_qu))));
 		List<Object> outTuple = collector.tuple;
 		assertNotNull(outTuple);
 		Event actionEvent = (Event)outTuple.get(1);
@@ -80,9 +80,9 @@ public class TestEventProcessing {
 		dens_ma = 0;
 		double upperLimit = 900; // random flow < onramp flow
 		
-		dmBolt.execute(mockTuple(new Values("1", createMainline(0, 4056,"section4",dens_ma,flow_ma))));
+		dmBolt.execute(mockTuple(new Values("1", createMainline(0, 4056,"section4",dens_ma,(int) flow_ma))));
 		dmBolt.execute(mockTuple(new Values("1", createLimits(0, 4453,"section4", -1, upperLimit))));
-		dmBolt.execute(mockTuple(new Values("1", createOnramp(0, 4136,"section4",dens_qu,flow_qu))));
+		dmBolt.execute(mockTuple(new Values("1", createOnramp(0, 4136,"section4",dens_qu,(int) flow_qu))));
 		outTuple = collector.tuple;
 		assertNotNull(outTuple);
 		actionEvent = (Event)outTuple.get(1);
@@ -108,14 +108,14 @@ public class TestEventProcessing {
 		// (d) lower limit
 		flow_ma = 0;
 		dens_ma = 200; // high density, lower limit will be active 
-		flow_qu = 100;
+		flow_qu = 20;
 		dens_qu = 0;
 		double lowerLimit = 180; // random flow < onramp flow
 		
-		dmBolt.execute(mockTuple(new Values("1", createMainline(30, 4056,"section4",dens_ma,flow_ma)))); // mainline congestion, just upstream
-		dmBolt.execute(mockTuple(new Values("1", createMainline(30, 4166,"section4",dens_ma,flow_ma)))); // mainline congestion, just downstream
+		dmBolt.execute(mockTuple(new Values("1", createMainline(30, 4056,"section4",dens_ma,(int) flow_ma)))); // mainline congestion, just upstream
+		dmBolt.execute(mockTuple(new Values("1", createMainline(30, 4166,"section4",dens_ma,(int) flow_ma)))); // mainline congestion, just downstream
 		dmBolt.execute(mockTuple(new Values("1", createLimits(30, 4453,"section4", lowerLimit, -1))));
-		dmBolt.execute(mockTuple(new Values("1", createOnramp(31, 4136,"section4",dens_qu,flow_qu))));
+		dmBolt.execute(mockTuple(new Values("1", createOnramp(31, 4136,"section4",dens_qu,(int) flow_qu))));
 		outTuple = collector.tuple;
 		assertNotNull(outTuple);
 		actionEvent = (Event)outTuple.get(1);
@@ -127,8 +127,8 @@ public class TestEventProcessing {
 		// (e) exact critical density
 		double rhoc = freeway.Roads.get(freeway.sensor2road.get(4166)).params.rhoc;
 		dens_ma = rhoc;
-		dmBolt.execute(mockTuple(new Values("1", createMainline(60, 4166,"section4",dens_ma,flow_ma)))); // critical density
-		dmBolt.execute(mockTuple(new Values("1", createMainline(60, 4056,"section4",dens_ma-10,flow_ma)))); // critical density	
+		dmBolt.execute(mockTuple(new Values("1", createMainline(60, 4166,"section4",dens_ma,(int) flow_ma)))); // critical density
+		dmBolt.execute(mockTuple(new Values("1", createMainline(60, 4056,"section4",dens_ma-10,(int) flow_ma)))); // critical density	
 		dmBolt.execute(mockTuple(new Values("1", createLimits(60, 4453,"section4", -1, -1)))); // disable limits
 		dmBolt.execute(mockTuple(new Values("1", createOnramp(60, 4136,"section4",dens_qu,0))));
 		outTuple = collector.tuple;
@@ -162,7 +162,7 @@ public class TestEventProcessing {
 		attrs.put("dmPartition", dmsensorId);
 		return SpeeddEventFactory.getInstance().createEvent("ClearCongestion", timestamp, attrs);
 	}
-	private Event createMainline(long timestamp, int sensorId, String dmsensorId, double density, double flow) {
+	private Event createMainline(long timestamp, int sensorId, String dmsensorId, double density, int flow) {
 		// Create a mainline measurement event
 		Map<String, Object> attrs = new HashMap<String, Object>();
 		attrs.put("sensorId", Integer.toString(sensorId));
@@ -171,7 +171,7 @@ public class TestEventProcessing {
 		attrs.put("average_flow", flow);
 		return SpeeddEventFactory.getInstance().createEvent("AverageDensityAndSpeedPerLocation", timestamp, attrs);
 	}
-	private Event createOnramp(long timestamp, int sensorId, String dmsensorId, double density, double flow) {
+	private Event createOnramp(long timestamp, int sensorId, String dmsensorId, double density, int flow) {
 		// Create a mainline measurement event
 		Map<String, Object> attrs = new HashMap<String, Object>();
 		attrs.put("sensorId", Integer.toString(sensorId));
@@ -180,7 +180,7 @@ public class TestEventProcessing {
 		attrs.put("average_flow", flow);
 		return SpeeddEventFactory.getInstance().createEvent("AverageOnRampValuesOverInterval", timestamp, attrs);
 	}
-	private Event createOfframp(long timestamp, int sensorId, String dmsensorId, double density, double flow) {
+	private Event createOfframp(long timestamp, int sensorId, String dmsensorId, double density, int flow) {
 		// Create a mainline measurement event
 		Map<String, Object> attrs = new HashMap<String, Object>();
 		attrs.put("sensorId", Integer.toString(sensorId));
@@ -212,6 +212,9 @@ public class TestEventProcessing {
 			assertEquals(expectedMeterRate * 60., phase_time, 1e-3);
 		} else {
 			assertEquals(phase_id, 2);
+			
+			System.out.println((1.-expectedMeterRate) * 60.);
+			System.out.println(phase_time);
 			assertEquals(((1.-expectedMeterRate) * 60.), phase_time, 1e-3);
 		}
 		assertEquals(expected_actu_id, actuator_id);
