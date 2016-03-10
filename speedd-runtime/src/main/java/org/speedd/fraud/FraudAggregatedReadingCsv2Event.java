@@ -168,7 +168,7 @@ public class FraudAggregatedReadingCsv2Event implements EventParser, Constants {
     	for(int i=0; i<NUM_FIELDS; ++i){
     		values.add("");
     	}
-    	values.set(ATTR_TIMESTAMP_INDEX, Long.toString(((Date)event.getAttributes().get(ATTR_TIMESTAMP)).getTime()));
+    	values.set(ATTR_TIMESTAMP_INDEX, Long.toString((Long)event.getAttributes().get(ATTR_TIMESTAMP)));
     	values.set(ATTR_TRANSACTION_ID_INDEX, (String)event.getAttributes().get(ATTR_TRANSACTION_ID));
     	values.set(ATTR_IS_CNP_INDEX, (Boolean)(event.getAttributes().get(ATTR_IS_CNP))? "1" : "0");
     	values.set(ATTR_AMOUNT_EUR_INDEX, event.getAttributes().get(ATTR_AMOUNT_EUR).toString());

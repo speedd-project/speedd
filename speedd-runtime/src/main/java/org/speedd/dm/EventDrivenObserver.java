@@ -5,7 +5,7 @@ import java.util.Map;
 
 import org.speedd.data.Event;
 
-public class eventDrivenObserver {
+public class EventDrivenObserver {
 	private network roadnetwork;
 	private long lastUpdate = 0;
 	
@@ -26,7 +26,7 @@ public class eventDrivenObserver {
 	 * Constructor for event-driven extended kalman filter
 	 * @param roadnetwork - reference to road network that is observed
 	 */
-	public eventDrivenObserver(network roadnetwork) {
+	public EventDrivenObserver(network roadnetwork) {
 		this.roadnetwork = roadnetwork;
 	}
 	
@@ -45,8 +45,16 @@ public class eventDrivenObserver {
     		long timestamp = event.getTimestamp();
         	Map<String, Object> attributes = event.getAttributes();
         	if ((attributes.get("average_flow") != null) && (attributes.get("average_occupancy") != null) && (attributes.get("sensorId") != null)) {
-        		// continue 
-            	double flow = (double) attributes.get("average_flow"); // Conversion factor: None, is the aggregated number of cars.
+        		// continue
+        		double flow = 0;
+        		
+        		Object avgFlowVal = attributes.get("average_flow");
+        		if(avgFlowVal instanceof Integer){
+        			flow = (Integer)avgFlowVal / 1.0;
+        		} else {
+        			flow = (Double)avgFlowVal;
+        		}
+        		
             	double dens = (8/5) * 125 * ((double) attributes.get("average_occupancy")); // Conversion factor: 8m space per 5m car, 125cars/km max. occup.
             	int sensorId = Integer.parseInt((String) attributes.get("sensorId"));
         		

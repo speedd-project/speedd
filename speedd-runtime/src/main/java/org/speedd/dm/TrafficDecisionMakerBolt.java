@@ -33,7 +33,7 @@ public class TrafficDecisionMakerBolt extends BaseRichBolt {
 	
 	Map<String, network> networkMap = new HashMap<String, network>();
 	Map<String, DistributedRM> distRMmap = new HashMap<String, DistributedRM>();
-    Map<String, eventDrivenObserver> observerMap = new HashMap<String, eventDrivenObserver>();
+    Map<String, EventDrivenObserver> observerMap = new HashMap<String, EventDrivenObserver>();
     
     final Boolean DEBUG = false;
 
@@ -60,8 +60,11 @@ public class TrafficDecisionMakerBolt extends BaseRichBolt {
 	 */
 	public void execute(Event event) {	
 		if (event == null) {
+			logger.warn("Event is null");
 			return; // do nothing
 		}
+		
+		logger.info("Event: " + event);
 		
 		// read event
 		String eventName = event.getEventName();
@@ -78,19 +81,27 @@ public class TrafficDecisionMakerBolt extends BaseRichBolt {
 		
 		if ((dmPartition != null) && (sensorId != null))
 		{
+			logger.info("Checkpoint 1");
 			// ============================================================== //
 			// INTERNAL status update --> create controller and observer instance, if necessary
 			network freeway = networkMap.get(dmPartition); // read sub-network data
+			
+			logger.info("Checkpoint 1.1");
+			
             if (freeway == null) {
                 // create instance of subnetwork if not yet created
             	try {
             		freeway = new network(dmPartition);
             	} catch(IllegalArgumentException e) {
+            		logger.warn("Unknown subnetwork - dmPartition: " + dmPartition);
             		return; // if name of dmPartition is not known, do nothing
             	}
                 // save instance
                 networkMap.put(dmPartition, freeway);
             }
+            
+            logger.info("Checkpoint 1.2");
+            
             DistributedRM controller = distRMmap.get(dmPartition);
             if (controller == null) {
                 // create instance of controller if not yet created
@@ -98,20 +109,26 @@ public class TrafficDecisionMakerBolt extends BaseRichBolt {
                 // save instance
                 distRMmap.put(dmPartition, controller);
             }
-            eventDrivenObserver observer = observerMap.get(dmPartition);
+            
+            logger.info("Checkpoint 1.3");
+            
+            EventDrivenObserver observer = observerMap.get(dmPartition);
             if (observer == null) {
                 // create instance of data if not yet created
-                observer = new eventDrivenObserver(freeway);
+                observer = new EventDrivenObserver(freeway);
                 // save instance
                 observerMap.put(dmPartition, observer);
             }  
             // now everything is present ...
             
+            logger.info("Checkpoint 1.9, event: " + event);
             // ============================================================== //
             // MEASUREMENT event --> hand over to OBSERVER
             if (eventName.equals("AverageDensityAndSpeedPerLocation") || eventName.equals("AverageOnRampValuesOverInterval"))
             {
             	observer.processEvent(event);
+            	logger.info("Checkpoint 2");
+            	
         		if (freeway.sensor2road.get(sensorId) != null) { // check if valid sensor id
         			if ((freeway.Roads.get(freeway.sensor2road.get(sensorId)).sensor_begin == sensorId) && (freeway.Roads.get(freeway.sensor2road.get(sensorId)).type.equals("onramp"))) {
 	            		int roadId = freeway.sensor2road.get(sensorId);
@@ -122,6 +139,8 @@ public class TrafficDecisionMakerBolt extends BaseRichBolt {
 	            		
 	            		// Emit event: Use DM partition for partitioning by kafka
 	                	outEvent = addLocation(outEvent);
+	                	
+	                	logger.info("Checkpoint 3 (out event created, emitting: " + outEvent + ")");
 	                	collector.emit(new Values(dmPartition, outEvent));
         			}
         		}
@@ -136,10 +155,15 @@ public class TrafficDecisionMakerBolt extends BaseRichBolt {
 				// Call ProcessEvent to deal with the event
 				Event[] outEvents = controller.processEvent(event);
 				
+				logger.info("Checkpoint 4");
+				
 				if (outEvents != null) {
 	                for (int ii=0; ii<outEvents.length; ii++) {
 	                	Event outEvent = addLocation(outEvents[ii]);
 						// Use DM partition for partitioning by kafka
+	                	
+	                	logger.info("Emitting event: " + outEvent);
+	                	
 	                	collector.emit(new Values("1", outEvent));	
 	                } 
 	                

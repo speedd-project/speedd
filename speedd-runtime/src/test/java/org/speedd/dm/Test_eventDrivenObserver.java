@@ -45,7 +45,7 @@ public class Test_eventDrivenObserver {
 		// freeway.printNetwork(); // debug purposes
 		
 		// create observer
-		eventDrivenObserver observer = new eventDrivenObserver(freeway_obs);
+		EventDrivenObserver observer = new EventDrivenObserver(freeway_obs);
 		
 		// set parameters for demand
 		final double PEAK_MAINLINE = 4000.;
