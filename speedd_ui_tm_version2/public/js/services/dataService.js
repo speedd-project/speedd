@@ -183,7 +183,7 @@ app.factory('dataService', function ($rootScope,socket) { // this service broadc
 	};
 	
 	data.parseEvent = function(event){
-		if (event.name == "Congestion" || event.name == "PredictedCongestion" || event.name == "ClearCongestion")
+		if (event.name == "Congestion" || event.name == "PredictedTrend" || event.name == "ClearCongestion")
 		{
 			data.mapEventList.push(event);
 			data.currentMapEvent = event;
