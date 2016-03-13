@@ -1,0 +1,229 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" class=" js flexbox flexboxlegacy canvas canvastext webgl no-touch geolocation postmessage websqldatabase indexeddb hashchange history draganddrop websockets rgba hsla multiplebgs backgroundsize borderimage borderradius boxshadow textshadow opacity cssanimations csscolumns cssgradients cssreflections csstransforms csstransforms3d csstransitions fontface generatedcontent video audio localstorage sessionstorage webworkers applicationcache svg inlinesvg smil svgclippaths">
+<head>
+	<meta charset="UTF-8">
+    <title>Analyst's Page</title>
+	
+    <link rel="stylesheet" href="bower_components/bootstrap/dist/css/bootstrap.min.css">
+    <script src="bower_components/angular/angular.min.js"></script>
+	<script src="bower_components/d3/d3.js" charset="utf-8"></script>
+    
+	<link rel="stylesheet" href="bower_components/jquery-ui/themes/smoothness/jquery-ui.min.css">
+	<script src="bower_components/jquery/dist/jquery.min.js"></script>
+	<script src="bower_components/jquery-ui/jquery-ui.min.js"></script>
+	
+	<script src="bower_components/angular-bootstrap/ui-bootstrap-tpls.min.js"></script>
+	
+	<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyA84Vw89JOaSp_SC7HflJeQ2D4a_uIGUnw&sensor=true"></script>
+	<script src='bower_components/lodash/dist/lodash.min.js'></script>
+	
+	<script src='bower_components/ng-grid/ng-grid-2.0.14.min.js'></script>
+	<link rel="stylesheet" type="text/css" href="bower_components/ng-grid/ng-grid.css" />
+	
+    <script type="text/javascript" src="bower_components/socket.io-client/socket.io.js"></script>
+	
+	<script src="bower_components/vis/dist/vis.js"></script>
+	<link href="bower_components/vis/dist/vis.css" rel="stylesheet" type="text/css" />
+
+	<script src="bower_components/gridstack/dist/gridstack.min.js"></script>
+	<link href="bower_components/gridstack/dist/gridstack.min.css" rel="stylesheet" type="text/css" />
+	
+<!--	<script src="bower_components/numeral/dist/angular-numeraljs.js"></script>
+	<script src="bower_components/numeral/test/lib/numeral.js"></script> -->
+    	
+	<script src="bower_components/angular-numeraljs/dist/angular-numeraljs.js"></script>
+	<script src="bower_components/numeral/numeral.js"></script>
+    
+    <script src="//cdnjs.cloudflare.com/ajax/libs/topojson/1.6.9/topojson.min.js"></script>
+	<script src="bower_components/datamaps/dist/datamaps.world.min.js"></script>
+	
+	<script src="http://cdnjs.cloudflare.com/ajax/libs/queue-async/1.0.7/queue.min.js"></script>
+	
+	<script src="js/angapp.js"></script>
+<!--	<script src="libs/topojson.js"></script>   -->
+	<script src="libs/cartogram.js"></script>
+	<script src="js/directives/cartogramDirective.js"></script>
+	<script src="js/directives/cartogramDirectiveAnalyst.js"></script>
+	<script src="js/directives/histogramDirective.js"></script>
+	<script src="js/directives/barChartDirective.js"></script>
+	<script src="js/directives/costChartDirective.js"></script>
+	<script src="js/directives/transactionSequenceDirective.js"></script>
+	<script src="js/directives/mapsDirective.js"></script>
+	<script src="js/controllers/CartogramController.js"></script>
+	<script src="js/controllers/CartogramModalController.js"></script>
+	<script src="js/controllers/ListModalController.js"></script>
+	<script src="js/controllers/EventListController.js"></script>
+	<script src="js/controllers/EventListControllerAnalyst.js"></script>
+	<script src="js/controllers/ExtraInfoController.js"></script>
+	<script src="js/controllers/AnalystController.js"></script>
+	<script src="js/controllers/LogInModalController.js"></script>
+	<script src="js/controllers/TopController.js"></script>
+	<script src="js/controllers/HistogramController.js"></script>
+	<script src="js/services/socketService.js"></script>
+	<script src="js/services/dataService.js"></script>
+
+	
+    <link href="bower_components/nvd3-master/build/nv.d3.min.css" rel="stylesheet">
+    <script src="bower_components/nvd3-master/build/nv.d3.min.js"></script>
+    
+	<link rel="stylesheet" href="style/main.css">
+    <style type="text/css">
+	
+
+    </style>
+
+    <script>    
+		
+		function clone(obj) {/////////////////// function from http://stackoverflow.com/questions/728360/most-elegant-way-to-clone-a-javascript-object
+			var copy;
+
+			// Handle the 3 simple types, and null or undefined
+			if (null == obj || "object" != typeof obj) return obj;
+
+			// Handle Date
+			if (obj instanceof Date) {
+				copy = new Date();
+				copy.setTime(obj.getTime());
+				return copy;
+			}
+
+			// Handle Array
+			if (obj instanceof Array) {
+				copy = [];
+				for (var i = 0, len = obj.length; i < len; i++) {
+					copy[i] = clone(obj[i]);
+				}
+				return copy;
+			}
+
+			// Handle Object
+			if (obj instanceof Object) {
+				copy = {};
+				for (var attr in obj) {
+					if (obj.hasOwnProperty(attr)) copy[attr] = clone(obj[attr]);
+				}
+				return copy;
+			}
+
+			throw new Error("Unable to copy obj! Its type isn't supported.");
+		}
+
+       
+
+
+	</script>
+</head>
+<body ng-app="CCFraudApp" style="background-color:#EAEAEA" ng-controller="EventListControllerAnalyst">
+    
+    <nav class="navbar navbar-inverse" style="background-color:#444C57; height: 30px" >
+		<div class="container-fluid">
+			<div class="navbar-header">
+			  
+			  <a class="navbar-brand" href="#"><img alt="Brand" src="img/card1.png" width="38.5px"></a>		
+			  <h5 style="color:#eee"> Transaction Investigation Tool </h4>
+			</div>
+			<div id="navbar" class="navbar-collapse collapse">
+                
+				<div class="nav navbar-nav navbar-right">
+                    
+                    <img src="img/speedd_logo.png" style="height: 50px">
+				</div>
+                
+                <div ng-show="analyst" class="nav navbar-nav navbar-right">
+					   <img src="img/analyst_idle.png" style="height: 48px">
+                       <label id='analystName' style="color: white">{{analyst}}</label>
+                </div>
+                
+			</div>
+		</div>
+	</nav>
+<!--    
+    <div>
+        {{eventList}}
+        <button ng-click="open('lg','views/analystLogin.html','LogInModalController')">asdasdas</button>
+    </div>
+-->    
+    
+
+    <ul id="draggablePanelList" >
+        
+        <li class="col-lg-6 col-md-12 col-xs-12">
+			<div class="panel panel-default" >
+				<div class="panel-heading" style="background-color:#CCD1D9">
+					<h3 class="panel-title">
+		<!--				<img src="img/traffic_light_stop.png" height="28px">	-->
+						<a href="#" ng-click="isCollapsed = !isCollapsed">
+							Transactions to Investigate
+						</a>
+					</h3>
+				</div>
+				<div collapse="isCollapsed">
+					<div class="panel-body" style="background-color:#DFDFE1">	
+						<div class="gridStyle" style="font-size:15px; height:400px" ng-grid="gridOptions"></div>
+						<p></p>
+						<div>
+							<button ng-click="onInspect()" class="btn btn-warning col-xs-4 col-xs-4 col-xs-offset-8" style="background-color:#F1C40F; border-color:#F1C40F;">Examine</button><!--ng-click="onInspect()"-->
+						</div>
+					</div>		
+				</div>
+			</div>
+		</li>
+        
+		<li-map-analyst class="col-lg-6 col-md-12 col-xs-12" >
+			<div class="panel panel-default" >
+				<div class="panel-heading" style="background-color:#4FC1E9 ; color: white;">
+					<h3 class="panel-title">
+		<!--				<img src="img/traffic_light_stop.png" height="28px">	-->
+						<a href="#" ng-click="isCollapsed = !isCollapsed">
+							Transaction View
+						</a>
+						<a href="#" style="overflow: hidden;"><span class="glyphicon glyphicon-refresh pull-right" ng-click="refreshClick()" aria-hidden="true"></span></a>
+					</h3>
+				</div>
+				<div collapse="isCollapsed">
+				  <div class="panel-body" style="height: 870px; " >
+                      <div  class="row" >
+                            <div id="trans-seq" class="col-lg-6 col-md-6 col-xs-6">
+                                <label style="font-size: 20px ">Transaction Sequence</label>
+                                <svg transaction-sequence-directive data="transaction" style="height:60px; width:100%"></svg>
+                            </div>
+                          
+                            <div class="col-lg-6 col-md-6 col-xs-6">
+                                <label style="font-size: 20px">Transaction Cost</label>
+                                <svg cost-chart data="transactionCost" style="height:60px; width:100%"></svg>
+                            </div>
+                      </div>
+                      
+                      <div  class="row" style = "background-color:#4FC1E9;" ng-controller="CartogramController">
+                        <div class="col-lg-12 col-md-12 col-xs-12">
+                                    <label style="font-size: 20px">Location</label>
+                                    <div cartogram-directive-analyst style="height:407px; font-size: 10px" map-data="data" transaction-countries="transactionCountries" in-terms="inTerms"> </div>
+                        </div>
+                                
+                            <div >
+                                <button class="btn btn-warning col-xs-4 col-lg-2 col-md-2 col-lg-offset-10 col-md-offset-10 col-xs-offset-8" ng-click="onBtnClick()" style="background-color:#F1C40F; border-color:#F1C40F; right: 20px;bottom:10px;">Examine</button>
+                            </div>
+                      </div>
+                      
+                      <div  class="row" style = "height:110px; font-family:sans-serif; text-align: left ;font-size: 20px;">
+                          <p class="col-lg-4 col-md-4 col-xs-4" style="">Detection Time: {{transactionData.time}}</p>
+                          <p class="col-lg-4 col-md-4 col-xs-4" style="">Certainty: {{transactionData.certainty+"%"}}</p>
+                          <p class="col-lg-4 col-md-4 col-xs-4" style="">Reasoning: {{transactionData.name}}</p>
+                      </div>
+                            
+                      <div class="row" >
+							<button ng-click="onFraud()" class="btn btn-primary col-xs-4" ng-click="" style="left:20px; top:10px; background-color:#F68275; border-color:#F68275;">Confirm Fraud</button>
+							<button ng-click="onAllow()" class="btn btn-warning col-xs-4 col-xs-4 col-xs-offset-4" style="right:20px; top:10px; background-color:#43B1A9; border-color:#43B1A9;">Allow Transaction</button><!--ng-click="onInspect()"-->
+				      </div>
+				  </div>
+				</div>
+			</div>
+		</li-map-analyst>
+		
+		
+		
+    </ul>
+
+</body>
+</html>
+
