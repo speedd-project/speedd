@@ -36,9 +36,16 @@ public class network {
 			int[] sens_of = {   -1,   -1,   -1,   -1};
 			double[] beta = {   0.,   0.,   0.,   0.};
 			int[] actu_id = {   -1, 4489,   -1,   -1};
-			double[] length = { 1.,   1.,   1.,   1.};
-			double[] ql   = {   1.,   1.,   1.,   1.};
-			network buffer = makeFreeway(sens_in,sens_ou,sens_on,sens_qu,sens_of,actu_id,beta,length,ql,1);
+			
+			double[] ql   = {  0.1,  0.4,  -1.,  -1.};
+			double[] length={  0.5,  0.4,  0.8,  0.4};
+			double[] v    = {  90.,  90.,  90.,  90.};
+			double[] rhoc = {  50.,  50.,  50.,  50.};
+			double[] rhom = { 250., 250., 250., 250.};
+			
+			// network buffer = makeFreeway(sens_in,sens_ou,sens_on,sens_qu,sens_of,actu_id,beta,length,ql,1);
+			network buffer = makeFreeway(sens_in,sens_ou,sens_on,sens_qu,sens_of,actu_id,beta,length,ql,v, rhoc, rhom,1);
+			
 			this.Intersections = buffer.Intersections;
 			this.Roads = buffer.Roads;
         } else if (networkId.equals("section2")) {
@@ -50,51 +57,79 @@ public class network {
 			int[] sens_of = { 1691,   -1, 1683,   -1,   -1,   -1,   -1};
 			double[] beta = {  0.2,   0.,  0.2,   0.,   0.,   0.,   0.};
 			int[] actu_id = {   -1,   -1,   -1, 4488,   -1,   -1,   -1};
-			double[] length = { 1.,   1.,   1.,   1.,   1.,   1.,   1.};
-			double[] ql   = {   1.,   1.,   1.,   1.,   1.,   1.,   1.};
-			network buffer = makeFreeway(sens_in,sens_ou,sens_on,sens_qu,sens_of,actu_id,beta,length,ql,4);
+			
+			double[] ql   = {  -1., 0.12,  -1., 0.15, 0.12,  -1.,  -1.};
+			double[] length={  0.4,  0.4,  0.8,  0.5, 0.45, 0.75,  1.3}; 
+			double[] v    = {  90.,  90.,  90.,  90.,  90.,  90.,  90.};
+			double[] rhoc = {  50.,  50.,  50.,  50.,  50.,  50.,  50.};
+			double[] rhom = { 250., 250., 250., 250., 250., 250., 250.};
+			
+			//network buffer = makeFreeway(sens_in,sens_ou,sens_on,sens_qu,sens_of,actu_id,beta,length,ql,4);
+			network buffer = makeFreeway(sens_in,sens_ou,sens_on,sens_qu,sens_of,actu_id,beta,length,ql,v, rhoc, rhom,4);
+			
 			this.Intersections = buffer.Intersections;
 			this.Roads = buffer.Roads;
         } else if (networkId.equals("section3")) {
 			// road parameters  10    11   11o   (12)
-			int[] sens_in = {   -1, 4061,   -1,   -1};
-			int[] sens_ou = {   -1, 4381, 4391,   -1};   
-			int[] sens_qu = {   -1, 4134,   -1,   -1};
-			int[] sens_on = {   -1, 1666,   -1,   -1};
-			int[] sens_of = { 1670,   -1,   -1,   -1};
-			double[] beta = {  0.2,   0.,   0.,   0.};
-			int[] actu_id = {   -1, 4487,   -1,   -1};
-			double[] length = { 1.,   1.,   1.,   1.};
-			double[] ql   = {   1.,   1.,   1.,   1.};
-			network buffer = makeFreeway(sens_in,sens_ou,sens_on,sens_qu,sens_of,actu_id,beta,length,ql,10);
+			int[] sens_in = {   -1, 4061,       4391};
+			int[] sens_ou = {   -1, 4381,         -1};   
+			int[] sens_qu = {   -1, 4134,         -1};
+			int[] sens_on = {   -1, 1666,         -1};
+			int[] sens_of = { 1670,   -1,         -1};
+			double[] beta = {  0.2,   0.,         0.};
+			int[] actu_id = {   -1, 4487,         -1};
+			
+			double[] ql   = {  -1.,  0.3,        -1.};
+			double[] length={  1.3,  0.5,        0.9};
+			double[] v    = {  90.,  90.,        90.};
+			double[] rhoc = {  50.,  50.,        50.};
+			double[] rhom = { 250., 250.,       250.};
+			
+			//network buffer = makeFreeway(sens_in,sens_ou,sens_on,sens_qu,sens_of,actu_id,beta,length,ql,10);
+			network buffer = makeFreeway(sens_in,sens_ou,sens_on,sens_qu,sens_of,actu_id,beta,length,ql,v, rhoc, rhom,10);
+			
 			this.Intersections = buffer.Intersections;
 			this.Roads = buffer.Roads;
         } else if (networkId.equals("section4")) {
 			// road parameters  12    13    14    15   15c   (16)
-			int[] sens_in = {   -1, 4375,   -1, 4057,   -1,   -1};
-			int[] sens_ou = {   -1, 4058,   -1, 4056, 4166,   -1};   
-			int[] sens_qu = {   -1, 4135,   -1, 4136,   -1,   -1};
-			int[] sens_on = {   -1, 1658,   -1, 1650,   -1,   -1};
-			int[] sens_of = { 1662,   -1, 1654,   -1,   -1,   -1};
-			double[] beta = {  0.2,   0.,  0.2,   0.,   0.,   0.};
-			int[] actu_id = {   -1, 4486,   -1, 4453,   -1,   -1};
-			double[] length = { 1.,   1.,   1.,   1.,   1.,   1.};
-			double[] ql   = {   1.,   1.,   1.,   1.,   1.,   1.};
-			network buffer = makeFreeway(sens_in,sens_ou,sens_on,sens_qu,sens_of,actu_id,beta,length,ql,13);
+			int[] sens_in = { 4391, 4375,   -1, 4057,       4166};
+			int[] sens_ou = {   -1, 4058,   -1, 4056,         -1};   
+			int[] sens_qu = {   -1, 4135,   -1, 4136,         -1};
+			int[] sens_on = {   -1, 1658,   -1, 1650,         -1};
+			int[] sens_of = { 1662,   -1, 1654,   -1,         -1};
+			double[] beta = {  0.2,   0.,  0.2,   0.,         0.};
+			int[] actu_id = {   -1, 4486,   -1, 4453,         -1};
+			
+			double[] ql   = {  -1.,  0.2,  -1.,  0.2,        -1.};
+			double[] length={  0.9,  0.5, 0.65, 0.55,       0.65};
+			double[] v    = {  90.,  90.,  90.,  90.,        90.};
+			double[] rhoc = {  50.,  50.,  50.,  50.,        50.};
+			double[] rhom = { 250., 250., 250., 250.,       250.};
+			
+			//network buffer = makeFreeway(sens_in,sens_ou,sens_on,sens_qu,sens_of,actu_id,beta,length,ql,13);
+			network buffer = makeFreeway(sens_in,sens_ou,sens_on,sens_qu,sens_of,actu_id,beta,length,ql,v, rhoc, rhom,12);
+			
 			this.Intersections = buffer.Intersections;
 			this.Roads = buffer.Roads;
         } else if (networkId.equals("section5")) {
 			// road parameters  16    17    18    19    20
-			int[] sens_in = {   -1, 4055,   -1, 4053,   -1};
-			int[] sens_ou = {   -1, 4054,   -1, 4052,   -1};   
-			int[] sens_qu = {   -1, 4138,   -1,   -1,   -1};
-			int[] sens_on = {   -1, 1642,   -1, 1634,   -1};
-			int[] sens_of = { 1646,   -1, 1638,   -1,   -1};
-			double[] beta = {  0.2,   0.,  0.2,   0.,   0.};
-			int[] actu_id = {   -1, 4490,   -1,   -1,   -1};
-			double[] length = { 1.,   1.,   1.,   1.,   1.};
-			double[] ql   = {   1.,   1.,   1.,   1.,   1.};
-			network buffer = makeFreeway(sens_in,sens_ou,sens_on,sens_qu,sens_of,actu_id,beta,length,ql,18);
+			int[] sens_in = { 4166, 4055,   -1, 4053      };
+			int[] sens_ou = {   -1, 4054,   -1, 4052      };   
+			int[] sens_qu = {   -1, 4138,   -1,   -1      };
+			int[] sens_on = {   -1, 1642,   -1, 1634      };
+			int[] sens_of = { 1646,   -1, 1638,   -1      };
+			double[] beta = {  0.2,   0.,  0.2,   0.      };
+			int[] actu_id = {   -1, 4490,   -1,   -1      };
+			
+			double[] ql   = {  -1.,  0.2,  -1., 0.06      };
+			double[] length={ 0.65, 0.55, 0.45,  0.4      };
+			double[] v    = {  90.,  90.,  90.,  90.      };
+			double[] rhoc = {  50.,  50.,  50.,  50.      };
+			double[] rhom = { 250., 250., 250., 250.      };
+			
+			//network buffer = makeFreeway(sens_in,sens_ou,sens_on,sens_qu,sens_of,actu_id,beta,length,ql,18);
+			network buffer = makeFreeway(sens_in,sens_ou,sens_on,sens_qu,sens_of,actu_id,beta,length,ql,v, rhoc, rhom,16);
+			
 			this.Intersections = buffer.Intersections;
 			this.Roads = buffer.Roads;
         } else {
@@ -355,6 +390,94 @@ public class network {
 		
 		return new network(intersections,roads); 
 	}
+	
+	/**
+	 * Creates a freeway network from the given parameters. TBD: complete documentation
+	 * 
+	 * @param sens_in
+	 * @param sens_ou
+	 * @param sens_on
+	 * @param sens_qu
+	 * @param sens_of
+	 * @param actu_id    
+	 * @param beta
+	 * @param length
+	 * @param ql
+	 * @return
+	 */
+	public static network makeFreeway(int[] sens_in, int[] sens_ou, int[] sens_on, int[] sens_qu, int[] sens_of, int[] actu_id, double[] beta, 
+			double[] length, double[] ql, double[] v, double[] rhoc, double[] rhom, int offset) {
+		
+		// create datastructures
+		Map<Integer,Intersection> intersections = new HashMap<Integer,Intersection>();
+		Map<Integer,Road> roads = new HashMap<Integer,Road>();
+		
+		// dimension checks
+		int n = sens_in.length;
+		if ((n >= 100) || (sens_ou.length != n) || (sens_on.length != n) || (sens_qu.length != n) || (sens_of.length != n) || (beta.length != n) || 
+				(actu_id.length != n) || (beta.length != n) || (length.length != n) || (ql.length != n) || (v.length != n) || (rhoc.length != n) || (rhom.length != n)) {
+			throw(new InvalidParameterException());
+		}
+		
+		// iteratively build the freeway
+		for (int ii=0; ii<n; ii++) {
+			Ctm freewayCtm = new Ctm(v[ii], rhoc[ii], rhom[ii], length[ii]);
+			Road cell; // allocate
+			if (ii == 0) {
+				cell = new RoadCtm(-1, ii+offset, sens_in[ii], sens_ou[ii], "freeway", freewayCtm); // "-1" indicates beginning of freeway
+			} else {
+				cell = new RoadCtm(ii+offset-1, ii+offset, sens_in[ii], sens_ou[ii], "freeway", freewayCtm);
+			}
+			roads.put(ii+offset, cell);
+			
+			// determine type of intersection. Assumption: no onramp and offramp at the same place!
+			if (ii < n-1) {
+				if (sens_on[ii] < 0) {
+					// no onramp
+					if (sens_of[ii] < 0) {
+						// neither onramp nor offramp
+						Fifo paramsFifo = Fifo.makeSplit();
+						IntersectionFifo intersection = new IntersectionFifo(ii+offset, new int[] {ii+offset}, new int[] {ii+offset+1}, actu_id[ii], paramsFifo); 
+						intersections.put(ii+offset, intersection);
+					} else {
+						// offramp, no onramp
+						Fifo paramsFifo = Fifo.makeOfframp(beta[ii]);
+						IntersectionFifo intersection = new IntersectionFifo(ii+offset, new int[] {ii+offset}, new int[] {ii+offset+1,-1}, actu_id[ii], paramsFifo); 
+						intersections.put(ii+offset, intersection);
+					}
+				} else {
+					if (sens_qu[ii] < 0) {
+						// unmetered onramp
+						Fifo paramsFifo = Fifo.makeOnramp();
+						IntersectionFifo intersection = new IntersectionFifo(ii+offset, new int[] {ii+offset,100+ii+offset}, new int[] {ii+offset+1}, actu_id[ii], paramsFifo); 
+						intersections.put(ii+offset, intersection);
+						// also need to create the queue
+						Ctm queueCtm = new Ctm("small",ql[ii]);
+						Road queue = new RoadCtm(-1, ii+offset, sens_qu[ii], sens_on[ii], "onramp", queueCtm);
+						roads.put(ii+offset+100, queue);
+					} else {
+						// metered onramp
+						Fifo paramsFifo = Fifo.makeMeteredOnramp();
+						IntersectionFifo intersection = new IntersectionFifo(ii+offset, new int[] {ii+offset,100+offset+ii}, new int[] {ii+offset+1}, actu_id[ii], paramsFifo); 
+						intersections.put(ii+offset, intersection);
+						// also need to create the queue
+						Ctm queueCtm = new Ctm("small",ql[ii]);
+						Road queue = new RoadCtm(-1, ii+offset, sens_qu[ii], sens_on[ii], "onramp", queueCtm);
+						roads.put(ii+offset+100, queue);
+					}
+				}
+			} else {
+				// ii = n-1 : end of freeway
+				Fifo paramsFifo = Fifo.makeSplit();
+				IntersectionFifo intersection = new IntersectionFifo(ii+offset, new int[] {ii+offset}, new int[] {-1}, actu_id[ii], paramsFifo); 
+				intersections.put(ii+offset, intersection);
+			}
+
+		}
+		
+		return new network(intersections,roads); 
+	}
+	
 	   
     /**
      * Create lookup table mapping sensorId to roadId. To be called in the
