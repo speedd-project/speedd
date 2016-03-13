@@ -3,25 +3,25 @@ app.factory('dataService', function ($rootScope,socket) { // this service broadc
   
   data.cams = {'cam1':'img/traffic1.jpg', 'cam2': 'img/traffic2.jpg', 'cam3': 'img/traffic3.jpg', 'cam4': 'img/traffic4.jpg', 'cam5': 'img/traffic5.jpg', 'cam6': 'img/traffic6.jpg', 'cam7': 'img/traffic7.jpg', 'cam8': 'img/traffic8.jpg'};
   
-  data.nodes = [{'id':'node1', 'location':'0024a4dc00003356', 'name':'1 - Meylan', 'camX': 680, 'camY': 160},
-        {'id':'node2', 'location':'0024a4dc00003354', 'name':'2 - A41', 'camX': 660, 'camY': 180},
+  data.nodes = [{'id':'node1', 'location':'0024a4dc00003356', 'name':'1 - Meylan', 'camX': 680, 'camY': 160, 'phase1':0, 'phase2':60},
+        {'id':'node2', 'location':'0024a4dc00003354', 'name':'2 - A41', 'camX': 660, 'camY': 180, 'phase1':1, 'phase2':60},
         {'id':'node3', 'location':'0024a4dc0000343c', 'name':'3 - Carronerie', 'camX': 665, 'camY': 225},
         {'id':'node4o', 'location':'0024a4dc0000343b', 'name':'4 - Domaine Uni', 'camX': 665, 'camY': 260},
-        {'id':'node4', 'location':'0024a4dc0000343b', 'name':'4 - Domaine Uni', 'camX': 665, 'camY': 275},
+        {'id':'node4', 'location':'0024a4dc0000343b', 'name':'4 - Domaine Uni', 'camX': 665, 'camY': 275, 'phase1':0, 'phase2':60},
         {'id':'node5o', 'location':'0024a4dc00003445', 'name':'5 - Gabriel Peri', 'camX': 655, 'camY': 295},
-        {'id':'node5', 'location':'0024a4dc00003445', 'name':'5 - Gabriel Peri', 'camX': 650, 'camY': 305},
-        {'id':'node6', 'location':'0024a4dc00001b67', 'name':'6 - Gabriel Peri', 'camX': 635, 'camY': 320},
+        {'id':'node5', 'location':'0024a4dc00003445', 'name':'5 - Gabriel Peri', 'camX': 650, 'camY': 305, 'phase1':0, 'phase2':60},
+        {'id':'node6', 'location':'0024a4dc00001b67', 'name':'6 - Gabriel Peri', 'camX': 635, 'camY': 320,  'phase1':0, 'phase2':60},
         {'id':'node7', 'location':'0024a4dc00003357', 'name':'7 - SMH', 'camX': 595, 'camY': 350},
         {'id':'node8', 'location':'0024a4dc00000ddd', 'name':'8 - SMH Centre', 'camX': 570, 'camY': 390},
-        {'id':'node9', 'location':'0024a4dc00003355', 'name':'9 - SMH Centre', 'camX': 550, 'camY': 415},
+        {'id':'node9', 'location':'0024a4dc00003355', 'name':'9 - SMH Centre', 'camX': 550, 'camY': 415,  'phase1':0, 'phase2':60},
         {'id':'node10', 'location':'0024a4dc000021d1', 'name':'10 - Eybens', 'camX': 520, 'camY': 450},
-        {'id':'node11', 'location':'0024a4dc0000343f', 'name':'11 - Eybens', 'camX': 500, 'camY': 470},
+        {'id':'node11', 'location':'0024a4dc0000343f', 'name':'11 - Eybens', 'camX': 500, 'camY': 470,  'phase1':0, 'phase2':60},
         {'id':'node12', 'location':'0024a4dc00001b5c', 'name':'12 - Echirolles', 'camX': 470, 'camY': 480},
-        {'id':'node13', 'location':'0024a4dc000025eb', 'name':'13 - Echirolles', 'camX': 440, 'camY': 480},
+        {'id':'node13', 'location':'0024a4dc000025eb', 'name':'13 - Echirolles', 'camX': 440, 'camY': 480,  'phase1':0, 'phase2':60},
         {'id':'node14', 'location':'0024a4dc000025ea', 'name':'14 - Etats Generaux', 'camX': 415, 'camY': 470},
-        {'id':'node16', 'location':'0024a4dc000013c6', 'name':'16 - Etats Generaux', 'camX': 375, 'camY': 475},
+        {'id':'node16', 'location':'0024a4dc000013c6', 'name':'16 - Etats Generaux', 'camX': 375, 'camY': 475,  'phase1':0, 'phase2':60},
         {'id':'node17', 'location':'0024a4dc00003444', 'name':'17 - Liberation', 'camX': 360, 'camY': 430},
-        {'id':'node18', 'location':'0024a4dc000025ec', 'name':'18 - Liberation', 'camX': 350, 'camY': 435},
+        {'id':'node18', 'location':'0024a4dc000025ec', 'name':'18 - Liberation', 'camX': 350, 'camY': 435,  'phase1':0, 'phase2':60},
         {'id':'node19', 'location':'0024a4dc0000343e', 'name':'19 - Rondeau', 'camX': 330, 'camY': 440}
     ];
     
@@ -93,6 +93,14 @@ app.factory('dataService', function ($rootScope,socket) { // this service broadc
         {
             if (data.nodes[i].id == nodeId)
                 return data.nodes[i]; 
+        }
+    }
+    
+    data.idToNodeIndex = function (nodeId){
+        for(var i = 0; i < data.nodes.length; i++)
+        {
+            if (data.nodes[i].id == nodeId)
+                return i; 
         }
     }
     
