@@ -1,0 +1,14 @@
+<div class="ngCellText" ng-class="col.colIndex()">
+    <!--           
+    <span ng-cell-text>{{row.getProperty(col.field)}}</span>
+    -->
+    
+    <!--
+    <span ng-repeat="n in analysts track by $index" ng-switch on="analysts.name">             
+        <img ng-switch-when="Gheorghe" ng-src="{{analysts[0].src}}" style="height:20px">
+        <img ng-switch-default ng-src="{{analysts[1].src}}" style="height:20px">
+    </span>
+    -->
+    <img ng-repeat="n in getNumber(row.getProperty(col.field)) track by $index" ng-src="{{row.getProperty(col.field)}}" style="height:20px">
+
+</div>
