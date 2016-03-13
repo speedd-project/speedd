@@ -46,7 +46,7 @@ public class EventDrivenObserver {
         	Map<String, Object> attributes = event.getAttributes();
         	if ((attributes.get("average_flow") != null) && (attributes.get("average_occupancy") != null) && (attributes.get("sensorId") != null)) {
         		// continue
-        		double flow = (Integer) attributes.get("average_flow")/1.0;
+        		double flow = ((Number)attributes.get("average_flow")).doubleValue();
         		
             	double dens = (8/5) * 125 * ((double) attributes.get("average_occupancy")); // Conversion factor: 8m space per 5m car, 125cars/km max. occup.
             	int sensorId = Integer.parseInt((String) attributes.get("sensorId"));
