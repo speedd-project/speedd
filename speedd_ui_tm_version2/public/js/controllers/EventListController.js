@@ -40,9 +40,9 @@ app.controller('EventListController', ['$scope','$interval','$window','dataServi
 		
 		event.id = $scope.formattedEventList.length;
 		// converts ms to date and time
-		event.time = (dataToFormat.attributes.OccurrenceTime != undefined)? new Date(dataToFormat.attributes.OccurrenceTime).toString() : -1;
+		event.time = (dataToFormat.attributes.OccurrenceTime != undefined)? new Date(dataToFormat.attributes.OccurrenceTime).toString() : "";
 		event.name = (dataToFormat.name != undefined)? dataToFormat.name : "";
-		event.node = (dataToFormat.attributes.location != undefined)? dataService.nodeToName(dataService.locationToNode(dataToFormat.attributes.location)): -1;
+		event.node = (dataToFormat.attributes.location != undefined)? dataService.nodeToName(dataService.locationToNode(dataToFormat.attributes.location)): "";
 		event.density = (dataToFormat.attributes.density != undefined)? dataToFormat.attributes.density.toFixed(2) : (dataToFormat.attributes.average_density != undefined)? dataToFormat.attributes.average_density.toFixed(2) : "";
 		event.problem_id = (dataToFormat.attributes.problem_id != undefined)? dataToFormat.attributes.problem_id : "";
 		

@@ -116,8 +116,8 @@ app.controller('CircularMapController', ['$scope','$interval','$window','dataSer
 	        var node = dataService.locationToNode(event.attributes.location);
             
             if(node){
-                $scope.currentRate(node, event.attributes.phase_time);
-                $scope.currentOccupancy(node, event.attributes.density);
+                $scope.currentRate(node, event.attributes.phase_time, event.attributes.phase_id);
+//                $scope.currentOccupancy(node, event.attributes.density);
                 
                 console.log(event);
             }
@@ -130,11 +130,12 @@ app.controller('CircularMapController', ['$scope','$interval','$window','dataSer
         
             if(node){
                 $scope.currentSpeed(node, event.attributes.average_speed);
+                /*
                 if(event.attributes.average_occupancy)
                     $scope.currentOccupancy(node, event.attributes.average_occupancy);
                 else
                     $scope.currentOccupancy(node, event.attributes.average_density);
-                
+                */
                 console.log(event);
             }
             else
@@ -146,11 +147,12 @@ app.controller('CircularMapController', ['$scope','$interval','$window','dataSer
         
             if(node){
                 $scope.currentSpeed(node, event.attributes.average_speed);
+                /*
                 if(event.attributes.average_occupancy)
                     $scope.currentOccupancy(node, event.attributes.average_occupancy);
                 else
                     $scope.currentOccupancy(node, event.attributes.average_density);
-                
+                */
                 console.log(event);
             }
             else
@@ -466,9 +468,9 @@ app.controller('CircularMapController', ['$scope','$interval','$window','dataSer
             if(barNo[0] == "e")
                 barNo = node.slice(-1);
             // historical
-            d3.select(circularMap).select('#hr'+barNo).attr("class", $scope.barClass("rother"))
+            d3.select(circularMap).select('#hr'+barNo).attr("class", $scope.barClass("rother"))//.attr("height",$scope.rbarScale(60))
                                                         .append("title").text(function (){//return "Historical Average Rate"});
-                                                                        return $scope.rbarScale2(d3.select(circularMap).select('#hr'+barNo).attr('height')).toFixed(2)+" % green"});
+                                                                        return $scope.rbarScale2(d3.select(circularMap).select('#hr'+barNo).attr('height')).toFixed(2)+" sec green"});
             d3.select(circularMap).select('#ho'+barNo).attr("class", $scope.barClass("oother"))
                                                         .append("title").text(function (){//return "Historical Average Occupancy"});
                                                                         return $scope.obarScale2(d3.select(circularMap).select('#ho'+barNo).attr('height')).toFixed(2)+" %"});
@@ -476,9 +478,9 @@ app.controller('CircularMapController', ['$scope','$interval','$window','dataSer
                                                         .append("title").text(function (){//return "Historical Average Speed"});
                                                                         return $scope.sbarScale2(d3.select(circularMap).select('#hs'+barNo).attr('height')).toFixed(2)+" kmph"});
             // predicted
-            d3.select(circularMap).select('#pr'+barNo).attr("class", $scope.barClass("rother"))
+            d3.select(circularMap).select('#pr'+barNo).attr("class", $scope.barClass("rother"))//.attr("height",$scope.rbarScale(60))
                                                         .append("title").text(function (){//return "Predicted Rate"});
-                                                                        return $scope.rbarScale2(d3.select(circularMap).select('#pr'+barNo).attr('height')).toFixed(2)+" % green"});
+                                                                        return $scope.rbarScale2(d3.select(circularMap).select('#pr'+barNo).attr('height')).toFixed(2)+" sec green"});
             d3.select(circularMap).select('#po'+barNo).attr("class", $scope.barClass("oother"))
                                                         .append("title").text(function (){//return "Predicted Occupancy"});
                                                                         return $scope.obarScale2(d3.select(circularMap).select('#po'+barNo).attr('height')).toFixed(2)+" %"});
@@ -486,9 +488,9 @@ app.controller('CircularMapController', ['$scope','$interval','$window','dataSer
                                                         .append("title").text(function (){//return "Predicted Speed"});
                                                                         return $scope.sbarScale2(d3.select(circularMap).select('#ps'+barNo).attr('height')).toFixed(2)+" kmph"});
             // current
-            d3.select(circularMap).select('#cr'+barNo).attr("class", $scope.barClass("rnorm"))
+            d3.select(circularMap).select('#cr'+barNo).attr("class", $scope.barClass("rnorm")).attr("height",$scope.rbarScale(60))
                                                         .append("title").text(function (){//return "Current Rate"});
-                                                                        return $scope.rbarScale2(d3.select(circularMap).select('#cr'+barNo).attr('height')).toFixed(2)+" % green"});
+                                                                        return $scope.rbarScale2(d3.select(circularMap).select('#cr'+barNo).attr('height')).toFixed(2)+" sec green"});
             d3.select(circularMap).select('#co'+barNo).attr("class", $scope.barClass("onorm"))
                                                         .append("title").text(function (){//return "Current Occupancy"});
                                                                         return $scope.obarScale2(d3.select(circularMap).select('#co'+barNo).attr('height')).toFixed(2)+" %"});
@@ -544,17 +546,28 @@ app.controller('CircularMapController', ['$scope','$interval','$window','dataSer
                 .text(function (){return $scope.sbarScale2(d3.select(circularMap).select('#cs'+barNo).attr('height')).toFixed(2)+" kmph"});   
     }
     
-    $scope.currentRate = function (node, percentage){     
+    $scope.currentRate = function (node, phase_time, phase_id){     
         // modify current occupancy bar
         var barNo = node.slice(-2);
             if(barNo[0] == "e")
                 barNo = node.slice(-1);
        
+        var nodeIndex = dataService.idToNodeIndex(node);
+        
+        if(phase_id == 1)
+            dataService.nodes[nodeIndex].phase1 = (phase_time >= 0)? phase_time:0;
+        else if (phase_id == 2)
+            dataService.nodes[nodeIndex].phase2 = (phase_time >= 0)? phase_time:0;
+        else;
+       
+        var rateValue = dataService.nodes[nodeIndex].phase2 / (dataService.nodes[nodeIndex].phase1 + dataService.nodes[nodeIndex].phase2) * 60;
+//        console.log(rateValue);
+        
         // change bar height
         d3.select(circularMap).select('#cr'+barNo).attr("height", function(){
-            if (percentage<=60 && percentage>=0) 
-                return $scope.rbarScale(percentage); 
-            else if (percentage>60) 
+            if (rateValue<=60 && rateValue>=0) 
+                return $scope.rbarScale(rateValue); 
+            else if (rateValue>60) 
                 return $scope.rbarScale(60);
             else
                 return $scope.rbarScale(1);
@@ -562,7 +575,7 @@ app.controller('CircularMapController', ['$scope','$interval','$window','dataSer
         
          // update tooltip content
         d3.select(circularMap).select('#cr'+barNo).select("title")
-                .text(function (){return $scope.rbarScale2(d3.select(circularMap).select('#cr'+barNo).attr('height')).toFixed(2)+" % green"});  
+                .text(function (){return $scope.rbarScale2(d3.select(circularMap).select('#cr'+barNo).attr('height')).toFixed(2)+" sec green"});  
     }
     
     $scope.appendCam = function (){
