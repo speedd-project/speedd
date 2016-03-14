@@ -66,7 +66,7 @@ public class DistributedRM {
 			if (localOnramp != null) {
 				int onrampId = localOnramp.onrampRoadId;
 				
-				if (eventName.equals("PredictedCongestion") || eventName.equals("Congestion")) {
+				if (eventName.equals("PredictedTrend") || eventName.equals("Congestion")) {
 					// turn on ramp metering
 					localOnramp.operationMode = 1;
 				}

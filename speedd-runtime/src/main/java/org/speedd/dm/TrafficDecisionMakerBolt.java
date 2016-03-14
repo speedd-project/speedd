@@ -134,7 +134,7 @@ public class TrafficDecisionMakerBolt extends BaseRichBolt {
  
             // ============================================================== //
 			// COMPLEX event --> hand over to CONTROLLER
-			if (eventName.equals("PredictedCongestion") || eventName.equals("Congestion") || eventName.equals("ClearCongestion") ||
+			if (eventName.equals("PredictedTrend") || eventName.equals("Congestion") || eventName.equals("ClearCongestion") ||
 					eventName.equals("setMeteringRateLimits") || eventName.equals("RampCooperation") || eventName.equals("PredictedRampOverflow") ||
 					eventName.equals("ClearRampOverflow") || eventName.equals("AverageOnRampValuesOverInterval") || eventName.equals("AverageDensityAndSpeedPerLocation")) {	
 				// Call ProcessEvent to deal with the event
