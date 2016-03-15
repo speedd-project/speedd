@@ -13,11 +13,33 @@ app.factory('dataService', function ($rootScope,socket,$http) { // this service 
 	data.userEvent;
 	data.inTerms = "area";
     data.rowData={};
+    data.receivedTransactions = [];
+    
+    data.transactionSelected;
+    
+    data.findTransactionById = function(ids){
+        var t = [];
+        
+        for (var i = 0; i < data.receivedTransactions.length; i++)
+        {
+            for (var j = 0; j < ids.length; j++)
+                if (data.receivedTransactions[i].attributes.transaction_id == ids[j])
+                    t.push(data.receivedTransactions[i]);
+        }
+ //       console.log(data.receivedTransactions)
+        
+        return t;
+    }
 	
 	socket.on('event-list', function (socketData) {
 			var events = JSON.parse(socketData.eventList);
 			data.rawEventList=events;
 			data.broadcastRawEventList();
+            
+            // makes sure raw transactions are pushed to the array
+            for (var i = 0; i < events.length; i++)
+                if (events[i].name == "Transaction")
+                    data.receivedTransactions.push(events[i]);
 	});
 	
 	
@@ -63,6 +85,8 @@ app.factory('dataService', function ($rootScope,socket,$http) { // this service 
 		}
 		else if (event.Name == "Transaction" || event.name == "Transaction")
 		{
+            console.log(data.receivedTransactions);
+            data.receivedTransactions.push(event);
 			data.broadcastTransaction();
 		}
 		else if (event.Name == "TransactionStats" || event.name == "TransactionStats")

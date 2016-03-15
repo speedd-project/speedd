@@ -7,7 +7,7 @@ app.directive('transactionSequenceDirective', function ($parse) {
 
 		    var exp = $parse(attrs.data);
 			var data = exp(scope);
-
+            
 			// listens for WINDOW RESIZE
 			scope.$watch(function(){
 			//	drawChart();
@@ -18,7 +18,9 @@ app.directive('transactionSequenceDirective', function ($parse) {
                console.log(dat)
                drawChart();
 			});
+            
 			
+            
             chartCont.append("defs").append("marker") // from
                 .attr("id", "arrowhead")
                 .attr("refX", 6 + 3) 
@@ -38,7 +40,8 @@ app.directive('transactionSequenceDirective', function ($parse) {
                     "9d47b44380024e82aedcf359f8be8dfb",
                     "8727070543664142bc7d2ba980dc1f19",
                     "b1dedbeb44ad431f995076153c7bdcc8"
-                    ]};      
+                    ]  
+            };      
 			          
             function drawChart(){
                 // get container size
@@ -70,10 +73,15 @@ app.directive('transactionSequenceDirective', function ($parse) {
                     .attr("cx", function(d,i){ return width-(spacing*(dataLength-(i)))+spacing/2})
                     .attr("cy", height/2)
                     .attr("r", 6)
-                    .attr("class", "transactionDot");
+                    .attr("class", "transactionDot")
+                    .on("click", function(d,i){
+                        // sends event to controller
+						return scope.onSequenceTransactionClick(dat.id[i]); 
+                    });
                     
                 circles.append('title').text(function(d,i){ return "date: "+new Date(d)+
                                                                  "\ntransaction ID: "+ dat.id[i]})
+                                                             
                 
                 var circleLabels = drawing//.append("g")
                     .selectAll("text")
