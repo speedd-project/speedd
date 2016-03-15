@@ -8,6 +8,7 @@ var io;
 var Consumer, client, consumer, Producer, producer;
 /////////////////////////
 var analysts = [];
+var analystAction;
 
 analysts.push = function (){
     
@@ -19,6 +20,16 @@ analysts.push = function (){
     
     return Array.prototype.push.apply(this,arguments);
 }
+
+function changeFlag(data){
+    // emits an analyst array to all connections
+    setTimeout(function(){
+        io.emit("analystActions", data);
+        console.log(data);
+    },100);
+    
+}
+
 ////////////////////////
 var outputFile;
 
@@ -174,6 +185,12 @@ function setSocket(){
 			console.log(data);
             analysts.push(data);
       //      socket.emit('analyst',data);
+		});
+        
+        socket.on('analystAction', function (data) {
+			//console.log(data);
+           
+            changeFlag(data);
 		});
         
 		socket.on('speedd-fraud-admin', function (data) {

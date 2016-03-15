@@ -42,11 +42,13 @@
 	<script src="js/angapp.js"></script>
 <!--	<script src="libs/topojson.js"></script>   -->
 	<script src="libs/cartogram.js"></script>
+	<script src="libs/dateFormat.js"></script>
 	<script src="js/directives/cartogramDirective.js"></script>
 	<script src="js/directives/cartogramDirectiveAnalyst.js"></script>
 	<script src="js/directives/histogramDirective.js"></script>
 	<script src="js/directives/barChartDirective.js"></script>
 	<script src="js/directives/costChartDirective.js"></script>
+	<script src="js/directives/clockDirective.js"></script>
 	<script src="js/directives/transactionSequenceDirective.js"></script>
 	<script src="js/directives/mapsDirective.js"></script>
 	<script src="js/controllers/CartogramController.js"></script>
@@ -63,8 +65,8 @@
 	<script src="js/services/dataService.js"></script>
 
 	
-    <link href="bower_components/nvd3-master/build/nv.d3.min.css" rel="stylesheet">
-    <script src="bower_components/nvd3-master/build/nv.d3.min.js"></script>
+    <link href="bower_components/nvd3-master/sr/nv.d3.min.css" rel="stylesheet">
+    <script src="bower_components/nvd3-master/sr/nv.d3.min.js"></script>
     
 	<link rel="stylesheet" href="style/main.css">
     <style type="text/css">
@@ -152,9 +154,9 @@
 				<div class="panel-heading" style="background-color:#CCD1D9">
 					<h3 class="panel-title">
 		<!--				<img src="img/traffic_light_stop.png" height="28px">	-->
-						<a href="#" ng-click="isCollapsed = !isCollapsed">
+						
 							Transactions to Investigate
-						</a>
+						
 					</h3>
 				</div>
 				<div collapse="isCollapsed">
@@ -174,9 +176,9 @@
 				<div class="panel-heading" style="background-color:#4FC1E9 ; color: white;">
 					<h3 class="panel-title">
 		<!--				<img src="img/traffic_light_stop.png" height="28px">	-->
-						<a href="#" ng-click="isCollapsed = !isCollapsed">
+						
 							Transaction View
-						</a>
+						
 						<a href="#" style="overflow: hidden;"><span class="glyphicon glyphicon-refresh pull-right" ng-click="refreshClick()" aria-hidden="true"></span></a>
 					</h3>
 				</div>
@@ -189,7 +191,7 @@
                             </div>
                           
                             <div class="col-lg-6 col-md-6 col-xs-6">
-                                <label style="font-size: 20px">Transaction Cost</label>
+                                <label style="font-size: 20px">Sum</label>
                                 <svg cost-chart data="transactionCost" style="height:60px; width:100%"></svg>
                             </div>
                       </div>
@@ -206,9 +208,10 @@
                       </div>
                       
                       <div  class="row" style = "height:110px; font-family:sans-serif; text-align: left ;font-size: 20px;">
-                          <p class="col-lg-4 col-md-4 col-xs-4" style="">Detection Time: {{transactionData.time}}</p>
-                          <p class="col-lg-4 col-md-4 col-xs-4" style="">Certainty: {{transactionData.certainty+"%"}}</p>
-                          <p class="col-lg-4 col-md-4 col-xs-4" style="">Reasoning: {{transactionData.name}}</p>
+                          <label class="col-lg-4 col-md-4 col-xs-4" style="">Detection Time:<span><img ng-src="img/time.png" style="width:60px"></img> {{transactionTime}}</label>
+                          <label class="col-lg-4 col-md-4 col-xs-4" style="">Certainty:<span><img ng-src="{{certaintyImg}}" style="width:60px"></img></span> {{transactionData.certainty+"%"}}</label>
+                          <label class="col-lg-4 col-md-4 col-xs-4" style="">Reason:<span><img ng-src="{{reasonImg}}" style="width:60px"></img></span> {{transactionData.name}}</label>
+                 
                       </div>
                             
                       <div class="row" >

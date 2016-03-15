@@ -12,6 +12,7 @@ app.factory('dataService', function ($rootScope,socket,$http) { // this service 
 	
 	data.userEvent;
 	data.inTerms = "area";
+    data.rowData={};
 	
 	socket.on('event-list', function (socketData) {
 			var events = JSON.parse(socketData.eventList);
@@ -29,6 +30,14 @@ app.factory('dataService', function ($rootScope,socket,$http) { // this service 
     socket.on("analyst", function (socketData){
         data.analysts = socketData;
         console.log(data.analysts);
+    });
+    
+    socket.on('analystActions', function (d) {
+//			console.log(d);
+        data.rowData = d;
+ //       console.log(data.rowData);
+        onAnalystAction();
+           
     });
 
 	data.parseEvent = function(event){
@@ -64,7 +73,7 @@ app.factory('dataService', function ($rootScope,socket,$http) { // this service 
 			country.financial.amount.push(parseInt(event.attributes.average_transaction_amount_eur));
 			country.financial.volume.push(parseInt(event.attributes.transaction_volume));
 			// notify listeners of change
-			data.broadcastTransactionStats();
+//			data.broadcastTransactionStats();
             // broadcast mapData again to update map countries info
             data.broadcastMapCountriesData();
 		}
@@ -142,7 +151,13 @@ app.factory('dataService', function ($rootScope,socket,$http) { // this service 
 	console.log(data.countrySelection);
   };
   
-  
+  data.emitAnalystAction = function (row){
+      var data = {id: row.id, src: row.analyst}
+      
+      socket.emit("analystAction", data);
+//      console.log(data)
+  }
+ 
   data.changeStatsClick = function(obj){
 	data.inTerms = obj;
 	data.broadcastStatsClick();
@@ -153,7 +168,13 @@ app.factory('dataService', function ($rootScope,socket,$http) { // this service 
     // emit the analyst name
     socket.emit("analyst", data.analystLoggedIn)
   }
-
+  
+  
+  function onAnalystAction () {
+	$rootScope.$broadcast('onAnalystAction');
+  }
+  
+  
   data.broadcastSelectionChanged = function(){
 	$rootScope.$broadcast('broadcastSelectionChanged');
   };

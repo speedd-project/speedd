@@ -20,9 +20,13 @@ app.controller('EventListControllerAnalyst', ['$scope','$interval','$window','da
                     "b1dedbeb44ad431f995076153c7bdcc8"
                     ]};
     $scope.transactionData;
+	$scope.transactionTime;
     $scope.transactionCountries = ["RO","DE"]
     $scope.cardCountry = ["IS"];
     $scope.transactionCost = 50;
+	$scope.reasonImg;
+	$scope.certaintyImg;
+	
     
     $scope.analyst=false;
     
@@ -86,7 +90,7 @@ app.controller('EventListControllerAnalyst', ['$scope','$interval','$window','da
 		event.reason = (dataToFormat.reason != undefined)? dataToFormat.reason : "";
         event.certainty = (dataToFormat.attributes.Certainty != undefined)? (parseFloat(dataToFormat.attributes.Certainty)*100).toFixed(2) : "";
 		event.confirmed = "false";
-        event.analyst = "img/analyst_yellow.png";
+        event.analyst = "img/analyst_idle.png";
         
         /// formatting data for transaction view window
         timestamps = [];
@@ -96,7 +100,7 @@ app.controller('EventListControllerAnalyst', ['$scope','$interval','$window','da
             timestamps.push(parseInt(e));
         })
         dataToFormat.attributes.transaction_ids.forEach(function(e){
-            transaction_ids.push(parseInt(e));
+            transaction_ids.push(e);
         })   
         
         event.data = {ts:timestamps, id:transaction_ids}
@@ -142,6 +146,14 @@ app.controller('EventListControllerAnalyst', ['$scope','$interval','$window','da
         $scope.transactionCountries = item.countries;
                 console.log(item.countries);
         $scope.transactionCost = item.cost;
+		
+		$scope.transactionTime = dateFormat(item.time, "dddd, mmmm dS, yyyy, h:MM:ss TT");
+		
+		// change reason Image
+		$scope.reasonImg = (item.name == "TransactionsInFarAwayPlaces")? "img/far_away.png":"img/sudden.png";
+		// change certainty Image
+		$scope.certaintyImg = (item.certainty > 70)? "img/system_fraud2.png":"img/system_yellow2.png";
+		
     };
     
     //////////////////////////////////////////
@@ -166,7 +178,7 @@ app.controller('EventListControllerAnalyst', ['$scope','$interval','$window','da
                     { field: 'name', displayName: "Reason"},
                     { field: 'confirmed', displayName: "Investigated"},
                     { field: 'certainty', displayName: "Certainty", cellTemplate: 'views/certaintyCellTemplate.html'},
-                    { field: 'analyst', displayName: "Analyst", width: 100, cellTemplate: 'views/analystCellTemplate2.html' },
+                    { field: 'analyst', displayName: "Analyst", width: 100, cellTemplate: 'views/analystCellTemplate2.html' }, //'views/analystCellTemplate2.html'
                     { field: 'data', displayName: "Other Info"},
                     { field: 'countries', displayName: "Used In"}
         ],
@@ -199,11 +211,17 @@ app.controller('EventListControllerAnalyst', ['$scope','$interval','$window','da
 		dataService.selection.confirmed = "true";
         
         dataService.selection.analyst = "img/analyst_fraud.png"
+        
+        // emit transaction
+        dataService.emitAnalystAction(dataService.selection);
 	}
     $scope.onAllow = function(){
 		dataService.selection.confirmed = "true";
         
-        dataService.selection.analyst = "img/analyst_green.png"
+        dataService.selection.analyst = "img/analyst_green.png";
+        
+        // emit transaction
+        dataService.emitAnalystAction(dataService.selection);
 	}
 	
     /*

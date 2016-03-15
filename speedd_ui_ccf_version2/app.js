@@ -16,6 +16,7 @@ console.log("ui port is set to: "+uiport+"\n\n");
 
 /////////////////////////
 var analysts = [];
+var analystAction;
 
 analysts.push = function (){
     
@@ -26,6 +27,15 @@ analysts.push = function (){
     
     
     return Array.prototype.push.apply(this,arguments);
+}
+
+function changeFlag(data){
+    // emits an analyst array to all connections
+    setTimeout(function(){
+        io.emit("analystActions", data);
+        console.log(data);
+    },100);
+    
 }
 ////////////////////////
 
@@ -76,6 +86,11 @@ function setSocket(){
             analysts.push(data);
       //      socket.emit('analyst',data);
 		});
+        
+        socket.on('analystAction', function (data) {
+            changeFlag(data);
+		});
+        
         
         
 		setKafka();	

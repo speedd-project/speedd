@@ -311,4 +311,7 @@
             stroke-width:2;
             
         }
-       
+        
+        
+        /* clock styles*/ 
+        #Date { font-family:'BebasNeueRegular', Arial, Helvetica, sans-serif; text-align:center; text-shadow:0 0 5px #70DAFF; }
