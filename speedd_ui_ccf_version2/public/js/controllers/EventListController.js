@@ -23,6 +23,12 @@ app.controller('EventListController', ['$scope','$interval','$window','dataServi
 		
 //		console.log($scope.formattedEventList);
 	});
+    
+    $scope.$on("onAnalystAction", function(){
+		var rowData = dataService.rowData;
+//		console.log(rowData.src)
+        $scope.formattedEventList[rowData.id].analyst = rowData.src;
+	});
 	
 	$scope.$on("broadcastFraudAtATM", function(){
 		var event = clone(dataService.rawEventList[dataService.rawEventList.length-1]);
@@ -72,10 +78,12 @@ app.controller('EventListController', ['$scope','$interval','$window','dataServi
         event.certainty = (dataToFormat.attributes.Certainty != undefined)? (parseFloat(dataToFormat.attributes.Certainty)*100).toFixed(2) : "";
 		event.confirmed = "false";
         //
+        /*
         $scope.an = dataService.analysts;
         event.analyst = dataService.analysts.length;
         event.assignedTo = dataService.analysts[dataService.randomInt(0,dataService.analysts.length)];
         console.log(dataService.analysts);
+        */event.analyst = "img/analyst_idle.png";
         
         //
         transactionCountries = dataToFormat.attributes.acquirer_country;
@@ -134,7 +142,7 @@ app.controller('EventListController', ['$scope','$interval','$window','dataServi
                     { field: 'countries', displayName: "Used In"},
                     { field: 'confirmed', displayName: "Investigated"},
                     { field: 'certainty', displayName: "Certainty", cellTemplate: 'views/certaintyCellTemplate.html'},
-                    { field: 'analyst', displayName: "Analysts", width: 200, cellTemplate: 'views/analystCellTemplate.html' }
+                    { field: 'analyst', displayName: "Analysts", width: 200, cellTemplate: 'views/analystCellTemplate2.html' }
         ],
 		// adds ng-click event ng-click="onClickRow(row)"
 		rowTemplate: '<div ng-click="onClickRow(row)" style="height: 100%" ng-class="{ selected: row.selected, green: row.getProperty(\'confirmed\') == 0}"><div ng-style="{ \'cursor\': row.cursor }" ng-repeat="col in renderedColumns" ng-class="col.colIndex()" class="ngCell {{col.cellClass}}"><div class="ngVerticalBar" ng-style="{height: rowHeight}" ng-class="{ ngVerticalBarVisible: !$last }">&nbsp;</div><div ng-cell></div></div></div>'

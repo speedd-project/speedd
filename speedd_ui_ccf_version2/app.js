@@ -16,6 +16,7 @@ console.log("ui port is set to: "+uiport+"\n\n");
 
 /////////////////////////
 var analysts = [];
+var analystAction;
 
 analysts.push = function (){
     
@@ -26,6 +27,15 @@ analysts.push = function (){
     
     
     return Array.prototype.push.apply(this,arguments);
+}
+
+function changeFlag(data){
+    // emits an analyst array to all connections
+    setTimeout(function(){
+        io.emit("analystActions", data);
+        console.log(data);
+    },100);
+    
 }
 ////////////////////////
 
@@ -77,6 +87,11 @@ function setSocket(){
       //      socket.emit('analyst',data);
 		});
         
+        socket.on('analystAction', function (data) {
+            changeFlag(data);
+		});
+        
+        
         
 		setKafka();	
 	});
@@ -92,8 +107,7 @@ function setKafka(){
 	offset = new kafka.Offset(client);
 	
 	offset.fetch([
-        { topic: 'speedd-traffic-actions', partition: 0, time: -1, maxNum: 1 },
-		{ topic: 'speedd-traffic-out-events', partition: 0, time: -1, maxNum: 1 }
+        { topic: 'speedd-fraud-out-events', partition: 0, time: -1, maxNum: 1 }
     ], function (err, data) {
 		if(err != null){
 			console.error("Error: " + JSON.stringify(err));
@@ -102,17 +116,15 @@ function setKafka(){
 			
 		console.log("Offset data: " + JSON.stringify(data));
 
-		var actionsOffset = data['speedd-traffic-actions'][0][0];
-		var outEventsOffset = data['speedd-traffic-out-events'][0][0];
+		var outEventsOffset = data['speedd-fraud-out-events'][0][0];
 		
-		console.log("Actions offset: " +  actionsOffset);
 		console.log("Events offset: " +  outEventsOffset);		
 		
 		consumer = new Consumer(
 			client, 
 			// payloads
-				[{ topic: 'speedd-traffic-actions', offset: data['speedd-traffic-actions'][0][0]},
-				 { topic: 'speedd-traffic-out-events', offset: data['speedd-traffic-out-events'][0][0]}
+				[
+				 { topic: 'speedd-fraud-out-events', offset: data['speedd-fraud-out-events'][0][0]}
 				 ],
 			// options
 			{
@@ -137,9 +149,6 @@ function setKafka(){
 
 	});
 
-	//consumer.setOffset('speedd-traffic-out-events', 0, 0);
-	//consumer.setOffset('speedd-traffic-actions', 0, 0);
-	
 }
 
 function setConsumerEvents(){
