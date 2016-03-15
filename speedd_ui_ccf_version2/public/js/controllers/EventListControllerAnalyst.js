@@ -19,6 +19,7 @@ app.controller('EventListControllerAnalyst', ['$scope','$interval','$window','da
                     "8727070543664142bc7d2ba980dc1f19",
                     "b1dedbeb44ad431f995076153c7bdcc8"
                     ]};
+                    
     $scope.transactionData;
 	$scope.transactionTime;
     $scope.transactionCountries = ["RO","DE"]
@@ -26,6 +27,9 @@ app.controller('EventListControllerAnalyst', ['$scope','$interval','$window','da
     $scope.transactionCost = 50;
 	$scope.reasonImg;
 	$scope.certaintyImg;
+    $scope.amountSum = 50;
+    
+    $scope.tSeq = $scope.transaction.transactions;
 	
     
     $scope.analyst=false;
@@ -103,8 +107,10 @@ app.controller('EventListControllerAnalyst', ['$scope','$interval','$window','da
             transaction_ids.push(e);
         })   
         
+ //       var transactions = dataService.findTransactionById(transaction_ids);
         event.data = {ts:timestamps, id:transaction_ids}
         $scope.transaction = event.data;
+           
         //
         transactionCountries = dataToFormat.attributes.acquirer_country;
         tc = [];
@@ -144,7 +150,7 @@ app.controller('EventListControllerAnalyst', ['$scope','$interval','$window','da
         $scope.transaction = item.data;
 
         $scope.transactionCountries = item.countries;
-                console.log(item.countries);
+     //           console.log(item.countries);
         $scope.transactionCost = item.cost;
 		
 		$scope.transactionTime = dateFormat(item.time, "dddd, mmmm dS, yyyy, h:MM:ss TT");
@@ -154,6 +160,15 @@ app.controller('EventListControllerAnalyst', ['$scope','$interval','$window','da
 		// change certainty Image
 		$scope.certaintyImg = (item.certainty > 70)? "img/system_fraud2.png":"img/system_yellow2.png";
 		
+        
+        //determine transactions associated with event
+        var transactions = dataService.findTransactionById($scope.transaction.id);
+        var s= 0;
+        transactions.forEach(function(e){
+            s += parseFloat(e.attributes.amount_eur);
+        })
+        $scope.amountSum = s;
+        console.log($scope.amountSum);
     };
     
     //////////////////////////////////////////
@@ -224,6 +239,12 @@ app.controller('EventListControllerAnalyst', ['$scope','$interval','$window','da
         dataService.emitAnalystAction(dataService.selection);
 	}
 	
+    $scope.onSequenceTransactionClick = function(id){
+        dataService.transactionSelected = id;
+		console.log(id)
+        
+        $scope.open('lg','views/transactionModal.html','TransactionModalController')
+	}
     /*
 	// MODAL CONTROL POP
 	$scope.open = function (size,template,controller) {

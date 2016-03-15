@@ -304,6 +304,7 @@
             stroke-width:6;
             fill: black;
             r: 10;
+            cursor:pointer;
         }
         
         .transactionLine{

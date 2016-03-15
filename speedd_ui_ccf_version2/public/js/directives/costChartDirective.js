@@ -30,6 +30,7 @@ app.directive('costChart', function ($parse) {
                         .datum(exampleData())
                         .transition().duration(1000)
                         .call(chart);
+                   // console.log(chartCont.tooltip.contentGenerator);
 
                     return chart;
                 });
@@ -37,13 +38,18 @@ app.directive('costChart', function ($parse) {
 
                 function exampleData() {
                     randomInt = function (min, max) // function that generates a random int between min and max
-            {
-                return Math.floor(Math.random() * (max - min + 1) + min);
-            } 
+                    {
+                        return Math.floor(Math.random() * (max - min + 1) + min);
+                    } 
+                    var max = randomInt(200,500);
+                    var mean = randomInt(0,max);
+                    var min = randomInt(0,mean);
+                    
+                    
                     return {
                         "title":"Cost",		//Label the bullet chart
                         "subtitle":"EUR €",		//sub-label for bullet chart
-                        "ranges":[randomInt(0,30),randomInt(0,100),randomInt(200,500)],	 //Minimum, mean and maximum values.
+                        "ranges":[min,mean,(data > max)? data+50:max ],	 //Minimum, mean and maximum values.
                         "measures":[data],		 //Value representing current measurement (the thick blue line in the example)
                         "markers":[150]			 //Place a marker on the chart (the white triangle marker)
                     };
