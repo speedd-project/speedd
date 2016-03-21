@@ -28,6 +28,8 @@ app.controller('EventListControllerAnalyst', ['$scope','$interval','$window','da
 	$scope.reasonImg;
 	$scope.certaintyImg;
     $scope.amountSum = 50;
+	
+	$scope.genName;
     
     $scope.tSeq = $scope.transaction.transactions;
 	
@@ -169,6 +171,9 @@ app.controller('EventListControllerAnalyst', ['$scope','$interval','$window','da
         })
         $scope.amountSum = s;
         console.log($scope.amountSum);
+		
+		// style name of event
+		
     };
     
     //////////////////////////////////////////
