@@ -11,12 +11,8 @@ object CNRSCollectedDataLoader extends CLIDataLoaderApp {
   // -------------------------------------------------------------------------------------------------------------------
   // --- Setup database connection pool
   // -------------------------------------------------------------------------------------------------------------------
-
-  import slick.driver.PostgresDriver.api._
-  val db = Database.forConfig("speeddDB")
-  val k = sqlu"""CREATE SCHEMA IF NOT EXISTS cnrs AUTHORIZATION postgres;"""
-  db.run(DBIO.seq(k))
-  //db.close()
+  import org.speedd.ml.util.data.DatabaseManager._
+  createCNRSSchema()
 
   // -------------------------------------------------------------------------------------------------------------------
   // --- Configuration parameters
@@ -54,7 +50,7 @@ object CNRSCollectedDataLoader extends CLIDataLoaderApp {
 
   info(s"Parsing ${inputFiles.size} input files")
 
-  // --- 3. Create the appropriate instance of data loader
+  // --- 2. Create the appropriate instance of data loader
   val loader: DataLoader = taskOpt.getOrElse(fatal("Please specify a task")) match {
     case "input" => cnrs.collected.InputDataLoader
     case "annotation" => cnrs.collected.AnnotationDataLoader
@@ -63,8 +59,10 @@ object CNRSCollectedDataLoader extends CLIDataLoaderApp {
       fatal(s"Unknown task '$name', please set one of the following tasks: (1) input, (2) annotation or (3) location.")
   }
 
-  // --- 4. Execute data loading task
+  // --- 3. Execute data loading task
   loader.loadAll(inputFiles)
 
+  // --- 4. Close database connection
+  closeConnection()
 }
 

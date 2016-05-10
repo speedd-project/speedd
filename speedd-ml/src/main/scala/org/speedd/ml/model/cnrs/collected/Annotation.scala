@@ -1,6 +1,7 @@
 package org.speedd.ml.model.cnrs.collected
 
 import slick.driver.PostgresDriver.api._
+import slick.jdbc.meta.MTable
 
 /**
   * Entity `Annotation`
@@ -25,19 +26,22 @@ class AnnotationTable(tag: Tag) extends Table[Annotation] (tag, Some("cnrs"), "a
 
   def startTs = column[Int]("start_ts")
   def endTs = column[Int]("end_ts")
-  def eventNum = column[Int]("event_num")
-  def decription = column[String]("description")
+  def eventId = column[Int]("event_id")
+  def description = column[String]("description")
   def sensor = column[Int]("sensor")
   def startLoc = column[Int]("start_loc")
   def endLoc = column[Int]("end_loc")
 
-  def pk = primaryKey("pk_annotation", (startTs, endTs, eventNum))
+  def pk = primaryKey("pk_annotation", (startTs, endTs, eventId))
 
-  def * = (startTs, endTs, eventNum, decription, sensor, startLoc, endLoc) <> (Annotation.tupled, Annotation.unapply)
+  def * = (startTs, endTs, eventId, description, sensor, startLoc, endLoc) <> (Annotation.tupled, Annotation.unapply)
 
-  def indexAnnotation = index("idx_annotation", decription)
+  def indexAnnotation = index("idx_annotation", description)
 }
 
-object AnnotationTable {
-  lazy val table = TableQuery[AnnotationTable]
+object annotation extends TableQuery[AnnotationTable](new AnnotationTable(_)) {
+
+  def createSchema() =
+    this.schema.create.asTry
+
 }

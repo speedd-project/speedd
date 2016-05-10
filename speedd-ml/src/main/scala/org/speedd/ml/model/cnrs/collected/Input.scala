@@ -34,3 +34,10 @@ class InputTable (tag: Tag) extends Table[Input] (tag, Some("cnrs"), "input") {
 
   def indexInput = index("idx_input", timeStamp)
 }
+
+object input extends TableQuery[InputTable](new InputTable(_)) {
+
+  def createSchema() =
+    this.schema.create.asTry
+
+}

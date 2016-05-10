@@ -25,7 +25,7 @@ object SPEEDDMLBuild {
       "-XX:+DoEscapeAnalysis",
       "-XX:+UseFastAccessorMethods",
       "-XX:+OptimizeStringConcat",
-      "-Dlogback.configurationFile=src/main/resources/logback.xml"),
+      "-Dlogback.configurationFile=src/main/resources/logback-speedd.xml"),
 
     // fork a JVM for 'run' and 'test:run'
     fork := true,

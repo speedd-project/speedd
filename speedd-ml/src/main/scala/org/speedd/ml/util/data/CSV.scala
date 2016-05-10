@@ -3,6 +3,7 @@ package org.speedd.ml.util.data
 import java.io.File
 import com.univocity.parsers.common.processor.RowListProcessor
 import com.univocity.parsers.csv.{CsvParser, CsvParserSettings}
+import scala.util.{Failure, Success, Try}
 
 /**
   * A collection of various utility functions related to CSV parsing
@@ -16,7 +17,6 @@ object CSV {
     * @param inputFile the input csv file
     * @param translator the translator functor
     * @tparam T the type of object
-    *
     * @return a set of objects T
     */
   def parse[T](inputFile: File, translator: Array[String] => Option[T]): Set[T] = {
@@ -47,7 +47,6 @@ object CSV {
     * Create a CSV parse iterator given a CSV file.
     *
     * @param inputFile the input csv file
-    *
     * @return a csv parser
     */
   def parseIterator(inputFile: File): CsvParser = {
@@ -67,14 +66,30 @@ object CSV {
     parser
   }
 
-  def parseNext[T](parser: CsvParser, translator: Array[String] => Option[T]): Option[T] = {
+  def parseNext[T](parser: CsvParser, translator: Array[String] => Option[T]): Try[Option[T]] = {
     val output = parser.parseNext()
-    if (output != null)
-      translator(output)
+    if (output != null) Success(translator(output))
     else {
       parser.stopParsing()
-      null
+      Failure(new NullPointerException)
     }
+  }
+
+  def parseNextBatch[T](parser: CsvParser, translator: Array[String] => Option[T], batchSize: Int = 1000): Try[List[T]] = {
+
+    var records = List[T]()
+
+    if (!parser.getContext.isStopped) for (i <- 1 to batchSize) {
+      parseNext[T](parser, translator) match {
+        case Success(Some(result)) => records :+= result
+        case Failure(ex) if records.nonEmpty => Success(records)
+        case Failure(ex) => Failure(new NullPointerException)
+      }
+    }
+    else
+      return Failure(new NullPointerException)
+
+    Success(records)
   }
 
 }

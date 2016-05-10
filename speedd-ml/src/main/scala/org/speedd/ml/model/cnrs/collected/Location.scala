@@ -21,7 +21,6 @@ case class Location(locId: Long,
                     num: Int,
                     distance: Int)
 
-
 class LocationTable(tag: Tag) extends Table[Location] (tag, Some("cnrs"), "location") {
 
   def locId = column[Long]("lod_id")
@@ -35,4 +34,11 @@ class LocationTable(tag: Tag) extends Table[Location] (tag, Some("cnrs"), "locat
   def pk = primaryKey("pk_location", (locId, lane))
 
   def * = (locId, lane, prevLane, coordinateX, coordinateY, num, distance) <> (Location.tupled, Location.unapply)
+}
+
+object location extends TableQuery[LocationTable](new LocationTable(_)) {
+
+  def createSchema() =
+    this.schema.create.asTry
+
 }

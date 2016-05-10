@@ -2,12 +2,12 @@ package org.speedd.ml.loaders.cnrs.collected
 
 import java.io.File
 import java.text.SimpleDateFormat
-
-import auxlib.log.Logging
 import org.speedd.ml.loaders.DataLoader
-import org.speedd.ml.model.cnrs.collected.{Annotation, AnnotationTable}
+import org.speedd.ml.model.cnrs.collected.{Annotation, annotation}
 import org.speedd.ml.util.data.CSV
+import org.speedd.ml.util.data.DatabaseManager._
 import slick.driver.PostgresDriver.api._
+import scala.concurrent.ExecutionContext.Implicits.global
 
 /**
   * Loads and converts annotation data from CSV files. The data is collected and provided by CNRS.
@@ -81,26 +81,16 @@ object AnnotationDataLoader extends DataLoader {
   override def loadAll(inputFiles: Seq[File]) = {
     info("Loading annotation data")
 
-    //val db = Database.forConfig("speeddDB")
-
-    /*val results = inputFiles.filter(f => f.isFile && f.canRead).
+    val results = inputFiles.filter(f => f.isFile && f.canRead).
       flatMap { file =>
         info(s"Parsing file '${file.getName}'")
         CSV.parse[Annotation](file, toAnnotation)
-      }*/
+      }
 
-    AnnotationTable.table.schema.create
-
-    //val annotation = TableQuery[AnnotationTable]
-    //db.run(DBIO.seq(annotation.schema.create))
-
-    //val setup = DBIO.seq (
-    //  annotation ++= results
-   // )
-
-    //db.run(setup)
-    //db.close()
-
+    exec {
+      annotation.createSchema() andThen
+        (annotation ++= results)
+    }.onSuccess { case s => info("Done!") }
   }
 
   private def toAnnotation(source: Array[String]): Option[Annotation] = {

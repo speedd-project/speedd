@@ -36,9 +36,8 @@ libraryDependencies ++= Seq(
 // Database
 libraryDependencies ++= Seq(
   "com.typesafe.slick" %% "slick" % "3.1.1",
-  "org.slf4j" % "slf4j-nop" % "1.6.4",
-  "com.typesafe.slick" %% "slick-codegen" % "3.1.1",
-  "org.postgresql" % "postgresql" % "9.4.1208"
+  "org.postgresql" % "postgresql" % "9.4.1208",
+  "com.typesafe.slick" % "slick-hikaricp_2.11" % "3.1.1"
 )
 
 // AuxLib library requires local publishing
@@ -62,5 +61,4 @@ dependencyOverrides += "org.scala-lang" % "scala-library" % scalaVersion.value
 dependencyOverrides += "org.scala-lang" % "scala-reflect" % scalaVersion.value
 dependencyOverrides += "org.scala-lang.modules" %% "scala-parser-combinators" % "1.0.4"
 dependencyOverrides += "org.scala-lang.modules" %% "scala-xml" % "1.0.4"
-
 
