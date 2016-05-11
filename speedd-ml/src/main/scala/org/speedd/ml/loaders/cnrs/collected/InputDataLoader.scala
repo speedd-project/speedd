@@ -1,36 +1,44 @@
 package org.speedd.ml.loaders.cnrs.collected
 
 import java.io.File
-import java.sql.Timestamp
-
 import org.speedd.ml.loaders.DataLoader
-import org.speedd.ml.model.cnrs.collected.{Input, InputTable, input}
+import org.speedd.ml.model.cnrs.collected.{Input, input}
 import org.speedd.ml.util.data.CSV
 import slick.driver.PostgresDriver.api._
 import org.speedd.ml.util.data.DatabaseManager._
-import slick.driver.PostgresDriver
-
 import scala.concurrent.{Await, Future}
 import scala.concurrent.duration.Duration
 import scala.util.{Failure, Success}
+import org.speedd.ml.util.data._
 
 object InputDataLoader extends DataLoader {
 
+  private val DATE_TIME_FORMAT = "yyyy-MM-dd HH:mm:ss"
+  private val DATE_TIME_FORMAT_SHORT = "yy-MM-dd HH:mm"
+
+  /**
+    * Loads all data from a sequence of CSV files into the database.
+    *
+    * @param inputFiles a sequence of files
+    */
   override def loadAll(inputFiles: Seq[File]) = {
     info("Loading sensor input data")
 
-    exec(input.createSchema())
+    input.createSchema()
 
     var futureList = List[Future[Option[Int]]]()
 
     inputFiles.filter(f => f.isFile && f.canRead).
       foreach { file =>
         info(s"Parsing file '${file.getName}'")
-        val parser = CSV.parseIterator(file)
+        val parser = CSV.parseIterator(file) match {
+          case Success(csvParser) => csvParser
+          case Failure(ex) => fatal(ex.getMessage)
+        }
         var stop = false
         while(!stop) {
           CSV.parseNextBatch[Input](parser, toInput) match {
-            case Success(result) => futureList +:= exec(input ++= result)
+            case Success(result) => futureList +:= asyncExec(input ++= result)
             case Failure(ex) => stop = true
           }
         }
@@ -40,6 +48,13 @@ object InputDataLoader extends DataLoader {
 
   }
 
+  /**
+    * Translator function used to map an array of strings produced by the CSV
+    * parser into an `Input` object.
+    *
+    * @param source an array of strings
+    * @return an Input object
+    */
   private def toInput(source: Array[String]): Option[Input] ={
 
     implicit def doubleToOpt(number: Double): Option[Double] = {
@@ -47,30 +62,36 @@ object InputDataLoader extends DataLoader {
       else Some(number)
     }
 
+    implicit def intToOpt(number: Int): Option[Int] = {
+      if(number < 0) None
+      else Some(number)
+    }
+
     val lane = source(3).trim
 
-    val START = 1396299600L
-    val step = ((Timestamp.valueOf(source(0) + " " + source(1)).getTime / 1000).toInt + 7200 - START) / 15
+    // Add 7200 seconds to shift +2 hours ahead, during to problem with annotation
+    val timeStamp = ts2UnixTS(source(0) + " " + source(1), DATE_TIME_FORMAT,
+                    DATE_TIME_FORMAT_SHORT, 7200, 1396299600L, round = true)
 
+    /*
+     * Note that occupancy, vehicles and avgSpeed are implicitly converted to Option instances, when their values are
+     * below zero are considered as `None`, otherwise instantiated as Some(value).
+     */
     if(lane.isEmpty) None
-    else {
-      // Please note that the arguments occupancy, vehicles and avgSpeed are implicitly converted to Option[Double]
-      // instances. When their values are equal or below zero are considered as `None`, otherwise are instantiated as
-      // Some(value).
-      Some(Input(
+    else Some(
+      Input(
         // loc_id:
         java.lang.Long.valueOf(source(2), 16),
         // lane:
         lane.split(Array('-', ' ', '_')).map(_.trim.capitalize).reduce(_ + _),
-        // timestamp (add 7200 to go +2 hours ahead, during to problem with annotation):
-        (START + step).toInt,
+        // timestamp:
+        timeStamp,
         // occupancy:
-        Some(source(4).toDouble),
+        source(4).toDouble,
         // vehicles:
-        Some(source(5).toInt),
+        source(5).toInt,
         // avg_speed:
-        Some(source(7).toDouble)
+        source(7).toDouble
       ))
-    }
   }
 }

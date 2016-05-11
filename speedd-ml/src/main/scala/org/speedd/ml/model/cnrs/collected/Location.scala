@@ -1,6 +1,8 @@
 package org.speedd.ml.model.cnrs.collected
 
+import org.speedd.ml.util.data.DatabaseManager._
 import slick.driver.PostgresDriver.api._
+import slick.jdbc.meta.MTable
 
 /**
   * Entity `Location`
@@ -39,6 +41,7 @@ class LocationTable(tag: Tag) extends Table[Location] (tag, Some("cnrs"), "locat
 object location extends TableQuery[LocationTable](new LocationTable(_)) {
 
   def createSchema() =
-    this.schema.create.asTry
-
+    if (blockingExec {
+      MTable.getTables("location")
+    }.isEmpty) blockingExec(this.schema.create)
 }

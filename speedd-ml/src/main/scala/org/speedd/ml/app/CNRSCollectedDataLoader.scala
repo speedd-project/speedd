@@ -2,6 +2,7 @@ package org.speedd.ml.app
 
 import org.speedd.ml.loaders.{DataLoader, cnrs}
 import scala.util.Success
+import lomrf.util.time._
 
 /**
   * Command line interface for loading the CNRS real data into the database.
@@ -9,15 +10,8 @@ import scala.util.Success
 object CNRSCollectedDataLoader extends CLIDataLoaderApp {
 
   // -------------------------------------------------------------------------------------------------------------------
-  // --- Setup database connection pool
-  // -------------------------------------------------------------------------------------------------------------------
-  import org.speedd.ml.util.data.DatabaseManager._
-  createCNRSSchema()
-
-  // -------------------------------------------------------------------------------------------------------------------
   // --- Configuration parameters
   // -------------------------------------------------------------------------------------------------------------------
-
   private var taskOpt: Option[String] = None
 
   // -------------------------------------------------------------------------------------------------------------------
@@ -37,6 +31,12 @@ object CNRSCollectedDataLoader extends CLIDataLoaderApp {
   }
 
   if(!parse(args)) fatal("Failed to parse the given arguments.")
+
+  // -------------------------------------------------------------------------------------------------------------------
+  // --- Setup database connection pool
+  // -------------------------------------------------------------------------------------------------------------------
+  import org.speedd.ml.util.data.DatabaseManager._
+  createSchema("cnrs")
 
   // --- 1. Check/prepare input files
   info(s"Checking/preparing input files in '$rootDir'")
@@ -60,7 +60,9 @@ object CNRSCollectedDataLoader extends CLIDataLoaderApp {
   }
 
   // --- 3. Execute data loading task
+  val t = System.currentTimeMillis()
   loader.loadAll(inputFiles)
+  info(s"Data loading completed in ${msecTimeToTextUntilNow(t)}")
 
   // --- 4. Close database connection
   closeConnection()

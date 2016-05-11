@@ -43,6 +43,9 @@ libraryDependencies ++= Seq(
 // AuxLib library requires local publishing
 libraryDependencies += "com.github.anskarl" %% "auxlib" % "0.1"
 
+// Logical Markov Random Fields
+libraryDependencies += "com.github.anskarl" %% "lomrf" % "0.4.2"
+
 // Unit testing
 libraryDependencies += "org.scalatest" %% "scalatest" % "2.2.4" % "test"
 

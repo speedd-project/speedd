@@ -1,5 +1,6 @@
 package org.speedd.ml.model.cnrs.collected
 
+import org.speedd.ml.util.data.DatabaseManager._
 import slick.driver.PostgresDriver.api._
 import slick.jdbc.meta.MTable
 
@@ -42,6 +43,7 @@ class AnnotationTable(tag: Tag) extends Table[Annotation] (tag, Some("cnrs"), "a
 object annotation extends TableQuery[AnnotationTable](new AnnotationTable(_)) {
 
   def createSchema() =
-    this.schema.create.asTry
-
+    if (blockingExec {
+      MTable.getTables("annotation")
+    }.isEmpty) blockingExec(this.schema.create)
 }

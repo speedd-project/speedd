@@ -1,6 +1,8 @@
 package org.speedd.ml.model.cnrs.collected
 
 import slick.driver.PostgresDriver.api._
+import org.speedd.ml.util.data.DatabaseManager._
+import slick.jdbc.meta.MTable
 
 /**
   * Entity `Input`
@@ -38,6 +40,7 @@ class InputTable (tag: Tag) extends Table[Input] (tag, Some("cnrs"), "input") {
 object input extends TableQuery[InputTable](new InputTable(_)) {
 
   def createSchema() =
-    this.schema.create.asTry
-
+    if (blockingExec {
+      MTable.getTables("input")
+    }.isEmpty) blockingExec(this.schema.create)
 }
