@@ -17,7 +17,7 @@ import auxlib.opt.OptionParser
   */
 trait CLIDataLoaderApp extends App with OptionParser with Logging {
 
-  println(s"${ModuleVersion()}\nData Loading Application")
+  info(s"${ModuleVersion()}\nData Loading Application")
 
   // -------------------------------------------------------------------------------------------------------------------
   // --- Configuration parameters
