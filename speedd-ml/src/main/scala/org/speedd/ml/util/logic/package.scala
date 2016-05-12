@@ -57,11 +57,13 @@ package object logic {
   }
 
   /**
+    * Generates function mappings given the extracted domains and appends
+    * the function return constants to the domain.
     *
-    * @param functionSchema
-    * @param domainsMap
+    * @param functionSchema a function schema
+    * @param domainsMap a set of domain mappings
     *
-    * @return
+    * @return an array of function mappings for each function signature and the refined domain mappings
     */
   def generateFunctionMappings(functionSchema: FunctionSchema, domainsMap: Map[String, Iterable[String]]):
                                Try[(Array[(AtomSignature, Iterable[FunctionMapping])], Map[String, Iterable[String]])] = {

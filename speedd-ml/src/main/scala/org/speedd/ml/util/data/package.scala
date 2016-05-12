@@ -35,7 +35,7 @@ package object data {
     (x: String) =>
       val pos = x.last.toString.toInt
       val symbol = x.head.toString
-      s"${symbols2domain(symbol)} >= ${sortedThresholds(pos)} AND ${symbols2domain(symbol)} < ${sortedThresholds(pos + 1)}"
+      s"${symbols2domain(symbol)} >= ${sortedThresholds(pos)} and ${symbols2domain(symbol)} < ${sortedThresholds(pos + 1)}"
   }
 
   /**
