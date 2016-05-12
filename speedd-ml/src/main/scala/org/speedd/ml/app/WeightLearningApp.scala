@@ -19,7 +19,7 @@ object WeightLearningApp extends App with OptionParser with Logging {
   // -------------------------------------------------------------------------------------------------------------------
   private var inputKBOpt: Option[File] = None
   private var outputKBOpt: Option[File] = None
-  private var intervalOpt: Option[(Long, Long)] = None
+  private var intervalOpt: Option[(Int, Int)] = None
   private var batchSizeOpt: Option[Long] = None
   private var taskOpt: Option[String] = None
 
@@ -52,7 +52,7 @@ object WeightLearningApp extends App with OptionParser with Logging {
       val t = v.split(",")
       if(t.length != 2) fatal("Please specify a valid temporal interval, e.g. 10,100")
       else intervalOpt = Option {
-        Try((t(0).toLong, t(1).toLong)) getOrElse fatal("Please specify a valid temporal interval. For example: 10,100")
+        Try((t(0).toInt, t(1).toInt)) getOrElse fatal("Please specify a valid temporal interval. For example: 10,100")
       }
   })
 

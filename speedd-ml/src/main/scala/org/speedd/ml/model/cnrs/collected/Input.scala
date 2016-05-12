@@ -23,9 +23,9 @@ case class Input(locId: Long,
 
 class InputTable (tag: Tag) extends Table[Input] (tag, Some("cnrs"), "input") {
 
-  def locId = column[Long]("lod_id")
+  def locId = column[Long]("loc_id")
   def lane = column[String]("lane")
-  def timeStamp = column[Int]("time_stamp")
+  def timeStamp = column[Int]("timestamp")
   def occupancy = column[Option[Double]]("occupancy")
   def vehicles = column[Option[Int]]("vehicles")
   def avgSpeed = column[Option[Double]]("avg_speed")

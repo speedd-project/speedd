@@ -58,7 +58,7 @@ object InputDataLoader extends DataLoader {
   private def toInput(source: Array[String]): Option[Input] ={
 
     implicit def doubleToOpt(number: Double): Option[Double] = {
-      if(number <= 0.0) None
+      if(number < 0.0) None
       else Some(number)
     }
 

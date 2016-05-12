@@ -5,6 +5,7 @@ import auxlib.log.Logging
 import lomrf.logic.AtomSignature
 import lomrf.mln.model._
 import org.speedd.ml.learners.Learner
+import org.speedd.ml.loaders.cnrs.collected.TrainingBatchLoader
 import org.speedd.ml.util.logic.RuleTransformation
 import scala.util.{Failure, Success}
 import org.speedd.ml.util.logic._
@@ -19,13 +20,20 @@ final class CNRSWeightLearner private(kb: KB,
                                       targetSignatures: Set[AtomSignature],
                                       nonEvidenceAtoms: Set[AtomSignature]) extends Learner {
 
-  override def trainFor(startTs: Long, endTs: Long, batchSize: Int): Unit = {
+  private lazy val batchLoader = new TrainingBatchLoader(kb, kbConstants, predicateSchema, nonEvidenceAtoms, ruleTransformations)
+
+  override def trainFor(startTs: Int, endTs: Int, batchSize: Int): Unit = {
 
     val range = startTs to endTs by batchSize
     val intervals = if (!range.contains(endTs)) range :+ endTs else range
 
     val microIntervals = intervals.sliding(2).map(i => (i.head, i.last)).toList
     info(s"Number of micro-intervals: ${microIntervals.size}")
+
+    for ( ((currStartTime, currEndTime), idx) <- microIntervals.zipWithIndex) {
+      info(s"Loading micro-batch training data no. $idx, for the temporal interval [$currStartTime, $currEndTime]")
+      batchLoader.forInterval(currStartTime, currEndTime)
+    }
   }
 
 }

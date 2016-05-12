@@ -1,8 +1,42 @@
 package org.speedd.ml.util
 
 import java.text.SimpleDateFormat
+import java.util.Arrays._
 
 package object data {
+
+  /**
+    * Each bin has limits lb <= x < ub
+    *
+    * @param thresholds input array of user-defined threshold values
+    * @param prefix a string to use as a prefix symbol
+    *
+    * @return the function that discretizes
+    */
+  def mkSymbolic(thresholds: Array[Double], prefix: String): Double => String = {
+    val sortedThresholds = thresholds.sorted
+
+    (x: Double) =>
+      val pos = binarySearch(sortedThresholds, x)
+      val bin = if (pos < 0) -pos - 2 else pos
+      prefix + bin
+  }
+
+  /**
+    * Each bin has limits lb <= value.index < ub
+    *
+    * @param thresholds input array of user-defined threshold values
+    *
+    * @return the function that finds intervals from constants
+    */
+  def mkInterval(thresholds: Array[Double], symbols2domain: Map[String, String]): String => String = {
+    val sortedThresholds = thresholds.sorted
+
+    (x: String) =>
+      val pos = x.last.toString.toInt
+      val symbol = x.head.toString
+      s"${symbols2domain(symbol)} >= ${sortedThresholds(pos)} AND ${symbols2domain(symbol)} < ${sortedThresholds(pos + 1)}"
+  }
 
   /**
     * Translates a date-time value into a unix time-stamp (in seconds) according to a

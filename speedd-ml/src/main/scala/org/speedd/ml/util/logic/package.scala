@@ -1,10 +1,11 @@
 package org.speedd.ml.util
 
 import java.io.{BufferedWriter, FileWriter, PrintWriter}
-import lomrf.logic.{AtomSignature, AtomicFormula, DefiniteClauseConstruct, Formula}
+import lomrf.logic.{Constant, _}
 import lomrf.mln.model._
+import lomrf.util.Cartesian.CartesianIterator
 import scala.collection.mutable
-import scala.util.Try
+import scala.util.{Failure, Success, Try}
 
 package object logic {
 
@@ -53,6 +54,46 @@ package object logic {
           resultingMatches
       }
     }
+  }
+
+  /**
+    *
+    * @param functionSchema
+    * @param domainsMap
+    *
+    * @return
+    */
+  def generateFunctionMappings(functionSchema: FunctionSchema, domainsMap: Map[String, Iterable[String]]):
+                               Try[(Array[(AtomSignature, Iterable[FunctionMapping])], Map[String, Iterable[String]])] = {
+
+    // ---
+    // --- Compute function mappings
+    // ---
+    val functionMappings = new Array[(AtomSignature, Iterable[FunctionMapping])](functionSchema.size)
+
+    var generatedDomains = Map.empty[String, Iterable[String]]
+
+    for(((signature, (retDomain, argDomains)), index) <- functionSchema.zipWithIndex) {
+      val symbol = signature.symbol
+
+      val argDomainValues = argDomains.map { name =>
+        domainsMap.getOrElse(name, return Failure(new NoSuchElementException(s"Unknown domain name '$name'")))
+      }
+
+      val iterator = CartesianIterator(argDomainValues)
+
+      val products = iterator.map { _.map(Constant) }.zipWithIndex.map {
+        case (constants, uid) =>
+          val retConstant = s"r_${index}_$uid"
+          retConstant -> FunctionMapping(retConstant, symbol, constants.toVector)
+      }.toMap
+
+      generatedDomains += retDomain -> products.keys
+
+      functionMappings(index) = signature -> products.values
+    }
+
+    Success((functionMappings, generatedDomains))
   }
 
   /**
