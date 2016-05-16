@@ -73,8 +73,6 @@ final class CNRSWeightLearner private(kb: KB,
 
       val evidence = new Evidence(batch.trainingEvidence.constants, atomStateDB, batch.trainingEvidence.functionMappers)
 
-      println(annotationDB)
-
       val mln = new MLN(batch.mlnSchema, domainSpace, evidence, batch.clauses)
       info(mln.toString())
 

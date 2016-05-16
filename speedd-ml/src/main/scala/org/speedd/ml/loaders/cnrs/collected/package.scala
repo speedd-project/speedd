@@ -1,5 +1,9 @@
 package org.speedd.ml.loaders.cnrs
 
+import lomrf.mln.model._
+import org.speedd.ml.model.cnrs.collected.{annotation, input, location}
+import org.speedd.ml.util.data.DatabaseManager._
+import slick.driver.PostgresDriver.api._
 import org.speedd.ml.util.data._
 
 package object collected {
@@ -46,4 +50,63 @@ package object collected {
     "S" -> mkInterval(speedLevels, symbols2domain),
     "V" -> mkInterval(vehicleLevels,symbols2domain)
   )
+
+  def loadFor(startTs: Int, endTs: Int,
+              initial: ConstantsDomain = Map.empty) = {
+
+    var domainsMap = initial.map(pair => pair._1 -> pair._2.toIterable)
+
+    domainsMap += "timestamp" -> (startTs to endTs).map(_.toString)
+
+    val inputValues =
+      blockingExec {
+        input.filter(i => i.timeStamp >= startTs && i.timeStamp <= endTs)
+          .map(i => (i.occupancy, i.vehicles, i.avgSpeed)).result
+      }.unzip3
+
+    domainsMap ++= Iterable("occupancy" -> inputValues._1.flatten.map(domain2udf("occupancy")(_)).distinct,
+      "vehicles" -> inputValues._2.flatten.map(domain2udf("vehicles")(_)).distinct,
+      "avg_speed" -> inputValues._3.flatten.map(domain2udf("avg_speed")(_)).distinct)
+
+    val locationValues = blockingExec {
+      location.map(l => (l.locId, l.lane)).result
+    }.map{ case (locId, lane) =>
+      (locId.toString, lane)
+    }.unzip
+
+    domainsMap ++= Iterable("loc_id" -> locationValues._1.distinct,
+      "lane" -> locationValues._2.distinct)
+
+    val annotationIntervalQuery =
+      annotation.filter(a => a.startTs <= endTs && a.endTs >= startTs)
+
+    domainsMap += "description" -> blockingExec {
+      annotationIntervalQuery.map(_.description).result
+    }.distinct
+
+    /*
+     * Creates annotated location tuples for each pair of location id and lane existing
+     * in the database table `location`. It performs left join in order to keep all pairs
+     * of location id, lane regardless of annotation existence. Then it expands the annotation
+     * intervals and keeps only those time-points belonging into the current batch interval.
+     * Finally if no annotation interval exists for a specific location id, lane pair then
+     * for all time-points of the current batch their `description` column is set to None.
+     */
+    val annotationTuples = blockingExec {
+      location.map(l => (l.locId, l.distance, l.lane))
+        .joinLeft(annotationIntervalQuery)
+        .on((a, b) => a._2 <= b.startLoc && a._2 >= b.endLoc).distinct.result
+    }.map { case (loc, ann) =>
+      if (ann.isDefined)
+        (Some(ann.get.startTs), Some(ann.get.endTs), loc._1, loc._3, Some(ann.get.description))
+      else (None, None, loc._1, loc._3, None)
+    }.flatMap { case (startT, endT, locId, lane, description) =>
+      (startTs to endTs).map { ts =>
+        if (startT.isDefined && endT.isDefined && ts >= startT.get && ts <= endT.get) (ts, locId, lane, description)
+        else (ts, locId, lane, None)
+      }
+    }
+
+    (domainsMap, annotationTuples)
+  }
 }

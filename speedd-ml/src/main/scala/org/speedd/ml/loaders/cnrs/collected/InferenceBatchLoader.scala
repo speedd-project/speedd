@@ -2,20 +2,20 @@ package org.speedd.ml.loaders.cnrs.collected
 
 import lomrf.logic._
 import lomrf.mln.model._
-import org.speedd.ml.loaders.{BatchLoader, TrainingBatch}
-import org.speedd.ml.util.logic._
-import slick.driver.PostgresDriver.api._
+import org.speedd.ml.loaders.{BatchLoader, InferenceBatch}
 import org.speedd.ml.util.data.DatabaseManager._
-import scala.util.{Failure, Success}
+import slick.driver.PostgresDriver.api._
+import org.speedd.ml.util.logic._
 import scala.collection.breakOut
+import scala.util.{Failure, Success}
 
-final class TrainingBatchLoader(kb: KB,
-                                kbConstants: ConstantsDomain,
-                                predicateSchema: PredicateSchema,
-                                queryPredicates: Set[AtomSignature],
-                                ruleTransformations: Iterable[RuleTransformation]) extends BatchLoader {
+final class InferenceBatchLoader(kb: KB,
+                                 kbConstants: ConstantsDomain,
+                                 predicateSchema: PredicateSchema,
+                                 queryPredicates: Set[AtomSignature],
+                                 atomMappings: List[AtomMapping]) extends BatchLoader {
 
-  def forInterval(startTs: Int, endTs: Int): TrainingBatch = {
+  def forInterval(startTs: Int, endTs: Int): InferenceBatch = {
 
     val (domainsMap, annotatedLocations) = loadFor(startTs, endTs)
 
@@ -40,45 +40,38 @@ final class TrainingBatchLoader(kb: KB,
     // --- Create a new evidence builder
     // ---
     // Evidence builder can incrementally create an evidence database for LoMRF
-    val trainingDB = EvidenceBuilder(predicateSchema, kb.functionSchema, queryPredicates, hiddenPredicates = Set.empty, constantsDomain)
-                      .withDynamicFunctions(predef.dynFunctions)
+    val annotatedDB = EvidenceBuilder(predicateSchema, kb.functionSchema, queryPredicates, hiddenPredicates = Set.empty, constantsDomain)
+      .withDynamicFunctions(predef.dynFunctions)
 
     // ---
     // --- Store previously computed function mappings
     // ---
     for ((_, fm) <- functionMappings)
-      trainingDB.functions ++= fm
+      annotatedDB.functions ++= fm
 
     debug(s"Domains:\n${constantsDomain.map(a => s"${a._1} -> [${a._2.mkString(", ")}]").mkString("\n")}")
 
-    // ---
-    // --- Create auxiliary predicates and give them as evidence facts:
-    // ---
-    // Compute instances of the auxiliary derived atoms from the raw data in the specified temporal interval.
-    info(s"Generating derived events for the temporal interval [$startTs, $endTs]")
+    for (atomMapping <- atomMappings) {
 
-    for {transformation <- ruleTransformations
-         transformedRule = transformation.transformedRule
-         (derivedAtom, sqlConstraint) <- transformation.atomMappings} {
+      val terms = atomMapping.domain.mkString(",")
+      val arity = atomMapping.domain.length
+      val symbol = atomMapping.symbol
 
-      val terms = transformation.schema(derivedAtom.signature).mkString(",")
-      val arity = derivedAtom.arity
-      val symbol = derivedAtom.symbol
-
-      val symbols = """[O|S][0-9]""".r.findAllMatchIn {
-        sqlConstraint
-      }.map(_ group 0).toIndexedSeq
+      val symbols =
+        """[O|S][0-9]""".r.findAllMatchIn {
+          atomMapping.sqlConstraint
+        }.map(_ group 0).toIndexedSeq
 
       val intervals = symbols.map(symbol => symbols2udf(symbol.head.toString)(symbol))
 
       debug(s"${symbols.mkString(", ")} -> ${intervals.map(_.toString).mkString(", ")}")
 
-      var result = sqlConstraint
+      var result = atomMapping.sqlConstraint
       for(i <- symbols.indices)
         result = result.replace(s"${symbols2domain(symbols(i).head.toString)} = '${symbols(i)}'", intervals(i))
 
       // TODO As Int should be changed if the derived atoms have different domain
-      trainingDB.evidence ++= blockingExec {
+      annotatedDB.evidence ++= blockingExec {
         sql"""select distinct #$terms from cnrs.input where timestamp >= #$startTs and timestamp <= #$endTs and #$result""".as[Int]
       }.map { t =>
         val constants: Vector[Constant] = (0 until arity).map(i => Constant(t.toString))(breakOut)
@@ -86,21 +79,19 @@ final class TrainingBatchLoader(kb: KB,
       }
     }
 
-    val functionMappingsMap = trainingDB.functions.result()
+    val functionMappingsMap = annotatedDB.functions.result()
 
     // ---
     // --- Create ground-truth predicates (HoldsAt/2)
     // ---
     info(s"Generating annotation predicates for the temporal interval [$startTs, $endTs]")
-    val headSignatures = ruleTransformations.map(_.transformedRule.clause.head.signature).toSet
 
-    val fluents = kb.definiteClauses
-      .withFilter(wc => headSignatures.contains(wc.clause.head.signature))
-      .map(_.clause.head.terms.head)
-      .flatMap {
+    val fluents = kb.formulas.flatMap(_.toCNF(kbConstants)).flatMap { c =>
+      c.literals.filter(l => queryPredicates.contains(l.sentence.signature)).map(_.sentence.terms.head).flatMap {
         case TermFunction(symbol, terms, "fluent") => Some((symbol, terms, kb.functionSchema(AtomSignature(symbol, terms.length))._2))
         case _ => None
       }
+    }
 
     for ((symbol, terms, domain) <- fluents) {
 
@@ -118,7 +109,7 @@ final class TrainingBatchLoader(kb: KB,
           for { t <- terms
                 d <- domain
                 if t.isConstant
-        } yield domainMap(d) == t
+          } yield domainMap(d) == t
 
         val theta = terms.withFilter(_.isVariable)
           .map(_.asInstanceOf[Variable])
@@ -134,18 +125,18 @@ final class TrainingBatchLoader(kb: KB,
               mapper <- functionMappingsMap.get(fluentSignature)
               resultingSymbol <- mapper.get(substitutedTerms.map(_.toText))
               groundTerms = Vector(Constant(resultingSymbol), Constant(r._1.toString))
-            } yield EvidenceAtom.asTrue("HoldsAt", groundTerms)
+            } yield (EvidenceAtom.asTrue("HoldsAt", groundTerms), substitutedTerms)
           else
             for {
               mapper <- functionMappingsMap.get(fluentSignature)
               resultingSymbol <- mapper.get(substitutedTerms.map(_.toText))
               groundTerms = Vector(Constant(resultingSymbol), Constant(r._1.toString))
-            } yield EvidenceAtom.asFalse("HoldsAt", groundTerms)
+            } yield (EvidenceAtom.asFalse("HoldsAt", groundTerms), substitutedTerms)
         } else None
       }
 
-      for (atom <- holdsAtInstances) try {
-        trainingDB.evidence += atom
+      for ((atom, sub) <- holdsAtInstances) try {
+        annotatedDB.evidence += atom
       } catch {
         case ex: java.util.NoSuchElementException =>
           val fluent = atom.terms.head
@@ -163,26 +154,38 @@ final class TrainingBatchLoader(kb: KB,
       }
     }
 
-    val trainingEvidence = trainingDB.result()
+    val annotatedEvidence = annotatedDB.result()
 
-    val definiteClauses = (kb.definiteClauses -- ruleTransformations.map(_.originalRule)) ++ ruleTransformations.map(_.transformedRule)
+    val domainSpace = PredicateSpace(kb.schema, queryPredicates, annotatedEvidence.constants)
 
-    val completedFormulas = PredicateCompletion(kb.formulas, definiteClauses)(predicateSchema, kb.functionSchema, trainingEvidence.constants)
+    var (annotationDB, atomStateDB) = annotatedEvidence.db.partition(e => queryPredicates.contains(e._1))
 
-    def initialiseWeight(formula: WeightedFormula): WeightedFormula = {
-      if (formula.weight.isNaN) formula.copy(weight = 1.0)
-      else formula
+    // Define all non evidence atoms as unknown in the evidence database
+    for (signature <- annotationDB.keysIterator)
+      atomStateDB += (signature -> AtomEvidenceDB.allUnknown(domainSpace.identities(signature)))
+
+    // Define all non evidence atoms for which annotation was not given as false in the annotation database (close world assumption)
+    for (signature <- queryPredicates; if !annotationDB.contains(signature)) {
+      warn(s"Annotation was not given in the training file(s) for predicate '$signature', assuming FALSE state for all its groundings.")
+      annotationDB += (signature -> AtomEvidenceDB.allFalse(domainSpace.identities(signature)))
     }
 
+    for (signature <- kb.predicateSchema.keysIterator; if !atomStateDB.contains(signature)) {
+      if ((kb.predicateSchema.keySet -- queryPredicates).contains(signature))
+        atomStateDB += (signature -> AtomEvidenceDB.allFalse(domainSpace.identities(signature)))
+    }
+
+    val evidence = new Evidence(annotatedEvidence.constants, atomStateDB, annotatedEvidence.functionMappers)
+
     val clauses = NormalForm
-      .compileCNF(completedFormulas.map(initialiseWeight))(trainingEvidence.constants)
+      .compileCNF(kb.formulas)(evidence.constants)
       .toVector
 
-    // Give the resulting TrainingBatch for the specified interval
-    TrainingBatch(
+    InferenceBatch(
       mlnSchema = MLNSchema(predicateSchema, kb.functionSchema, kb.dynamicPredicates, kb.dynamicFunctions),
-      trainingEvidence,
-      nonEvidenceAtoms = queryPredicates,
+      evidence,
+      annotationDB,
+      queryPredicates,
       clauses)
   }
 }
