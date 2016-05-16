@@ -3,9 +3,12 @@ package org.speedd.ml.inference
 import java.io.File
 import auxlib.log.Logging
 import lomrf.logic.AtomSignature
+import lomrf.mln.grounding.MRFBuilder
+import lomrf.mln.inference._
 import lomrf.mln.model._
 import org.speedd.ml.loaders.cnrs.collected.InferenceBatchLoader
 import org.speedd.ml.util.logic.{Atom2SQLParser, AtomMapping}
+import lomrf.util.evaluation._
 
 final class CNRSInferenceEngine private(kb: KB,
                                         kbConstants: ConstantsDomain,
@@ -24,10 +27,44 @@ final class CNRSInferenceEngine private(kb: KB,
     val microIntervals = intervals.sliding(2).map(i => (i.head, i.last)).toList
     info(s"Number of micro-intervals: ${microIntervals.size}")
 
+    var results = Vector[EvaluationStats]()
+
     for ( ((currStartTime, currEndTime), idx) <- microIntervals.zipWithIndex) {
       info(s"Loading micro-batch training data no. $idx, for the temporal interval [$currStartTime, $currEndTime]")
-      batchLoader.forInterval(currStartTime, currEndTime)
+      val batch = batchLoader.forInterval(currStartTime, currEndTime)
+
+      info {
+        s"""
+           |${batch.evidence.constants.map(e => s"Domain '${e._1}' contains '${e._2.size}' constants.").mkString("\n")}
+           |Total number of 'True' evidence atom instances: ${batch.evidence.db.values.map(_.numberOfTrue).sum}
+           |Total number of 'True' non-evidence atom instances: ${batch.annotation.values.map(_.numberOfTrue).sum}
+          """.stripMargin
+      }
+
+      val domainSpace = PredicateSpace(batch.mlnSchema, queryAtoms, batch.evidence.constants)
+
+      val mln = new MLN(batch.mlnSchema, domainSpace, batch.evidence, batch.clauses)
+      info(mln.toString())
+
+      info("Creating MRF...")
+      val mrfBuilder = new MRFBuilder(mln, createDependencyMap = true)
+      val mrf = mrfBuilder.buildNetwork
+
+      val state = new ILP(mrf).infer()
+
+      val atoms = (state.mrf.queryAtomStartID until state.mrf.queryAtomEndID)
+        .map(id => state.mrf.fetchAtom(id)).par
+
+      val result = Evaluate(atoms, batch.annotation)(mln)
+      println("RESULT: " + result)
+      results +:= result
+
+      val r = (results.map(_._1).sum, results.map(_._2).sum, results.map(_._3).sum, results.map(_._4).sum)
+      println(r)
+      println(Metrics.f1(r._1, r._3, r._4))
+
     }
+
   }
 
 }
