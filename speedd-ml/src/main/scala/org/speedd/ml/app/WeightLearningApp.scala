@@ -4,6 +4,7 @@ import java.io.File
 import auxlib.log.Logging
 import auxlib.opt.OptionParser
 import lomrf.logic.AtomSignature
+import lomrf.util.time._
 import org.speedd.ml.ModuleVersion
 import org.speedd.ml.learners.cnrs.collected.CNRSWeightLearner
 import org.speedd.ml.learners.Learner
@@ -152,7 +153,9 @@ object WeightLearningApp extends App with OptionParser with Logging {
   }
 
   // --- 2. Perform training for all intervals
+  val t = System.currentTimeMillis()
   weightLearner.trainFor(startTime, endTime, batchSize)
+  info(s"Weight learning for task ${taskOpt.get} completed in ${msecTimeToTextUntilNow(t)}")
 
   // --- 3. Close database connection
   closeConnection()

@@ -8,7 +8,7 @@ sealed trait Batch
 
 trait BatchLoader extends Logging {
 
-  def forInterval(startTs: Int, endTs: Int): Unit //Batch
+  def forInterval(startTs: Int, endTs: Int): Batch
 
 }
 

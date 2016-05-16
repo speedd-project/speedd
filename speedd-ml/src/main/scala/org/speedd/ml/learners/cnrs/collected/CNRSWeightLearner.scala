@@ -1,8 +1,12 @@
 package org.speedd.ml.learners.cnrs.collected
 
-import java.io.File
+import java.io.{File, PrintStream}
 import auxlib.log.Logging
+import lomrf.app.Algorithm
 import lomrf.logic.AtomSignature
+import lomrf.mln.grounding.MRFBuilder
+import lomrf.mln.inference.Solver
+import lomrf.mln.learning.weight.OnlineLearner
 import lomrf.mln.model._
 import org.speedd.ml.learners.Learner
 import org.speedd.ml.loaders.cnrs.collected.TrainingBatchLoader
@@ -30,12 +34,65 @@ final class CNRSWeightLearner private(kb: KB,
     val microIntervals = intervals.sliding(2).map(i => (i.head, i.last)).toList
     info(s"Number of micro-intervals: ${microIntervals.size}")
 
+    var learner: OnlineLearner = null
+
     for ( ((currStartTime, currEndTime), idx) <- microIntervals.zipWithIndex) {
       info(s"Loading micro-batch training data no. $idx, for the temporal interval [$currStartTime, $currEndTime]")
-      batchLoader.forInterval(currStartTime, currEndTime)
-    }
-  }
+      val batch = batchLoader.forInterval(currStartTime, currEndTime)
 
+      val domainSpace = PredicateSpace(batch.mlnSchema, nonEvidenceAtoms, batch.trainingEvidence.constants)
+
+      val evidenceAtoms = predicateSchema.keySet -- nonEvidenceAtoms
+
+      // Partition the training data into annotation and evidence databases
+      var (annotationDB, atomStateDB) = batch.trainingEvidence.db.partition(e => nonEvidenceAtoms.contains(e._1))
+
+      // Show stats for the current batch
+      info {
+        s"""
+           |${batch.trainingEvidence.constants.map(e => s"Domain '${e._1}' contains '${e._2.size}' constants.").mkString("\n")}
+           |Total number of 'True' evidence atom instances: ${atomStateDB.values.map(_.numberOfTrue).sum}
+           |Total number of 'True' non-evidence atom instances: ${annotationDB.values.map(_.numberOfTrue).sum}
+          """.stripMargin
+      }
+
+      // Define all non evidence atoms as unknown in the evidence database
+      for (signature <- annotationDB.keysIterator)
+        atomStateDB += (signature -> AtomEvidenceDB.allUnknown(domainSpace.identities(signature)))
+
+      // Define all non evidence atoms for which annotation was not given as false in the annotation database (close world assumption)
+      for (signature <- nonEvidenceAtoms; if !annotationDB.contains(signature)) {
+        warn(s"Annotation was not given in the training data for predicate '$signature', assuming FALSE state for all its groundings.")
+        annotationDB += (signature -> AtomEvidenceDB.allFalse(domainSpace.identities(signature)))
+      }
+
+      for (signature <- kb.predicateSchema.keysIterator; if !atomStateDB.contains(signature)) {
+        if (evidenceAtoms.contains(signature))
+          atomStateDB += (signature -> AtomEvidenceDB.allFalse(domainSpace.identities(signature)))
+      }
+
+      val evidence = new Evidence(batch.trainingEvidence.constants, atomStateDB, batch.trainingEvidence.functionMappers)
+
+      println(annotationDB)
+
+      val mln = new MLN(batch.mlnSchema, domainSpace, evidence, batch.clauses)
+      info(mln.toString())
+
+      info("Creating MRF...")
+      val mrfBuilder = new MRFBuilder(mln, createDependencyMap = true)
+      val mrf = mrfBuilder.buildNetwork
+
+      if(idx == 0) learner = new OnlineLearner(mln, algorithm = Algorithm.ADAGRAD_FB, lossAugmented = true,
+        printLearnedWeightsPerIteration = true, ilpSolver = Solver.LPSOLVE)
+      learner.learningStep(idx + 1, mrf, annotationDB)
+    }
+
+    info("Weight learning is complete!")
+
+    learner.writeResults(new PrintStream(outputKB))
+
+    info(s"Resulting trained MLN file is written to '${outputKB.getPath}'.")
+  }
 }
 
 object CNRSWeightLearner extends Logging {
