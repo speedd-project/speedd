@@ -58,6 +58,9 @@ libraryDependencies += "com.datumbox" % "lpsolve" % "5.5.2.0"
 // CSV parsing
 libraryDependencies += "com.univocity" % "univocity-parsers" % "2.0.2"
 
+// Graph plot
+libraryDependencies += "org.jfree" % "jfreechart" % "1.0.19"
+
 // Dependency overrides
 dependencyOverrides += "org.scala-lang" % "scala-compiler" % scalaVersion.value
 dependencyOverrides += "org.scala-lang" % "scala-library" % scalaVersion.value
