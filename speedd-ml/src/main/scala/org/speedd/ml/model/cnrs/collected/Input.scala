@@ -35,6 +35,9 @@ class InputTable (tag: Tag) extends Table[Input] (tag, Some("cnrs"), "input") {
   def * = (locId, lane, timeStamp, occupancy, vehicles, avgSpeed) <> (Input.tupled, Input.unapply)
 
   def indexInput = index("idx_input", timeStamp)
+
+  lazy val columnNames = List(locId.toString, lane.toString, timeStamp.toString,
+                              occupancy.toString, vehicles.toString, avgSpeed.toString)
 }
 
 object InputData extends TableQuery[InputTable](new InputTable(_)) {
