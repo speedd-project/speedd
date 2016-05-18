@@ -38,7 +38,7 @@ class LocationTable(tag: Tag) extends Table[Location] (tag, Some("cnrs"), "locat
   def * = (locId, lane, prevLane, coordinateX, coordinateY, num, distance) <> (Location.tupled, Location.unapply)
 }
 
-object location extends TableQuery[LocationTable](new LocationTable(_)) {
+object LocationData extends TableQuery[LocationTable](new LocationTable(_)) {
 
   def createSchema() =
     if (blockingExec {

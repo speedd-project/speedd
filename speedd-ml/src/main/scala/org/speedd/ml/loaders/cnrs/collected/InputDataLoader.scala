@@ -2,7 +2,7 @@ package org.speedd.ml.loaders.cnrs.collected
 
 import java.io.File
 import org.speedd.ml.loaders.DataLoader
-import org.speedd.ml.model.cnrs.collected.{Input, input}
+import org.speedd.ml.model.cnrs.collected.{Input, InputData}
 import org.speedd.ml.util.data.CSV
 import slick.driver.PostgresDriver.api._
 import org.speedd.ml.util.data.DatabaseManager._
@@ -24,7 +24,7 @@ object InputDataLoader extends DataLoader {
   override def loadAll(inputFiles: Seq[File]) = {
     info("Loading sensor input data")
 
-    input.createSchema()
+    InputData.createSchema()
 
     var futureList = List[Future[Option[Int]]]()
 
@@ -38,7 +38,7 @@ object InputDataLoader extends DataLoader {
         var stop = false
         while(!stop) {
           CSV.parseNextBatch[Input](parser, toInput) match {
-            case Success(result) => futureList +:= asyncExec(input ++= result)
+            case Success(result) => futureList +:= asyncExec(InputData ++= result)
             case Failure(ex) => stop = true
           }
         }

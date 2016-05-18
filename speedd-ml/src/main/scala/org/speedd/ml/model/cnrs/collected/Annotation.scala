@@ -40,7 +40,7 @@ class AnnotationTable(tag: Tag) extends Table[Annotation] (tag, Some("cnrs"), "a
   def indexAnnotation = index("idx_annotation", description)
 }
 
-object annotation extends TableQuery[AnnotationTable](new AnnotationTable(_)) {
+object AnnotationData extends TableQuery[AnnotationTable](new AnnotationTable(_)) {
 
   def createSchema() =
     if (blockingExec {

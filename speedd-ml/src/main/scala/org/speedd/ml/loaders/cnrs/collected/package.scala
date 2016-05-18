@@ -1,7 +1,7 @@
 package org.speedd.ml.loaders.cnrs
 
 import lomrf.mln.model._
-import org.speedd.ml.model.cnrs.collected.{annotation, input, location}
+import org.speedd.ml.model.cnrs.collected.{AnnotationData, InputData, LocationData}
 import org.speedd.ml.util.data.DatabaseManager._
 import slick.driver.PostgresDriver.api._
 import org.speedd.ml.util.data._
@@ -60,7 +60,7 @@ package object collected {
 
     val inputValues =
       blockingExec {
-        input.filter(i => i.timeStamp >= startTs && i.timeStamp <= endTs)
+        InputData.filter(i => i.timeStamp >= startTs && i.timeStamp <= endTs)
           .map(i => (i.occupancy, i.vehicles, i.avgSpeed)).result
       }.unzip3
 
@@ -69,7 +69,7 @@ package object collected {
       "avg_speed" -> inputValues._3.flatten.map(domain2udf("avg_speed")(_)).distinct)
 
     val locationValues = blockingExec {
-      location.map(l => (l.locId, l.lane)).result
+      LocationData.map(l => (l.locId, l.lane)).result
     }.map{ case (locId, lane) =>
       (locId.toString, lane)
     }.unzip
@@ -78,7 +78,7 @@ package object collected {
       "lane" -> locationValues._2.distinct)
 
     val annotationIntervalQuery =
-      annotation.filter(a => a.startTs <= endTs && a.endTs >= startTs)
+      AnnotationData.filter(a => a.startTs <= endTs && a.endTs >= startTs)
 
     domainsMap += "description" -> blockingExec {
       annotationIntervalQuery.map(_.description).result
@@ -93,7 +93,7 @@ package object collected {
      * for all time-points of the current batch their `description` column is set to None.
      */
     val annotationTuples = blockingExec {
-      location.map(l => (l.locId, l.distance, l.lane))
+      LocationData.map(l => (l.locId, l.distance, l.lane))
         .joinLeft(annotationIntervalQuery)
         .on((a, b) => a._2 <= b.startLoc && a._2 >= b.endLoc).distinct.result
     }.map { case (loc, ann) =>

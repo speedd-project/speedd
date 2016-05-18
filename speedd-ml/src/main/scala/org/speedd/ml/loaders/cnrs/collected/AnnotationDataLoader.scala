@@ -2,7 +2,7 @@ package org.speedd.ml.loaders.cnrs.collected
 
 import java.io.File
 import org.speedd.ml.loaders.DataLoader
-import org.speedd.ml.model.cnrs.collected.{Annotation, annotation}
+import org.speedd.ml.model.cnrs.collected.{Annotation, AnnotationData}
 import org.speedd.ml.util.data.CSV
 import org.speedd.ml.util.data.DatabaseManager._
 import slick.driver.PostgresDriver.api._
@@ -74,10 +74,10 @@ object AnnotationDataLoader extends DataLoader {
         }
       }
 
-    annotation.createSchema()
+    AnnotationData.createSchema()
 
     asyncExec {
-      annotation ++= results
+      AnnotationData ++= results
     }.onSuccess { case s => info("Done!") }
   }
 

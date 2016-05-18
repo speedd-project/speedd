@@ -10,7 +10,7 @@ import org.jfree.data.xy
 import org.jfree.data.xy.{XYDataset, XYSeries, XYSeriesCollection}
 import org.jfree.ui.{ApplicationFrame, RefineryUtilities}
 import org.speedd.ml.ModuleVersion
-import org.speedd.ml.model.cnrs.collected.{annotation, input, location}
+import org.speedd.ml.model.cnrs.collected.{AnnotationData, InputData, LocationData}
 import scala.util.Try
 import slick.driver.PostgresDriver.api._
 import org.speedd.ml.util.data.Plotter._
@@ -94,14 +94,14 @@ object CNRSDataPlotApp extends App with OptionParser with Logging {
     val occupancyArray = Array.fill(endTs - startTs + 1)(0.0)
 
     blockingExec {
-      input.filter(i => i.timeStamp >= startTs && i.timeStamp <= endTs && i.locId === locationId && i.lane === lane)
+      InputData.filter(i => i.timeStamp >= startTs && i.timeStamp <= endTs && i.locId === locationId && i.lane === lane)
         .map(i => (i.timeStamp, i.occupancy)).result
     }.foreach { case (timeStamp, occupancy) =>
       occupancyArray(timeStamp - startTs) = occupancy.get
     }
 
     val annotationIntervalQuery =
-      annotation.filter(a => a.startTs <= endTs && a.endTs >= startTs)
+      AnnotationData.filter(a => a.startTs <= endTs && a.endTs >= startTs)
 
     /*
      * Creates annotated location tuples for each pair of location id and lane existing
@@ -112,7 +112,7 @@ object CNRSDataPlotApp extends App with OptionParser with Logging {
      * for all time-points of the current batch their `description` column is set to None.
      */
     blockingExec {
-      location.filter(l => l.locId === locationId)
+      LocationData.filter(l => l.locId === locationId)
         .join(annotationIntervalQuery)
         .on((a, b) => a.distance <= b.startLoc && a.distance >= b.endLoc)
         .map(joined => (joined._2.startTs, joined._2.endTs, joined._1.locId)).distinct.result

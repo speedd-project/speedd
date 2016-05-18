@@ -2,7 +2,7 @@ package org.speedd.ml.loaders.cnrs.collected
 
 import java.io.File
 import org.speedd.ml.loaders.DataLoader
-import org.speedd.ml.model.cnrs.collected.{Location, location}
+import org.speedd.ml.model.cnrs.collected.{Location, LocationData}
 import org.speedd.ml.util.data.CSV
 import org.speedd.ml.util.data.DatabaseManager._
 import slick.driver.PostgresDriver.api._
@@ -28,10 +28,10 @@ object LocationDataLoader extends DataLoader {
         }
       }
 
-    location.createSchema()
+    LocationData.createSchema()
 
     asyncExec {
-      location ++= results
+      LocationData ++= results
     }.onSuccess{ case s => info("Done!") }
   }
 
