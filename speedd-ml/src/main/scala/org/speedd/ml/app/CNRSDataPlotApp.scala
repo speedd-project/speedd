@@ -15,7 +15,7 @@ object CNRSDataPlotApp extends App with OptionParser with Logging {
   // -------------------------------------------------------------------------------------------------------------------
   // --- Configuration parameters
   // -------------------------------------------------------------------------------------------------------------------
-  private var taskOpt: Option[Seq[String]] = None
+  private var dataOpt: Option[Seq[String]] = None
   private var intervalOpt: Option[(Int, Int)] = None
   private var slidingOpt: Option[Int] = None
   private var locationIdOpt: Option[Long] = None
@@ -25,11 +25,11 @@ object CNRSDataPlotApp extends App with OptionParser with Logging {
   // --- Command line interface options
   // -------------------------------------------------------------------------------------------------------------------
 
-  opt("d", "data", "<string>", "Comma seperated data columns to be plotted (occupancy, vehicles, avg_speed).", {
+  opt("d", "data", "<string>", "Comma seperated data columns to be plotted along annotation (occupancy, vehicles, avg_speed).", {
     v: String =>
       val d = v.split(",")
-      taskOpt = Option {
-        Try(d.map(_.trim.toLowerCase)) getOrElse fatal("")
+      dataOpt = Option {
+        Try(d.map(_.trim.toLowerCase)) getOrElse fatal("Please specify a valid set of data columns, e.g. occupancy,vehicles")
       }
   })
 
@@ -47,7 +47,7 @@ object CNRSDataPlotApp extends App with OptionParser with Logging {
     }
   })
 
-  opt("i", "interval", "<start time-point>,<end time-point>", "Specify the temporal interval for plotting data, e.g. 10,100 ", {
+  opt("i", "interval", "<start time-point>,<end time-point>", "Specify the temporal interval for plotting data, e.g. 10,100.", {
     v: String =>
       val t = v.split(",")
       if(t.length != 2) fatal("Please specify a valid temporal interval, e.g. 10,100")
@@ -87,30 +87,27 @@ object CNRSDataPlotApp extends App with OptionParser with Logging {
   val (startTime, endTime) = intervalOpt getOrElse fatal("Please specify an interval")
   val intervalLength = endTime - startTime
 
+  // Check if the given location id exists in the database
   val locationId = locationIdOpt getOrElse fatal("Please specify a location id")
   if (blockingExec {
     LocationData.filter(_.locId === locationId).result
   }.isEmpty) fatal(s"Location id $locationId does not exist in the database")
 
+  // Check if the given lane exists in the database for the given location id
   val lane = laneOpt getOrElse fatal("Please specify the lanes")
   if (blockingExec {
     LocationData.filter(l => l.locId === locationId && l.lane === lane).result
   }.isEmpty) fatal(s"Lane $lane does not exist in the database for location id $locationId")
 
-  //if(!InputData.baseTableRow.columnNames.contains(taskOpt.get))
-  //  fatal("dsadsa")
+  // Check if given data columns exist in the input table
+  val columns = dataOpt.getOrElse(fatal("Please specify a set of data columns"))
+  columns.foreach { column =>
+    if(!InputData.baseTableRow.columnNames.contains(s"input.$column"))
+      fatal(s"Data column $column does not exist in the input table")
+  }
 
-  // --- 1. Create the appropriate instance of inference engine
-
-  val k = taskOpt.getOrElse(fatal("Please specify a task name"))
-  plot1(startTime, endTime, slidingOpt, locationId, lane, k)
-
-  /*match {
-    case "occupancy" => plotOccupancy(startTime, endTime, slidingOpt, locationId, lane)
-    case "vehicles" => plotVehicles(startTime, endTime, slidingOpt, locationId, lane)
-    case "avg_speed" => plotAvgSpeed(startTime, endTime, slidingOpt, locationId, lane)
-    case _ => fatal("Please specify a task name")
-  }*/
+  // --- 1. Visualize the given data columns for the given time interval
+  visualize(startTime, endTime, slidingOpt, locationId, lane, columns)
 
   // --- 2. Close database connection
   closeConnection()
@@ -120,7 +117,7 @@ object CNRSDataPlotApp extends App with OptionParser with Logging {
     val annotation = Array.fill(endTs - startTs + 1)(0.0)
 
     val annotationIntervalQuery =
-      AnnotationData.filter(a => a.startTs <= endTs && a.endTs >= startTs)
+      AnnotationData.filter(a => a.startTs <= endTs && a.endTs >= startTs && a.description === "traffic_jam")
 
     /*
      * Creates annotated location tuples for each pair of location id and lane existing
@@ -137,20 +134,25 @@ object CNRSDataPlotApp extends App with OptionParser with Logging {
         .map(joined => (joined._2.startTs, joined._2.endTs, joined._1.locId)).distinct.result
     }.foreach { case (start, end, locId) =>
       (startTs to endTs).foreach { ts =>
-        if (ts >= start && ts <= end) annotation(ts - startTs) = 105.0
+        if (ts >= start && ts <= end) annotation(ts - startTs) = 100.0
       }
     }
 
     annotation
   }
 
-  private def plot1(startTs: Int, endTs: Int, sliding: Option[Int], locationId: Long, lane: String, columns: Seq[String]) = {
+  private def visualize(startTs: Int, endTs: Int, sliding: Option[Int],
+                        locationId: Long, lane: String, columns: Seq[String]) = {
 
+    // Time domain
     val time = (startTs to endTs).map(_.toDouble)
 
+    // Load annotation for the given location id
     val annotation = loadAnnotation(startTs, endTs, locationId)
 
-    val basicQuery = InputData.filter(i => i.timeStamp >= startTs && i.timeStamp <= endTs && i.locId === locationId && i.lane === lane)
+    // Basic query that filters the input table and keeps only relevant data
+    val basicQuery = InputData.filter(i => i.timeStamp >= startTs && i.timeStamp <= endTs
+                                      && i.locId === locationId && i.lane === lane)
 
     val data = columns.map {
 
@@ -182,17 +184,15 @@ object CNRSDataPlotApp extends App with OptionParser with Logging {
         (avgSpeedArray, "Average Speed")
     }
 
-    val li = data.map(d => (time zip d._1, d._2))
+    val datasets = Seq((time zip annotation, "Annotation")) ++ data.map(d => (time zip d._1, d._2))
 
     sliding match {
       case Some(window) =>
-        slidingPlot(li, window, s"Occupancy in $locationId, $lane", "Time", "Occupancy/Annotation")
+        slidingPlot(datasets, window, s"${columns.map(c => c.replace("_",". ").capitalize).mkString(", ")} in $locationId, $lane", "Time", "Data")
       case None =>
-        plot(li, s"Occupancy in $locationId, $lane", "Time", "Occupancy/Annotation")
+        plot(datasets, s"${columns.map(_.capitalize).mkString(",")} in $locationId, $lane", "Time", "Data")
     }
-
   }
-
 
   /*private def plotOccupancy(startTs: Int, endTs: Int, sliding: Option[Int], locationId: Long, lane: String) = {
 
