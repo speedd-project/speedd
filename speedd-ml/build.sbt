@@ -60,6 +60,7 @@ libraryDependencies += "com.univocity" % "univocity-parsers" % "2.0.2"
 
 // Graph plot
 libraryDependencies += "org.jfree" % "jfreechart" % "1.0.19"
+libraryDependencies += "com.itextpdf" % "itextpdf" % "5.5.9"
 
 // Dependency overrides
 dependencyOverrides += "org.scala-lang" % "scala-compiler" % scalaVersion.value

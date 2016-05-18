@@ -20,6 +20,7 @@ object CNRSDataPlotApp extends App with OptionParser with Logging {
   private var slidingOpt: Option[Int] = None
   private var locationIdOpt: Option[Long] = None
   private var laneOpt: Option[String] = None
+  private var pdfOpt: Option[String] = None
 
   // -------------------------------------------------------------------------------------------------------------------
   // --- Command line interface options
@@ -29,37 +30,45 @@ object CNRSDataPlotApp extends App with OptionParser with Logging {
     v: String =>
       val d = v.split(",")
       dataOpt = Option {
-        Try(d.map(_.trim.toLowerCase)) getOrElse fatal("Please specify a valid set of data columns, e.g. occupancy,vehicles")
+        Try(d.map(_.trim.toLowerCase)) getOrElse fatal("Please specify a valid set of data columns, e.g. occupancy,vehicles.")
       }
   })
 
   opt("loc", "location-id", "<integer>", "The location id data to plot.", {
     v: String =>
       locationIdOpt = Option{
-        Try(v.toLong) getOrElse fatal("Please specify a valid location id")
+        Try(v.toLong) getOrElse fatal("Please specify a valid location id.")
       }
   })
 
-  opt("lane", "location-lane", "<string>", "The lane for the given location id, e.g. Fast", {
+  opt("lane", "location-lane", "<string>", "The lane for the given location id, e.g. Fast.", {
     v: String =>
       laneOpt = Option {
-      Try(v) getOrElse fatal("Please specify a valid lane, e.g. Fast")
+      Try(v) getOrElse fatal("Please specify a valid lane, e.g. Fast.")
     }
   })
 
   opt("i", "interval", "<start time-point>,<end time-point>", "Specify the temporal interval for plotting data, e.g. 10,100.", {
     v: String =>
       val t = v.split(",")
-      if(t.length != 2) fatal("Please specify a valid temporal interval, e.g. 10,100")
+      if(t.length != 2) fatal("Please specify a valid temporal interval, e.g. 10,100.")
       else intervalOpt = Option {
-        Try((t(0).toInt, t(1).toInt)) getOrElse fatal("Please specify a valid temporal interval, e.g. 10,100")
+        Try((t(0).toInt, t(1).toInt)) getOrElse fatal("Please specify a valid temporal interval, e.g. 10,100.")
       }
   })
 
   opt("sw", "sliding-window", "<integer>", "Specify a sliding window for data visualization, e.g. 100.", {
     v: String =>
       slidingOpt = Option {
-        Try(v.toInt) getOrElse fatal("Please specify a valid sliding window, e.g. 1000")
+        Try(v.toInt) getOrElse fatal("Please specify a valid sliding window, e.g. 1000.")
+      }
+  })
+
+  opt("pdf", "pdf-filename", "<string>", "Specify a filename for the pdf file, e.g. output.pdf.", {
+    v: String =>
+      if(!v.matches(".*[.]pdf")) fatal("Please specify a valid filename, e.g. output.pdf.")
+      pdfOpt = Option {
+        Try(v) getOrElse fatal("Please specify a valid filename, e.g. output.pdf.")
       }
   })
 
@@ -107,7 +116,7 @@ object CNRSDataPlotApp extends App with OptionParser with Logging {
   }
 
   // --- 1. Visualize the given data columns for the given time interval
-  visualize(startTime, endTime, slidingOpt, locationId, lane, columns)
+  visualize(startTime, endTime, slidingOpt, locationId, lane, columns, pdfOpt)
 
   // --- 2. Close database connection
   closeConnection()
@@ -142,7 +151,7 @@ object CNRSDataPlotApp extends App with OptionParser with Logging {
   }
 
   private def visualize(startTs: Int, endTs: Int, sliding: Option[Int],
-                        locationId: Long, lane: String, columns: Seq[String]) = {
+                        locationId: Long, lane: String, columns: Seq[String], pdfName: Option[String]) = {
 
     // Time domain
     val time = (startTs to endTs).map(_.toDouble)
@@ -186,7 +195,10 @@ object CNRSDataPlotApp extends App with OptionParser with Logging {
 
     val datasets = Seq((time zip annotation, "Annotation")) ++ data.map(d => (time zip d._1, d._2))
 
-    sliding match {
+    if (pdfName.isDefined)
+      plotPDF(datasets, "Time", "Data", pdfName.get)
+
+    else sliding match {
       case Some(window) =>
         slidingPlot(datasets, window, s"${columns.map(c => c.replace("_",". ").capitalize).mkString(", ")} in $locationId, $lane", "Time", "Data")
       case None =>
