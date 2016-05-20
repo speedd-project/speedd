@@ -3,7 +3,7 @@
 ## Dependencies
 In order to build SPEEDD Machine Learning Module from source, you need to have Java SE Development Kit (e.g., OpenJDK) version 8 or higher and [SBT](http://www.scala-sbt.org) (v0.13.x) installed in your system.
 
-All library dependencies are defined inside the `build.sbt` file. The module requires the following projects to be locally build and published:
+All library dependencies are defined inside the `build.sbt`. The module requires the following projects to be locally build and published:
 
 **1.** Clone and publish locally the auxlib project:
 ```bash
@@ -26,8 +26,6 @@ $ git clone -b v0.4.2 --depth 1 https://github.com/anskarl/LoMRF.git
 $ cd LoMRF
 $ sbt publishLocal
 ```
-Once you have successfully build and published `auxlib`, `Optimus` and `LoMRF` projects, you can either build a standalone version or a "cluster" version.
-
 
 ## LPSolve installation instructions
 Weight learning of SPEEDD ML requires LPSolve to be installed in your OS.
@@ -94,13 +92,11 @@ export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$HOME/lib/lpsolve55
   * Add the directory to the PATH environment variable in your system environment variables (see [instructions](#microsoft-windows-operating-systems)).
 
 ## Build SPEEDD-ML module
-To build the SPEEDD Machine Learning Module, give the following commands:
+To build the SPEEDD Machine Learning Module, type the following commands:
 ```bash
 $ cd path/to/speedd/speedd-ml
 $ sbt clean dist
 ```
 
-After a successful compilation, the SPEEDD Machine Learning Module is located inside the `./target/universal/speedd-ml-<version>.zip` file.
-You can extract this file and add the path/to/speedd-ml-<version>/bin in your PATH, in order to execute the SPEEDD
-Machine Learning Module scripts from terminal.
+After a successful compilation, the SPEEDD Machine Learning Module is located inside the `./target/universal/speedd-ml-<version>.zip` file. You can extract this file and add the path/to/speedd-ml-<version>/bin in your PATH in order to execute the SPEEDD Machine Learning Module scripts from terminal.
 
