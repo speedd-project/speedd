@@ -1,119 +1,149 @@
 package org.speedd.ml.util.data
 
-import java.security.InvalidParameterException
-
-import org.apache.spark.sql.Column
-import org.apache.spark.sql.types._
-import scala.language.implicitConversions
+import java.io.{File, FileInputStream, InputStream, UnsupportedEncodingException}
+import java.util.zip.{ZipInputStream, GZIPInputStream}
+import com.univocity.parsers.common.processor.RowListProcessor
+import com.univocity.parsers.csv.{CsvParser, CsvParserSettings}
+import scala.util.{Failure, Success, Try}
 
 /**
- * A collection of various utility functions related to CSV parsing
- */
+  * A collection of various utility functions related to CSV parsing
+  */
 object CSV {
 
-  val CSV_FORMAT = "com.databricks.spark.csv"
+  /**
+    * Maps a given file into an `InputStream` according to its extension. It supports
+    * .gz, .zip and .csv file extensions.
+    *
+    * @param inputFile a given file
+    * @return an input stream
+    */
+  private def toInputStream(inputFile: File): Try[InputStream] = inputFile.getName match {
 
-  val CSV_OPTIONS = Map(
-    "delimiter" -> ",", // use standard column delimiter
-    "header" -> "false", // don't expect that the input file will have a header information
-    "parserLib" -> "UNIVOCITY", // use UNIVOCITY CSV parser back-end for memory and CPU efficiency
-    "mode" -> "DROPMALFORMED" // ignore lines with errors
-  )
+    case fileName if fileName.matches(".*[.]gz") =>
+      Success(new GZIPInputStream(new FileInputStream(inputFile)))
 
+    case fileName if fileName.matches(".*[.]zip") =>
+      Success(new ZipInputStream(new FileInputStream(inputFile)))
+
+    case fileName if fileName.matches(".*[.]csv") =>
+      Success(new FileInputStream(inputFile))
+
+    case _ => Failure(new UnsupportedEncodingException(s"Unsupported extension for file ${inputFile.getName}!"))
+  }
 
   /**
-   * Creates a CSV schema definition from the given string. For example, the following line:
-   *
-   * {{{
-   *   loc, lane, ?prev_lane, coordX:double, coordY:double, num:int
-   * }}}
-   *
-   * Defines six columns, identified by the names: `loc`, `lane`, `prev_lane`, `coordX`, `cooedY` and `num`.
-   * The entries of columns `loc`, `lane` and `pev_lane`, take string elements (implicitly defined).
-   * The entries of columns `coordX` and `coordY` take floating point numbers of double precision, similarly, the
-   * entries of column `num` accept integer numbers. Finally, the symbol `?` defines that the column `prev_lane`
-   * can also accept null values. Therefore, the other columns do not accept null values.
-   *
-   * Following the example, the schema of each column can be defined with the following notation:
-   * {{{
-   *   [?] name [:type]
-   * }}}
-   * - The `?` is optional and defines whether the column accepts null values
-   * - The `name` uniquely defines the column name and is a required field.
-   * - `:type` defines the type of the entries, i.e., int (or integer), double, bool (boolean), float, long,
-   * byte and short.
-   *
-   *
-   * @param src the specified CSV schema definition
-   *
-   * @throws InvalidParameterException when an unknown column type is given
-   *
-   * @return The resulting `StructType` of the specified schema.
-   *
-   * @see [[org.apache.spark.sql.types.StructType]]
-   */
-  @throws[InvalidParameterException]
-  def parseSchema(src: String): StructType = {
+    * Parse an input file and translate each line into an object T
+    * given a translator functor.
+    *
+    * @param inputFile the input file
+    * @param translator the translator functor
+    * @tparam T the type of object
+    * @return a set of objects T
+    */
+  def parse[T](inputFile: File, translator: Array[String] => Option[T]): Try[Set[T]] = {
 
-    def parseAtomic(atomicDef: String) = {
-      atomicDef match {
-        case "int" | "integer" => IntegerType
-        case "double" => DoubleType
-        case "bool" | "boolean" => BooleanType
-        case "float" => FloatType
-        case "long" => LongType
-        case "byte" => ByteType
-        case "short" => ShortType
-        case "string" => StringType
-        case unknownType =>
-          throw new InvalidParameterException(s"Unknown type '$unknownType'")
-      }
+    val inputStream: InputStream = toInputStream(inputFile) match {
+      case Success(stream) => stream
+      case Failure(ex) => return Failure(ex)
     }
 
-    val fields = src.split(",") map { name =>
+    val processor = new RowListProcessor()
 
-      val trimmedName = name.trim
-      val isNullable = trimmedName.charAt(0) == '?'
-      val entry = trimmedName.split(":")
+    val settings = new CsvParserSettings()
 
-      if (entry.length == 2) {
+    settings.setRowProcessor(processor)
+    settings.getFormat.setDelimiter(',')
+    settings.getFormat.setLineSeparator("\n")
 
-        val columnName = (if (isNullable) entry(0).substring(1) else entry(0)).trim()
-        val columnTypeStr = entry(1).trim.toLowerCase
+    // CSV parser
+    val parser = new CsvParser(settings)
+    parser.parse(inputStream)
 
-        val columnType = columnTypeStr match {
-          case r"array<[a-zA-Z]+>" =>
-            val elementType = parseAtomic(columnTypeStr.substring(6, columnTypeStr.length - 1))
-            ArrayType(elementType)
+    val rows = processor.getRows
 
-          case r"map<[a-zA-Z]+/[a-zA-Z]+>" =>
-            val kvTypeDef = columnTypeStr.substring(4, columnTypeStr.length - 1).split("/")
-            val keyType = parseAtomic(kvTypeDef(0).trim)
-            val valueType = parseAtomic(kvTypeDef(1).trim)
-            MapType(keyType, valueType)
+    var result = Set.empty[Option[T]]
+    val iterator = rows.listIterator()
+    while(iterator.hasNext)
+      result += translator(iterator.next())
 
-          case atomicType: String => parseAtomic(atomicType)
-        }
-
-        StructField(columnName, columnType, nullable = isNullable)
-
-      } else {
-        val entryName = if (isNullable) trimmedName.substring(1) else trimmedName
-        StructField(entryName, StringType, nullable = isNullable)
-      }
-    }
-
-    StructType(fields)
+    Success(result.flatten)
   }
 
-  implicit class WrappedStructType(val src: StructType) extends AnyVal {
-    def toColumns: Array[Column] = {
-      src.fields.map(field => new Column(field.name))
+  /**
+    * Create a CSV parse iterator given a file.
+    *
+    * @param inputFile the input csv file
+    * @return a csv parser
+    */
+  def parseIterator(inputFile: File): Try[CsvParser] = {
+
+    val inputStream: InputStream = toInputStream(inputFile) match {
+      case Success(stream) => stream
+      case Failure(ex) => return Failure(ex)
+    }
+
+    val settings = new CsvParserSettings()
+
+    settings.getFormat.setDelimiter(',')
+    settings.getFormat.setLineSeparator("\n")
+    settings.setNullValue("null")
+
+    // CSV parser
+    val parser = new CsvParser(settings)
+
+    // call beginParsing to read records one by one, iterator-style.
+    parser.beginParsing(inputStream)
+
+    Success(parser)
+  }
+
+  /**
+    * Parses the next record and returns a result if any exist or a failure if
+    * the end of file is reached.
+    *
+    * @param parser a csv parser
+    * @param translator a translator function that maps an array of strings into an object
+    * @tparam T a type of object to parse
+    *
+    * @return a parsed object T
+    */
+  def parseNext[T](parser: CsvParser, translator: Array[String] => Option[T]): Try[Option[T]] = {
+    val output = parser.parseNext()
+    if (output != null) Success(translator(output))
+    else {
+      parser.stopParsing()
+      Failure(new NullPointerException)
     }
   }
 
-  implicit class Regex(sc: StringContext) {
-    def r = new scala.util.matching.Regex(sc.parts.mkString, sc.parts.tail.map(_ => "x"): _*)
+  /**
+    * Parses the next batch of records and returns a list of results if any exist or a failure if
+    * the end of file is reached.
+    *
+    * @param parser a csv parser
+    * @param translator a translator function that maps an array of strings into an object
+    * @param batchSize the batch size (default is 1000)
+    * @tparam T a type of object to parse
+    *
+    * @return a parsed batch of objects T
+    */
+  def parseNextBatch[T](parser: CsvParser, translator: Array[String] => Option[T], batchSize: Int = 1000): Try[List[T]] = {
+
+    var records = List[T]()
+
+    if (!parser.getContext.isStopped) for (i <- 1 to batchSize) {
+      parseNext[T](parser, translator) match {
+        case Success(Some(result)) => records :+= result
+        case Failure(ex) if records.nonEmpty => Success(records)
+        case Failure(ex) => Failure(new NullPointerException)
+      }
+    }
+    else
+      return Failure(new NullPointerException)
+
+    Success(records)
   }
 
 }
+

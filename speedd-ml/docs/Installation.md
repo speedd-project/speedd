@@ -1,9 +1,9 @@
 # Instructions to build from source
 
 ## Dependencies
-In order to build SPEEDD Machine Learning Module from source, you need to have Java SE Development Kit (e.g., OpenJDK) version 7 or higher and [SBT](http://www.scala-sbt.org) (v0.13.x) installed in your system. 
+In order to build SPEEDD Machine Learning Module from source, you need to have Java SE Development Kit (e.g., OpenJDK) version 8 or higher and [SBT](http://www.scala-sbt.org) (v0.13.x) installed in your system.
 
-All library dependencies are defined inside the `build.sbt` file. The module requires the following projects to be locally build and published:
+All library dependencies are defined inside the `build.sbt`. The module requires the following projects to be locally build and published:
 
 **1.** Clone and publish locally the auxlib project:
 ```bash
@@ -26,28 +26,22 @@ $ git clone -b v0.4.2 --depth 1 https://github.com/anskarl/LoMRF.git
 $ cd LoMRF
 $ sbt publishLocal
 ```
-Once you have successfully build and published `auxlib`, `Optimus` and `LoMRF` projects, you can either build a standalone version or a "cluster" version. 
 
-
-## LPSolve installation instructions 
+## LPSolve installation instructions
 Weight learning of SPEEDD ML requires LPSolve to be installed in your OS.
 
-### Linux distributions 
-
-For example, on a ***Debian-based*** distribution, write the following command:
+#### Install LPSolve v5.5.x to ***Debian-based*** distribution:
 ```bash
 $ sudo apt-get install lp-solve
 ```
-  
-To install Java Native Interface support for LPSolve v5.5.x you need follow the  instructions below:
-* Download LPSolve dev, 64bit *lp_solve_5.5.2.x_dev_ux64.zip* or for 32bit *lp_solve_5.5.2.x_dev_ux32.zip*, from [LPSolve official repository](http://sourceforge.net/projects/lpsolve/files/lpsolve/5.5.2.0/).
-  * Extract the file
-  * We only need the `lpsolve55.so` file.
-* Download LPSolve java bindings (lp_solve_5.5.2.x_java.zip) from [LPSolve official repository](http://sourceforge.net/projects/lpsolve/files/lpsolve/5.5.2.0/).
-    * Extract the file
-    * We only need the `lpsolve55j.so` files
-* Create a directory containing the `lpsolve55.so` and `lpsolve55j.so` files, e.g., `$HOME/lib/lpsolve55`    
-* Add this directory to `LD_LIBRARY_PATH` in your profile file:
+
+Installation of Java Native Interface support for LPSolve v5.5.x:
+* Download [LPSolve dev](http://sourceforge.net/projects/lpsolve/files/lpsolve/5.5.2.0/): *lp_solve_5.5.2.x_dev_ux64.zip* for 64bit or *lp_solve_5.5.2.x_dev_ux32.zip* for 32bit.
+  * Extract the archive and keep `lpsolve55.so` file.
+* Download LPSolve java bindings [lp_solve_5.5.2.x_java.zip](http://sourceforge.net/projects/lpsolve/files/lpsolve/5.5.2.0/).
+    * Extract the archive and keep `lpsolve55j.so` file.
+* Create a directory containing the `lpsolve55.so` and `lpsolve55j.so` files, e.g., `$HOME/lib/lpsolve55`
+* Add the directory to `LD_LIBRARY_PATH` in your profile:
 
 **BASH** e.g., inside `.profile`, `.bashrc` or `.bash_profile` file in your home directory:
 ```bash
@@ -63,68 +57,46 @@ or in `~/.cshrc` file in your home directory:
 setenv LD_LIBRARY_PATH $LD_LIBRARY_PATH:$HOME/lib/lpsolve55:.
 ```
 
-### Apple MacOS X
+#### Install LPSolve 5.5.x to ***Apple Mac OSX***
+Either download and install from the [LPSolve website](http://lpsolve.sourceforge.net) or from your favorite package manager:
 
-Either download and install from the [LPSolve website](http://lpsolve.sourceforge.net)
-or from your favorite package manager.
-
-For example, from [macports](https://www.macports.org):
+[Macports](https://www.macports.org):
 ```bash
 $ sudo port install lp_solve
 ```
 
-or from [homebrew](http://brew.sh):
+[Homebrew](http://brew.sh):
 ```bash
 $ brew tap homebrew/science
 $ brew install lp_solve
 ```
 
-To install the Java Native Interface support for LPSolve v5.5.x you need follow the  instructions below:
-* Download LPSolve dev, 64bit *lp_solve_5.5.2.x_dev_ux64.zip* or for 32bit *lp_solve_5.5.2.x_dev_ux32.zip*, from [LPSolve official repository](http://sourceforge.net/projects/lpsolve/files/lpsolve/5.5.2.0/).
-  * Extract the file
-  * We only need the `lpsolve55.dylib` file.
-* Download LPSolve java bindings (lp_solve_5.5.2.x_java.zip) from [LPSolve official repository](http://sourceforge.net/projects/lpsolve/files/lpsolve/5.5.2.0/).
-    * Extract the file
-    * We only need the `lpsolve55j.jnilib` files
-* Create a directory containing the `lpsolve55.dylib` and `lpsolve55j.jnilib` files, e.g., `$HOME/lib/lpsolve55`    
-* Add this directory to `LD_LIBRARY_PATH` inside `.profile` file in your home directory:
+Installation of Java Native Interface support for LPSolve v5.5.x:
+* Download [LPSolve dev](http://sourceforge.net/projects/lpsolve/files/lpsolve/5.5.2.0/): *lp_solve_5.5.2.x_dev_ux64.zip* for 64bit or *lp_solve_5.5.2.x_dev_ux32.zip* for 32bit.
+  * Extract the archive and keep `lpsolve55.dylib` file.
+* Download LPSolve java bindings [lp_solve_5.5.2.x_java.zip](http://sourceforge.net/projects/lpsolve/files/lpsolve/5.5.2.0/).
+    * Extract the archive and keep `lpsolve55j.jnilib` file.
+* Create a directory containing the `lpsolve55.dylib` and `lpsolve55j.jnilib` files, e.g., `$HOME/lib/lpsolve55`
+* Add the directory to `LD_LIBRARY_PATH` inside `.profile` file in your home directory:
 
 ```bash
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$HOME/lib/lpsolve55
 ```
 
-
-### Microsoft Windows
-To install LPSolve v5.5.x in your system, follow the instructions below:
-  * Download LPSolve dev, 64bit *lp_solve_5.5.2.x_dev_win64.zip* or for 32bit *lp_solve_5.5.2.x_dev_win64.zip*, from [LPSolve official repository](http://sourceforge.net/projects/lpsolve/files/lpsolve/5.5.2.0/).
-    * Extract the file
-    * We only need the `lpsolve55.dll` file.
-  * Download LPSolve java bindings (lp_solve_5.5.2.x_java.zip) from [LPSolve official repository](http://sourceforge.net/projects/lpsolve/files/lpsolve/5.5.2.0/).
-    * Extract the file
-    * We only need the `lpsolve55j.jar` and `lpsolve55j.dll` files
+#### Install LPSolve v5.5.x to ***Microsoft Windows***
+  * Download [LPSolve dev](http://sourceforge.net/projects/lpsolve/files/lpsolve/5.5.2.0/): *lp_solve_5.5.2.x_dev_win64.zip* for 64bit or *lp_solve_5.5.2.x_dev_win64.zip* for 32bit.
+    * Extract the archive and keep `lpsolve55.dll` file.
+  * Download LPSolve java bindings [lp_solve_5.5.2.x_java.zip](http://sourceforge.net/projcts/lpsolve/files/lpsolve/5.5.2.0/).
+    * Extract the archive and keep `lpsolve55j.jar` and `lpsolve55j.dll` files.
   * Create a directory containing the `lpsolve55.dll`, `lpsolve55j.jar` and `lpsolve55j.dll` files, e.g., `C:\path\to\lpsolve55`
-  * Add this directory to the PATH environment variable in your system environment variables
-
+  * Add the directory to the PATH environment variable in your system environment variables (see [instructions](#microsoft-windows-operating-systems)).
 
 ## Build SPEEDD-ML module
-To build the SPEEDD Machine Learning Module, give the following commands:
+To build the SPEEDD Machine Learning Module, type the following commands:
 ```bash
 $ cd path/to/speedd/speedd-ml
 $ sbt clean dist
 ```
 
-After a successful compilation, the SPEEDD Machine Learning Module is located inside the `./target/universal/speedd-ml-<version>.zip` file. 
-You can extract this file and add the path/to/speedd-ml-<version>/bin in your PATH, in order to execute the SPEEDD 
-Machine Learning Module scripts from terminal.
-
-
-## Initialize database schema
-
-In the `schema` directory there are CQL files that define the schema for each use case. 
-For example, to initialize the schema in Cassandra DB for Traffic Management use case 
-write the following command:
-
-```bash
-$ cqlsh -f path/to/speedd/speedd-ml/schema/cnrs.cql
-```
+After a successful compilation, the SPEEDD Machine Learning Module is located inside the `./target/universal/speedd-ml-<version>.zip` file. You can extract this file and add the path/to/speedd-ml-<version>/bin in your PATH in order to execute the SPEEDD Machine Learning Module scripts from terminal.
 
