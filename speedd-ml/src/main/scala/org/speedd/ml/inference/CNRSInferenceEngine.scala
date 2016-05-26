@@ -58,12 +58,11 @@ final class CNRSInferenceEngine private(kb: KB,
       val result = Evaluate(atoms, batch.annotation)(mln)
       println("RESULT: " + result)
       results +:= result
-
-      val r = (results.map(_._1).sum, results.map(_._2).sum, results.map(_._3).sum, results.map(_._4).sum)
-      println(r)
-      println(Metrics.f1(r._1, r._3, r._4))
-
     }
+
+    val r = (results.map(_._1).sum, results.map(_._2).sum, results.map(_._3).sum, results.map(_._4).sum)
+    println("TELIKO: " + r)
+    println(Metrics.f1(r._1, r._3, r._4))
 
   }
 

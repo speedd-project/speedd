@@ -21,6 +21,7 @@ object WeightLearningApp extends App with OptionParser with Logging {
   private var inputKBOpt: Option[File] = None
   private var outputKBOpt: Option[File] = None
   private var intervalOpt: Option[(Int, Int)] = None
+  private var excludeIntervalOpt: Option[(Int, Int)] = None
   private var batchSizeOpt: Option[Long] = None
   private var taskOpt: Option[String] = None
 
@@ -53,6 +54,15 @@ object WeightLearningApp extends App with OptionParser with Logging {
       val t = v.split(",")
       if(t.length != 2) fatal("Please specify a valid temporal interval, e.g. 10,100")
       else intervalOpt = Option {
+        Try((t(0).toInt, t(1).toInt)) getOrElse fatal("Please specify a valid temporal interval. For example: 10,100")
+      }
+  })
+
+  opt("exclude", "exclude-interval", "<start time-point>,<end time-point>", "Specify the temporal intervals to exclude from training, e.g. 20,40 ", {
+    v: String =>
+      val t = v.split(",")
+      if(t.length != 2) fatal("Please specify a valid temporal interval, e.g. 20,40")
+      else excludeIntervalOpt = Option {
         Try((t(0).toInt, t(1).toInt)) getOrElse fatal("Please specify a valid temporal interval. For example: 10,100")
       }
   })
@@ -131,7 +141,11 @@ object WeightLearningApp extends App with OptionParser with Logging {
 
   // The temporal interval by which we will take the evidence that annotation data
   val (startTime, endTime) = intervalOpt getOrElse fatal("Please specify an interval")
-  val intervalLength = endTime - startTime
+  val intervalLength =
+    if (excludeIntervalOpt.isDefined)
+      endTime - startTime - (excludeIntervalOpt.get._2 - excludeIntervalOpt.get._1)
+    else
+      endTime - startTime
 
   // The batch size of the data that will given each time to the online learner
   val batchSize = batchSizeOpt match {
@@ -154,7 +168,7 @@ object WeightLearningApp extends App with OptionParser with Logging {
 
   // --- 2. Perform training for all intervals
   val t = System.currentTimeMillis()
-  weightLearner.trainFor(startTime, endTime, batchSize)
+  weightLearner.trainFor(startTime, endTime, batchSize, excludeIntervalOpt)
   info(s"Weight learning for task ${taskOpt.get} completed in ${msecTimeToTextUntilNow(t)}")
 
   // --- 3. Close database connection

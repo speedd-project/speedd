@@ -16,12 +16,14 @@ package object collected {
   /**
     * User defined occupancy levels
     */
-  val occLevels = Array(0.0, 25.0, 101.0)
+  val occLevels = Array(0.0, 30.0, 101.0)
+  //val occLevels = Array(0.0, 10.0, 20.0, 30.0, 40.0, 50.0, 60.0, 70.0, 80.0, 90.0, 100.0)
 
   /**
     * User defined average speed levels
     */
   val speedLevels = Array(0.0, 55.0, 100.0)
+  //val speedLevels = Array(0.0, 10.0, 20.0, 30.0, 40.0, 50.0, 60.0, 70.0, 80.0, 90.0, 100.0)
 
   /**
     * User defined vehicle numbers

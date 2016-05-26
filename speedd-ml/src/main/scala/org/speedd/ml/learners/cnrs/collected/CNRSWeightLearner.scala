@@ -26,12 +26,26 @@ final class CNRSWeightLearner private(kb: KB,
 
   private lazy val batchLoader = new TrainingBatchLoader(kb, kbConstants, predicateSchema, nonEvidenceAtoms, ruleTransformations)
 
-  override def trainFor(startTs: Int, endTs: Int, batchSize: Int): Unit = {
+  override def trainFor(startTs: Int, endTs: Int, batchSize: Int, excludeInterval: Option[(Int, Int)] = None): Unit = {
 
-    val range = startTs to endTs by batchSize
-    val intervals = if (!range.contains(endTs)) range :+ endTs else range
+    val microIntervals =
+      if (excludeInterval.isDefined) {
+        info(s"Excluding interval ${excludeInterval.get} from $startTs,$endTs")
+        val (excludeStart, excludeEnd) = excludeInterval.get
+        val range1 = startTs until excludeStart by batchSize
+        val range2 = excludeEnd to endTs by batchSize
+        val intervals = if (excludeEnd < endTs) range2 :+ endTs else range2
 
-    val microIntervals = intervals.sliding(2).map(i => (i.head, i.last)).toList
+        range1.sliding(2).map(i => (i.head, i.last)).toList ++
+          intervals.sliding(2).map(i => (i.head, i.last)).toList
+      }
+      else {
+        val range = startTs to endTs by batchSize
+        val intervals = if (!range.contains(endTs)) range :+ endTs else range
+        intervals.sliding(2).map(i => (i.head, i.last)).toList
+      }
+
+    println(microIntervals)
     info(s"Number of micro-intervals: ${microIntervals.size}")
 
     var learner: OnlineLearner = null
