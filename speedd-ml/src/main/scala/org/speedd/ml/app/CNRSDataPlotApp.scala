@@ -21,6 +21,7 @@ object CNRSDataPlotApp extends App with OptionParser with Logging {
   private var locationIdOpt: Option[Long] = None
   private var laneOpt: Option[String] = None
   private var pdfOpt: Option[String] = None
+  private var pngOpt: Option[String] = None
 
   // -------------------------------------------------------------------------------------------------------------------
   // --- Command line interface options
@@ -72,6 +73,14 @@ object CNRSDataPlotApp extends App with OptionParser with Logging {
       }
   })
 
+  opt("png", "png-filename", "<string>", "Specify a filename for the png image file, e.g. output.png.", {
+    v: String =>
+      if(!v.matches(".*[.]png")) fatal("Please specify a valid filename, e.g. output.png.")
+      pngOpt = Option {
+        Try(v) getOrElse fatal("Please specify a valid filename, e.g. output.png.")
+      }
+  })
+
   flagOpt("v", "version", "Print version and exit.", sys.exit(0))
 
   flagOpt("h", "help", "Print usage options.", {
@@ -116,7 +125,7 @@ object CNRSDataPlotApp extends App with OptionParser with Logging {
   }
 
   // --- 1. Visualize the given data columns for the given time interval
-  visualize(startTime, endTime, slidingOpt, locationId, lane, columns, pdfOpt)
+  visualize(startTime, endTime, slidingOpt, locationId, lane, columns, pdfOpt, pngOpt)
 
   // --- 2. Close database connection
   closeConnection()
@@ -151,7 +160,8 @@ object CNRSDataPlotApp extends App with OptionParser with Logging {
   }
 
   private def visualize(startTs: Int, endTs: Int, sliding: Option[Int],
-                        locationId: Long, lane: String, columns: Seq[String], pdfName: Option[String]) = {
+                        locationId: Long, lane: String, columns: Seq[String],
+                        pdfName: Option[String], pngName: Option[String]) = {
 
     // Time domain
     val time = (startTs to endTs).map(_.toDouble)
@@ -197,6 +207,9 @@ object CNRSDataPlotApp extends App with OptionParser with Logging {
 
     if (pdfName.isDefined)
       plotPDF(datasets, "Time", "Data", pdfName.get)
+
+    else if (pngName.isDefined)
+      plotImage(datasets, "Time", "Data", pngName.get)
 
     else sliding match {
       case Some(window) =>

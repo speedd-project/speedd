@@ -42,4 +42,7 @@ local.properties
 *.iws
 /out/
 
+# Mac OSx
+
+.DS_Store
 
