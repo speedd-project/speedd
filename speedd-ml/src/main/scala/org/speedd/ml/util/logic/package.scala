@@ -5,6 +5,7 @@ import lomrf.logic.{Constant, _}
 import lomrf.mln.model._
 import lomrf.util.Cartesian.CartesianIterator
 import scala.collection.mutable
+import scala.util.matching.Regex._
 import scala.util.{Failure, Success, Try}
 
 package object logic {
@@ -62,7 +63,6 @@ package object logic {
     *
     * @param functionSchema a function schema
     * @param domainsMap a set of domain mappings
-    *
     * @return an array of function mappings for each function signature and the refined domain mappings
     */
   def generateFunctionMappings(functionSchema: FunctionSchema, domainsMap: Map[String, Iterable[String]]):
@@ -98,13 +98,59 @@ package object logic {
     Success((functionMappings, generatedDomains))
   }
 
+  // TODO under testing
+  def generateFunctionMappings(functionSchema: FunctionSchema, domainsMap: Map[String, Iterable[String]], functionsSql: Map[AtomSignature, String]):
+                               Try[(Array[(AtomSignature, Iterable[FunctionMapping])], Map[String, Iterable[String]])] = {
+
+    def replaceRegex(input: String, values: IndexedSeq[Constant]) =
+      """\$(\d+)""".r.replaceAllIn(input, _ match {
+        case Match(index) => s"'${values(index.substring(1).toInt).symbol}'"
+      })
+
+    // ---
+    // --- Compute function mappings
+    // ---
+    val functionMappings = new Array[(AtomSignature, Iterable[FunctionMapping])](functionSchema.size)
+
+    var generatedDomains = Map.empty[String, Iterable[String]]
+
+    import org.speedd.ml.util.data.DatabaseManager._
+    import slick.driver.PostgresDriver.api._
+    import org.speedd.ml.model.cnrs.collected.Input
+
+    for(((signature, (retDomain, argDomains)), index) <- functionSchema.zipWithIndex) {
+      val symbol = signature.symbol
+
+      val argDomainValues = argDomains.map { name =>
+        domainsMap.getOrElse(name, return Failure(new NoSuchElementException(s"Unknown domain name '$name'")))
+      }
+
+      val iterator = CartesianIterator(argDomainValues)
+
+      val products = iterator.map { _.map(Constant) }.zipWithIndex.map {
+        case (constants, uid)
+          if blockingExec {
+            sql"""select * from cnrs.input where #${replaceRegex(functionsSql(signature), constants)}""".as[Input]
+          }.nonEmpty =>
+
+          val retConstant = s"r_${symbol}_$uid"
+          retConstant -> FunctionMapping(retConstant, symbol, constants.toVector)
+      }.toMap
+
+      generatedDomains += retDomain -> products.keys
+
+      functionMappings(index) = signature -> products.values
+    }
+
+    Success((functionMappings, generatedDomains))
+  }
+
   /**
     * Export all given rule transformations into the given output path.
     *
     * @param ruleTransformations an iterable of rule transformation instances
     * @param outputPath the output path to export the transformations
     * @param interval
-    *
     * @return the output path
     */
   def exportTransformations(ruleTransformations: Iterable[RuleTransformation],
