@@ -1,25 +1,29 @@
 package org.speedd.ml.app
 
 import java.io.File
-
 import auxlib.log.Logging
 import auxlib.opt.OptionParser
 import lomrf.logic.AtomSignature
+import lomrf.mln.learning.structure.ModeParser
+import lomrf.util.time._
 import org.speedd.ml.ModuleVersion
+import org.speedd.ml.learners.Learner
+import org.speedd.ml.learners.cnrs.collected.CNRSStructureLearner
 import org.speedd.ml.util.logic._
 
 import scala.util.{Success, Try}
 
 object StructureLearningApp extends App with OptionParser with Logging {
 
-  info(s"${ModuleVersion()}\nWeight Learning Application")
+  info(s"${ModuleVersion()}\nStructure Learning Application")
 
   // -------------------------------------------------------------------------------------------------------------------
   // --- Variables accessible from command-line
   // -------------------------------------------------------------------------------------------------------------------
   private var inputKBOpt: Option[File] = None
   private var outputKBOpt: Option[File] = None
-  private var functionMappingsOpt: Option[File] = None
+  private var modesFileOpt: Option[String] = None
+  private var sqlFunctionsFileOpt: Option[File] = None
   private var intervalOpt: Option[(Int, Int)] = None
   private var excludeIntervalOpt: Option[(Int, Int)] = None
   private var batchSizeOpt: Option[Long] = None
@@ -28,6 +32,9 @@ object StructureLearningApp extends App with OptionParser with Logging {
   private var targetPredicates = Set(AtomSignature("InitiatedAt", 2), AtomSignature("TerminatedAt", 2))
   private var evidencePredicates = Set(AtomSignature("HappensAt", 2))
   private var nonEvidencePredicates = Set(AtomSignature("HoldsAt", 2))
+
+  private var maxLength: Int = 8
+  private var threshold: Int = 1
 
   // -------------------------------------------------------------------------------------------------------------------
   // --- Command-line options
@@ -49,13 +56,25 @@ object StructureLearningApp extends App with OptionParser with Logging {
     v: String => outputKBOpt = Some(new File(v))
   })
 
-  opt("fm", "function-mappings", "<string>", "Specify the function mappings file containing mappings of event functions to sql constraints.", {
+  opt("m", "modes", "<mode file>", "Specify the mode declarations file.", {
+    v: String => modesFileOpt = Some(v)
+
+      /*val file = new File(v)
+
+      modesFileOpt = {
+        if (!file.isFile) fatal("The specified mode declarations file does not exist.")
+        else if (!file.canRead) fatal("Cannot read the specified mode declaration file, please check the file permissions.")
+        else Some(file)
+      }*/
+  })
+
+  opt("f2sql", "sql-function-mappings", "<string>", "Specify the sql function mappings file containing mappings of event functions to sql constraints.", {
     v: String =>
       val file = new File(v)
 
-      functionMappingsOpt = {
+      sqlFunctionsFileOpt = {
         if (!file.isFile) fatal("The specified function mappings file does not exist.")
-        else if (!file.canRead) fatal("Cannot read the specified function mappings file, please check the file permissions.")
+        else if (!file.canRead) fatal("Cannot read the specified sql function mappings file, please check the file permissions.")
         else Some(file)
       }
   })
@@ -123,13 +142,18 @@ object StructureLearningApp extends App with OptionParser with Logging {
       }
   })
 
-  flagOpt("v", "version", "Print version and exit.", sys.exit(0))
+  intOpt("maxLength", "max-length", "The maximum length of literals for each clause produced (default is " + maxLength + ").", {
+    v: Int => if (v < 0) fatal("The maximum length of literals must be any integer above zero, but you gave: " + v) else maxLength = v
+  })
+
+  intOpt("threshold", "threshold", "Evaluation threshold for each new clause produced (default is " + threshold + ").", {
+    v: Int => if (v < 0) fatal("The evaluation threshold must be any integer above zero, but you gave: " + v) else threshold = v
+  })
 
   flagOpt("h", "help", "Print usage options.", {
     println(usage)
     sys.exit(0)
   })
-
 
   // -------------------------------------------------------------------------------------------------------------------
   // --- Application
@@ -151,6 +175,14 @@ object StructureLearningApp extends App with OptionParser with Logging {
     new File(kbFile.getPath + name.substring(0, name.lastIndexOf('.')) + "_trained.mln")
   }
 
+  // Parse all mode declarations from file
+  val modesFile = modesFileOpt getOrElse fatal("Please specify a mode declaration file.")
+  val modes = ModeParser.parseFrom(modesFile)
+  info("Modes Declarations: \n" + modes.map(pair => "\t" + pair._1 + " -> " + pair._2).reduce(_ + "\n" + _))
+
+  // File indicating the mappings of event functions to sql statements
+  val sqlFunctionMappingsFile = sqlFunctionsFileOpt getOrElse fatal("Please specify sql function mappings file")
+
   // The temporal interval by which we will take the evidence that annotation data
   val (startTime, endTime) = intervalOpt getOrElse fatal("Please specify an interval")
   val intervalLength =
@@ -170,4 +202,20 @@ object StructureLearningApp extends App with OptionParser with Logging {
     case _ => fatal("Please specify a batch size")
   }
 
+  import org.speedd.ml.util.data.DatabaseManager._
+
+  // --- 1. Create the appropriate instance of weight learner
+  val structureLearner: Learner = taskOpt.getOrElse(fatal("Please specify a task name")) match {
+    case "CNRS" => CNRSStructureLearner(kbFile, outputFile, sqlFunctionMappingsFile, modes, maxLength,
+                                        threshold, evidencePredicates, targetPredicates)
+    case _ => fatal("Please specify a task name")
+  }
+
+  // --- 2. Perform training for all intervals
+  val t = System.currentTimeMillis()
+  structureLearner.trainFor(startTime, endTime, batchSize, excludeIntervalOpt)
+  info(s"Weight learning for task ${taskOpt.get} completed in ${msecTimeToTextUntilNow(t)}")
+
+  // --- 3. Close database connection
+  closeConnection()
 }

@@ -7,13 +7,13 @@ import lomrf.mln.grounding.MRFBuilder
 import lomrf.mln.inference._
 import lomrf.mln.model._
 import org.speedd.ml.loaders.cnrs.collected.InferenceBatchLoader
-import org.speedd.ml.util.logic.{Atom2SQLParser, AtomMapping}
+import org.speedd.ml.util.logic.{Term2SQLParser, TermMapping}
 import lomrf.util.evaluation._
 
 final class CNRSInferenceEngine private(kb: KB,
                                         kbConstants: ConstantsDomain,
                                         predicateSchema: PredicateSchema,
-                                        atomMappings: List[AtomMapping],
+                                        atomMappings: List[TermMapping],
                                         inputKB: File,
                                         queryAtoms: Set[AtomSignature]) extends InferenceEngine with Logging {
 
@@ -79,11 +79,10 @@ object CNRSInferenceEngine extends Logging {
             queryAtoms: Set[AtomSignature] = DEFAULT_NON_EVIDENCE_ATOMS): CNRSInferenceEngine = {
 
     info(s"Processing the given input KB '${inputKB.getPath}'.")
-    val (kb, constantsDomainBuilder) = KB.fromFile(inputKB.getPath)
-    val kbConstants = constantsDomainBuilder.result()
+    val (kb, kbConstants) = KB.fromFile(inputKB.getPath)
 
     info(s"Processing the given atom mappings '${atomMappingsFile.getPath}'")
-    val atomMappings = Atom2SQLParser.parseFrom(atomMappingsFile)
+    val atomMappings = Term2SQLParser.parseAtomTermFrom(atomMappingsFile)
 
     whenDebug {
       debug(atomMappings.mkString("\n"))

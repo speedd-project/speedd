@@ -5,8 +5,8 @@ import lomrf.logic.{Constant, _}
 import lomrf.mln.model._
 import lomrf.util.Cartesian.CartesianIterator
 import scala.collection.mutable
-import scala.util.matching.Regex._
 import scala.util.{Failure, Success, Try}
+import lomrf.FUNC_RET_VAR_PREFIX
 
 package object logic {
 
@@ -86,58 +86,14 @@ package object logic {
 
       val products = iterator.map { _.map(Constant) }.zipWithIndex.map {
         case (constants, uid) =>
-          val retConstant = s"r_${index}_$uid"
+          val retConstant = s"${FUNC_RET_VAR_PREFIX}_${index}_$uid"
           retConstant -> FunctionMapping(retConstant, symbol, constants.toVector)
       }.toMap
 
-      generatedDomains += retDomain -> products.keys
-
-      functionMappings(index) = signature -> products.values
-    }
-
-    Success((functionMappings, generatedDomains))
-  }
-
-  // TODO under testing
-  def generateFunctionMappings(functionSchema: FunctionSchema, domainsMap: Map[String, Iterable[String]], functionsSql: Map[AtomSignature, String]):
-                               Try[(Array[(AtomSignature, Iterable[FunctionMapping])], Map[String, Iterable[String]])] = {
-
-    def replaceRegex(input: String, values: IndexedSeq[Constant]) =
-      """\$(\d+)""".r.replaceAllIn(input, _ match {
-        case Match(index) => s"'${values(index.substring(1).toInt).symbol}'"
-      })
-
-    // ---
-    // --- Compute function mappings
-    // ---
-    val functionMappings = new Array[(AtomSignature, Iterable[FunctionMapping])](functionSchema.size)
-
-    var generatedDomains = Map.empty[String, Iterable[String]]
-
-    import org.speedd.ml.util.data.DatabaseManager._
-    import slick.driver.PostgresDriver.api._
-    import org.speedd.ml.model.cnrs.collected.Input
-
-    for(((signature, (retDomain, argDomains)), index) <- functionSchema.zipWithIndex) {
-      val symbol = signature.symbol
-
-      val argDomainValues = argDomains.map { name =>
-        domainsMap.getOrElse(name, return Failure(new NoSuchElementException(s"Unknown domain name '$name'")))
-      }
-
-      val iterator = CartesianIterator(argDomainValues)
-
-      val products = iterator.map { _.map(Constant) }.zipWithIndex.map {
-        case (constants, uid)
-          if blockingExec {
-            sql"""select * from cnrs.input where #${replaceRegex(functionsSql(signature), constants)}""".as[Input]
-          }.nonEmpty =>
-
-          val retConstant = s"r_${symbol}_$uid"
-          retConstant -> FunctionMapping(retConstant, symbol, constants.toVector)
-      }.toMap
-
-      generatedDomains += retDomain -> products.keys
+      // If constants exist for this return type domain, then append the the keys
+      if (generatedDomains.contains(retDomain))
+        generatedDomains += retDomain -> (generatedDomains(retDomain) ++ products.keys)
+      else generatedDomains += retDomain -> products.keys
 
       functionMappings(index) = signature -> products.values
     }

@@ -13,7 +13,7 @@ final class InferenceBatchLoader(kb: KB,
                                  kbConstants: ConstantsDomain,
                                  predicateSchema: PredicateSchema,
                                  queryPredicates: Set[AtomSignature],
-                                 atomMappings: List[AtomMapping]) extends BatchLoader {
+                                 atomMappings: List[TermMapping]) extends BatchLoader {
 
   def forInterval(startTs: Int, endTs: Int): InferenceBatch = {
 

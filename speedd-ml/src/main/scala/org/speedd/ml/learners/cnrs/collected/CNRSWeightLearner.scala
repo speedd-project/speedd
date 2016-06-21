@@ -122,8 +122,7 @@ object CNRSWeightLearner extends Logging {
     // Attempt to simplify the given KB --- i.e., exploit input data, in order to eliminate existentially
     // quantified variables that may appear in the body part of each definite clause
     info(s"Processing the given input KB '${inputKB.getPath}', in order to make simplifications.")
-    val (kb, constantsDomainBuilder) = KB.fromFile(inputKB.getPath)
-    val kbConstants = constantsDomainBuilder.result()
+    val (kb, kbConstants) = KB.fromFile(inputKB.getPath)
 
 
     // Try to simplify the knowledge base, in order to eliminate existential quantifiers.
