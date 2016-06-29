@@ -214,7 +214,7 @@ object StructureLearningApp extends App with OptionParser with Logging {
   // --- 2. Perform training for all intervals
   val t = System.currentTimeMillis()
   structureLearner.trainFor(startTime, endTime, batchSize, excludeIntervalOpt)
-  info(s"Weight learning for task ${taskOpt.get} completed in ${msecTimeToTextUntilNow(t)}")
+  info(s"Structure learning for task ${taskOpt.get} completed in ${msecTimeToTextUntilNow(t)}")
 
   // --- 3. Close database connection
   closeConnection()

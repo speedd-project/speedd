@@ -11,6 +11,24 @@ import scala.concurrent.duration.Duration
 import scala.util.{Failure, Success}
 import org.speedd.ml.util.data._
 
+/**
+  * Loads and converts input sensor data from CSV files. The data is collected and provided by CNRS.
+  *
+  * <p>
+  * The expected format of the CSV file is the following:
+  * <ul>
+  *   <li>date: format yyyy-mm-dd</li>
+  *   <li>time: format hh:mm:ss</li>
+  *   <li>loc_id: location id (hexadecimal)</li>
+  *   <li>lane: lane type (string)</li>
+  *   <li>occupancy: the percentage of time the sensor had vehicle above itself (double)</li>
+  *   <li>vehicles: the number of vehicles that were counted by a sensor during the last 15 seconds (integer)</li>
+  *   <li>avg_speed: average speed in kilometers per hour (double)</li>
+  *   <li>histogram of speeds: 20 bins of 10 kilometers per hour each</li>
+  *   <li>histogram of lengths: 100 bins of 0.5 meters each</li>
+  * </ul>
+  * </p>
+  */
 object InputDataLoader extends DataLoader {
 
   private val DATE_TIME_FORMAT = "yyyy-MM-dd HH:mm:ss"

@@ -2,10 +2,12 @@ package org.speedd.ml.loaders.cnrs.collected
 
 import lomrf.logic._
 import lomrf.mln.model._
+import lomrf.util.Cartesian.CartesianIterator
 import org.speedd.ml.loaders.{BatchLoader, InferenceBatch}
 import org.speedd.ml.util.data.DatabaseManager._
 import slick.driver.PostgresDriver.api._
 import org.speedd.ml.util.logic._
+
 import scala.collection.breakOut
 import scala.util.{Failure, Success}
 
@@ -13,7 +15,8 @@ final class InferenceBatchLoader(kb: KB,
                                  kbConstants: ConstantsDomain,
                                  predicateSchema: PredicateSchema,
                                  queryPredicates: Set[AtomSignature],
-                                 atomMappings: List[TermMapping]) extends BatchLoader {
+                                 /*atomMappings: List[TermMapping],*/
+                                 sqlFunctionMappings: List[TermMapping]) extends BatchLoader {
 
   def forInterval(startTs: Int, endTs: Int): InferenceBatch = {
 
@@ -41,7 +44,7 @@ final class InferenceBatchLoader(kb: KB,
     // ---
     // Evidence builder can incrementally create an evidence database for LoMRF
     val annotatedDB = EvidenceBuilder(predicateSchema, kb.functionSchema, queryPredicates, hiddenPredicates = Set.empty, constantsDomain)
-      .withDynamicFunctions(predef.dynFunctions)
+      .withDynamicFunctions(predef.dynFunctions).withCWAForAll(true)
 
     // ---
     // --- Store previously computed function mappings
@@ -49,9 +52,14 @@ final class InferenceBatchLoader(kb: KB,
     for ((_, fm) <- functionMappings)
       annotatedDB.functions ++= fm
 
+    (startTs to endTs).sliding(2).foreach { pair =>
+      val atom = EvidenceAtom.asTrue("Next", pair.map(t => Constant(t.toString)).reverse.toVector)
+      annotatedDB.evidence ++= atom
+    }
+
     debug(s"Domains:\n${constantsDomain.map(a => s"${a._1} -> [${a._2.mkString(", ")}]").mkString("\n")}")
 
-    for (atomMapping <- atomMappings) {
+    /*for (atomMapping <- atomMappings) {
 
       val terms = atomMapping.domain.mkString(",")
       val arity = atomMapping.domain.length
@@ -77,9 +85,40 @@ final class InferenceBatchLoader(kb: KB,
         val constants: Vector[Constant] = (0 until arity).map(i => Constant(t.toString))(breakOut)
         EvidenceAtom.asTrue(symbol, constants)
       }
-    }
+    }*/
 
     val functionMappingsMap = annotatedDB.functions.result()
+
+    for (sqlFunction <- sqlFunctionMappings) {
+
+      val domain = sqlFunction.domain
+      val arity = sqlFunction.domain.length
+      val symbol = sqlFunction.symbol
+      val eventSignature = AtomSignature(symbol, arity)
+
+      val argDomainValues = domain.map(t => domainsMap.get(t).get)
+
+      val iterator = CartesianIterator(argDomainValues)
+
+      iterator.map(_.map(Constant))
+        .foreach { case constants =>
+
+          val time_points = blockingExec {
+            sql"""select timestamp from cnrs.input where #${bindSQLVariables(sqlFunction.sqlConstraint, constants)}
+                  AND timestamp between #$startTs AND #$endTs""".as[Int]
+          }
+
+          val happens = for {
+            t <- time_points
+            mapper <- functionMappingsMap.get(eventSignature)
+            resultingSymbol <- mapper.get(constants.map(_.toText).toVector)
+            groundTerms = Vector(Constant(resultingSymbol), Constant(t.toString))
+          } yield EvidenceAtom.asTrue("HappensAt", groundTerms)
+
+          for (h <- happens)
+            annotatedDB.evidence += h
+        }
+    }
 
     // ---
     // --- Create ground-truth predicates (HoldsAt/2)
@@ -95,7 +134,7 @@ final class InferenceBatchLoader(kb: KB,
 
     for ((symbol, terms, domain) <- fluents) {
 
-      val holdsAtInstances = annotatedLocations.flatMap { r =>
+      /*val holdsAtInstances = annotatedLocations.flatMap { r =>
 
         val domainMap = Map[String, Constant](
           "timestamp" -> Constant(r._1.toString),
@@ -133,9 +172,30 @@ final class InferenceBatchLoader(kb: KB,
               groundTerms = Vector(Constant(resultingSymbol), Constant(r._1.toString))
             } yield (EvidenceAtom.asFalse("HoldsAt", groundTerms), substitutedTerms)
         } else None
+      }*/
+
+      val holdsAtInstances = annotatedLocations.flatMap { r =>
+
+        val domainMap = Map[String, Constant](
+          "timestamp" -> Constant(r._1.toString),
+          "loc_id" -> Constant(r._2.toString),
+          "lane" -> Constant(r._3.toString)
+        )
+
+        val tuple = domain.map(domainMap)
+
+        val fluentSignature = AtomSignature(symbol, terms.size)
+
+        if(r._4.isDefined && r._4.get == fluentSignature.symbol)
+          for {
+            mapper <- functionMappingsMap.get(fluentSignature)
+            resultingSymbol <- mapper.get(tuple.map(_.toText))
+            groundTerms = Vector(Constant(resultingSymbol), Constant(r._1.toString))
+          } yield EvidenceAtom.asTrue("HoldsAt", groundTerms)
+        else None
       }
 
-      for ((atom, sub) <- holdsAtInstances) try {
+      for (atom <- holdsAtInstances) try {
         annotatedDB.evidence += atom
       } catch {
         case ex: java.util.NoSuchElementException =>
@@ -155,6 +215,8 @@ final class InferenceBatchLoader(kb: KB,
     }
 
     val annotatedEvidence = annotatedDB.result()
+
+    info(annotatedEvidence.db.values.mkString("\n"))
 
     val domainSpace = PredicateSpace(kb.schema, queryPredicates, annotatedEvidence.constants)
 

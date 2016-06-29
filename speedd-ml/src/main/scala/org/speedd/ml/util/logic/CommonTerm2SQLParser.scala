@@ -3,7 +3,7 @@ package org.speedd.ml.util.logic
 import scala.util.parsing.combinator.{RegexParsers, JavaTokenParsers}
 
 /**
-  * Regular expressions for atom mappings to sql constraints parser.
+  * Regular expressions for term mappings to sql constraints parser.
   */
 trait CommonTerm2SQLParser extends JavaTokenParsers with RegexParsers {
 

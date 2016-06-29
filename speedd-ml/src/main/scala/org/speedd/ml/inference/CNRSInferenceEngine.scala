@@ -13,11 +13,12 @@ import lomrf.util.evaluation._
 final class CNRSInferenceEngine private(kb: KB,
                                         kbConstants: ConstantsDomain,
                                         predicateSchema: PredicateSchema,
-                                        atomMappings: List[TermMapping],
+                                        /*atomMappings: List[TermMapping],*/
+                                        functionMappings: List[TermMapping],
                                         inputKB: File,
                                         queryAtoms: Set[AtomSignature]) extends InferenceEngine with Logging {
 
-  private lazy val batchLoader = new InferenceBatchLoader(kb, kbConstants, predicateSchema, queryAtoms, atomMappings)
+  private lazy val batchLoader = new InferenceBatchLoader(kb, kbConstants, predicateSchema, queryAtoms, /*atomMappings,*/ functionMappings)
 
   override def inferFor(startTs: Int, endTs: Int, batchSize: Int): Unit = {
 
@@ -75,20 +76,24 @@ object CNRSInferenceEngine extends Logging {
   val DEFAULT_NON_EVIDENCE_ATOMS = Set[AtomSignature](AtomSignature("HoldsAt", 2))
 
   def apply(inputKB: File,
-            atomMappingsFile: File,
+            /*atomMappingsFile: File,*/
+            functionMappingsFile: File,
             queryAtoms: Set[AtomSignature] = DEFAULT_NON_EVIDENCE_ATOMS): CNRSInferenceEngine = {
 
     info(s"Processing the given input KB '${inputKB.getPath}'.")
     val (kb, kbConstants) = KB.fromFile(inputKB.getPath)
 
-    info(s"Processing the given atom mappings '${atomMappingsFile.getPath}'")
-    val atomMappings = Term2SQLParser.parseAtomTermFrom(atomMappingsFile)
+    //info(s"Processing the given atom mappings '${atomMappingsFile.getPath}'")
+    //val atomMappings = Term2SQLParser.parseAtomTermFrom(atomMappingsFile)
 
-    whenDebug {
-      debug(atomMappings.mkString("\n"))
-    }
+    info(s"Processing the given function mappings '${functionMappingsFile.getPath}'")
+    val functionMappings = Term2SQLParser.parseFunctionTermFrom(functionMappingsFile)
+
+    //whenDebug {
+     // debug(atomMappings.mkString("\n"))
+    //}
 
     println(kb.formulas.map(_.toText))
-    new CNRSInferenceEngine(kb, kbConstants, kb.predicateSchema, atomMappings, inputKB, queryAtoms)
+    new CNRSInferenceEngine(kb, kbConstants, kb.predicateSchema, /*atomMappings,*/ functionMappings, inputKB, queryAtoms)
   }
 }

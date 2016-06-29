@@ -3,17 +3,13 @@ package org.speedd.ml.util.data
 import java.awt._
 import java.awt.geom._
 import java.io._
-import javax.imageio.ImageIO
 import javax.swing.{JPanel, JSlider}
 import javax.swing.event.{ChangeEvent, ChangeListener}
-
 import com.itextpdf.awt.DefaultFontMapper
 import com.itextpdf.text.Document
 import com.itextpdf.text.pdf.PdfWriter
-import com.sun.image.codec.jpeg.JPEGCodec
 import org.jfree.chart._
 import org.jfree.chart.plot.PlotOrientation
-import org.jfree.data.general.DefaultPieDataset
 import org.jfree.data.xy.{XYSeries, XYSeriesCollection}
 import org.jfree.ui.{ApplicationFrame, RefineryUtilities}
 

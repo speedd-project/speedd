@@ -8,9 +8,9 @@ import scala.util.Try
 import slick.driver.PostgresDriver.api._
 import org.speedd.ml.util.data.Plotter._
 
-object CNRSDataPlotApp extends App with OptionParser with Logging {
+object CollectedCNRSDataPlotApp extends App with OptionParser with Logging {
 
-  println(s"${ModuleVersion()}\nData Plot Application")
+  println(s"${ModuleVersion()}\nCollected CNRS 'Grenoble South Ring' Data Plot Application")
 
   // -------------------------------------------------------------------------------------------------------------------
   // --- Configuration parameters
@@ -27,7 +27,7 @@ object CNRSDataPlotApp extends App with OptionParser with Logging {
   // --- Command line interface options
   // -------------------------------------------------------------------------------------------------------------------
 
-  opt("d", "data", "<string>", "Comma seperated data columns to be plotted along annotation (occupancy, vehicles, avg_speed).", {
+  opt("d", "data", "<string>", "Comma separated data columns to be plotted along annotation (occupancy, vehicles, avg_speed).", {
     v: String =>
       val d = v.split(",")
       dataOpt = Option {
@@ -180,7 +180,7 @@ object CNRSDataPlotApp extends App with OptionParser with Logging {
         blockingExec {
           basicQuery.map(i => (i.timeStamp, i.occupancy)).result
         }.foreach { case (timeStamp, occupancy) =>
-          occupancyArray(timeStamp - startTs) = occupancy.get
+          occupancyArray(timeStamp - startTs) = occupancy.getOrElse(0.0)
         }
         (occupancyArray, "Occupancy")
 
@@ -189,7 +189,7 @@ object CNRSDataPlotApp extends App with OptionParser with Logging {
         blockingExec {
           basicQuery.map(i => (i.timeStamp, i.vehicles)).result
         }.foreach { case (timeStamp, vehicles) =>
-          vehiclesArray(timeStamp - startTs) = vehicles.get
+          vehiclesArray(timeStamp - startTs) = vehicles.getOrElse(0)
         }
         (vehiclesArray, "Vehicles")
 
@@ -218,142 +218,4 @@ object CNRSDataPlotApp extends App with OptionParser with Logging {
         plot(datasets, s"${columns.map(_.capitalize).mkString(",")} in $locationId, $lane", "Time", "Data")
     }
   }
-
-  /*private def plotOccupancy(startTs: Int, endTs: Int, sliding: Option[Int], locationId: Long, lane: String) = {
-
-    val annotationArray = Array.fill(endTs - startTs + 1)(0.0)
-    val occupancyArray = Array.fill(endTs - startTs + 1)(0.0)
-
-    blockingExec {
-      InputData.filter(i => i.timeStamp >= startTs && i.timeStamp <= endTs && i.locId === locationId && i.lane === lane)
-        .map(i => (i.timeStamp, i.occupancy)).result
-    }.foreach { case (timeStamp, occupancy) =>
-      occupancyArray(timeStamp - startTs) = occupancy.get
-    }
-
-    val annotationIntervalQuery =
-      AnnotationData.filter(a => a.startTs <= endTs && a.endTs >= startTs)
-
-    /*
-     * Creates annotated location tuples for each pair of location id and lane existing
-     * in the database table `location`. It performs left join in order to keep all pairs
-     * of location id, lane regardless of annotation existence. Then it expands the annotation
-     * intervals and keeps only those time-points belonging into the current batch interval.
-     * Finally if no annotation interval exists for a specific location id, lane pair then
-     * for all time-points of the current batch their `description` column is set to None.
-     */
-    blockingExec {
-      LocationData.filter(l => l.locId === locationId)
-        .join(annotationIntervalQuery)
-        .on((a, b) => a.distance <= b.startLoc && a.distance >= b.endLoc)
-        .map(joined => (joined._2.startTs, joined._2.endTs, joined._1.locId)).distinct.result
-    }.foreach { case (start, end, locId) =>
-      (startTs to endTs).foreach { ts =>
-        if (ts >= start && ts <= end) annotationArray(ts - startTs) = 105.0
-      }
-    }
-
-    val time = (startTs to endTs).map(_.toDouble)
-
-    sliding match {
-      case Some(window) =>
-        slidingPlot(List((time zip occupancyArray, "Occupancy"), (time zip annotationArray, "Annotation")), window,
-          s"Occupancy in $locationId, $lane", "Time", "Occupancy/Annotation")
-      case None =>
-        plot(List((time zip occupancyArray, "Occupancy"), (time zip annotationArray, "Annotation")),
-          s"Occupancy in $locationId, $lane", "Time", "Occupancy/Annotation")
-    }
-  }
-
-  def plotVehicles(startTs: Int, endTs: Int, sliding: Option[Int], locationId: Long, lane: String) = {
-
-    val annotationArray = Array.fill(endTs - startTs + 1)(0.0)
-    val vehiclesArray = Array.fill(endTs - startTs + 1)(0.0)
-
-    blockingExec {
-      InputData.filter(i => i.timeStamp >= startTs && i.timeStamp <= endTs && i.locId === locationId && i.lane === lane)
-        .map(i => (i.timeStamp, i.vehicles)).result
-    }.foreach { case (timeStamp, vehicles) =>
-      vehiclesArray(timeStamp - startTs) = vehicles.get
-    }
-
-    val annotationIntervalQuery =
-      AnnotationData.filter(a => a.startTs <= endTs && a.endTs >= startTs)
-
-    /*
-     * Creates annotated location tuples for each pair of location id and lane existing
-     * in the database table `location`. It performs left join in order to keep all pairs
-     * of location id, lane regardless of annotation existence. Then it expands the annotation
-     * intervals and keeps only those time-points belonging into the current batch interval.
-     * Finally if no annotation interval exists for a specific location id, lane pair then
-     * for all time-points of the current batch their `description` column is set to None.
-     */
-    blockingExec {
-      LocationData.filter(l => l.locId === locationId)
-        .join(annotationIntervalQuery)
-        .on((a, b) => a.distance <= b.startLoc && a.distance >= b.endLoc)
-        .map(joined => (joined._2.startTs, joined._2.endTs, joined._1.locId)).distinct.result
-    }.foreach { case (start, end, locId) =>
-      (startTs to endTs).foreach { ts =>
-        if (ts >= start && ts <= end) annotationArray(ts - startTs) = 20.0
-      }
-    }
-
-    val time = (startTs to endTs).map(_.toDouble)
-
-    sliding match {
-      case Some(window) =>
-        slidingPlot(List((time zip vehiclesArray, "Vehicles"), (time zip annotationArray, "Annotation")), window,
-          s"Vehicles in $locationId, $lane", "Time", "Vehicles/Annotation")
-      case None =>
-        plot(List((time zip vehiclesArray, "Vehicles"), (time zip annotationArray, "Annotation")),
-          s"Vehicles in $locationId, $lane", "Time", "Vehicles/Annotation")
-    }
-  }
-
-  def plotAvgSpeed(startTs: Int, endTs: Int, sliding: Option[Int], locationId: Long, lane: String) = {
-
-    val annotationArray = Array.fill(endTs - startTs + 1)(0.0)
-    val avgSpeedArray = Array.fill(endTs - startTs + 1)(0.0)
-
-    blockingExec {
-      InputData.filter(i => i.timeStamp >= startTs && i.timeStamp <= endTs && i.locId === locationId && i.lane === lane)
-        .map(i => (i.timeStamp, i.avgSpeed)).result
-    }.foreach { case (timeStamp, avgSpeed) =>
-      avgSpeedArray(timeStamp - startTs) = avgSpeed.getOrElse(0.0)
-    }
-
-    val annotationIntervalQuery =
-      AnnotationData.filter(a => a.startTs <= endTs && a.endTs >= startTs)
-
-    /*
-     * Creates annotated location tuples for each pair of location id and lane existing
-     * in the database table `location`. It performs left join in order to keep all pairs
-     * of location id, lane regardless of annotation existence. Then it expands the annotation
-     * intervals and keeps only those time-points belonging into the current batch interval.
-     * Finally if no annotation interval exists for a specific location id, lane pair then
-     * for all time-points of the current batch their `description` column is set to None.
-     */
-    blockingExec {
-      LocationData.filter(l => l.locId === locationId)
-        .join(annotationIntervalQuery)
-        .on((a, b) => a.distance <= b.startLoc && a.distance >= b.endLoc)
-        .map(joined => (joined._2.startTs, joined._2.endTs, joined._1.locId)).distinct.result
-    }.foreach { case (start, end, locId) =>
-      (startTs to endTs).foreach { ts =>
-        if (ts >= start && ts <= end) annotationArray(ts - startTs) = 200.0
-      }
-    }
-
-    val time = (startTs to endTs).map(_.toDouble)
-
-    sliding match {
-      case Some(window) =>
-        slidingPlot(List((time zip avgSpeedArray, "Average Speed"), (time zip annotationArray, "Annotation")), window,
-          s"Avg. speed in $locationId, $lane", "Time", "Avg.Speed/Annotation")
-      case None =>
-        plot(List((time zip avgSpeedArray, "Average Speed"), (time zip annotationArray, "Annotation")),
-          s"Avg. speed in $locationId, $lane", "Time", "Avg.Speed/Annotation")
-    }
-  }*/
 }

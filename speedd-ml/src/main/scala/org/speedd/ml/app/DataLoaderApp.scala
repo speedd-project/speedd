@@ -5,9 +5,9 @@ import scala.util.Success
 import lomrf.util.time._
 
 /**
-  * Command line interface for loading the CNRS real data into the database.
+  * Command line interface for loading the CNRS real or simulated data into the database.
   */
-object CNRSCollectedDataLoader extends CLIDataLoaderApp {
+object DataLoaderApp extends CLIDataLoaderApp {
 
   // -------------------------------------------------------------------------------------------------------------------
   // --- Configuration parameters
@@ -17,7 +17,8 @@ object CNRSCollectedDataLoader extends CLIDataLoaderApp {
   // -------------------------------------------------------------------------------------------------------------------
   // --- Command line interface options
   // -------------------------------------------------------------------------------------------------------------------
-  opt("t", "task", "Specify one of the following tasks: input, annotation, location.", {
+  opt("t", "task", "Specify one of the following tasks: collected.input, collected.annotation, collected.location," +
+    " simulation.input, simulation.annotation, simulation.location.", {
     v: String => taskOpt = Some(v.trim.toLowerCase)
   })
 
@@ -52,9 +53,12 @@ object CNRSCollectedDataLoader extends CLIDataLoaderApp {
 
   // --- 2. Create the appropriate instance of data loader
   val loader: DataLoader = taskOpt.getOrElse(fatal("Please specify a task")) match {
-    case "input" => cnrs.collected.InputDataLoader
-    case "annotation" => cnrs.collected.AnnotationDataLoader
-    case "location" => cnrs.collected.LocationDataLoader
+    case "collected.input" => cnrs.collected.InputDataLoader
+    case "collected.annotation" => cnrs.collected.AnnotationDataLoader
+    case "collected.location" => cnrs.collected.LocationDataLoader
+    case "simulation.input" => cnrs.simulation.InputDataLoader
+    case "simulation.annotation" => cnrs.simulation.AnnotationDataLoader
+    case "simulation.location" => cnrs.simulation.LocationDataLoader
     case name =>
       fatal(s"Unknown task '$name', please set one of the following tasks: (1) input, (2) annotation or (3) location.")
   }

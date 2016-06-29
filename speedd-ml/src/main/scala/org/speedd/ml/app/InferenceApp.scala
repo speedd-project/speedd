@@ -19,6 +19,7 @@ object InferenceApp extends App with OptionParser with Logging {
   // -------------------------------------------------------------------------------------------------------------------
   private var inputKBOpt: Option[File] = None
   private var atomMappingsOpt: Option[File] = None
+  private var functionMappingsOpt: Option[File] = None
   private var intervalOpt: Option[(Int, Int)] = None
   private var batchSizeOpt: Option[Int] = None
   private var taskOpt: Option[String] = None
@@ -83,6 +84,17 @@ object InferenceApp extends App with OptionParser with Logging {
       }
   })
 
+  opt("fm", "function-mappings", "<string>", "Specify the atom mappings file containing mappings of functions to sql constraints.", {
+    v: String =>
+      val file = new File(v)
+
+      functionMappingsOpt = {
+        if (!file.isFile) fatal("The specified function mappings file does not exist.")
+        else if (!file.canRead) fatal("Cannot read the specified function mappings file, please check the file permissions.")
+        else Some(file)
+      }
+  })
+
   flagOpt("v", "version", "Print version and exit.", sys.exit(0))
 
   flagOpt("h", "help", "Print usage options.", {
@@ -104,8 +116,9 @@ object InferenceApp extends App with OptionParser with Logging {
   // File indicating the input MLN knowledge file
   val kbFile = inputKBOpt getOrElse fatal("Please specify an input KB file")
 
-  // File indicating the input MLN knowledge file
-  val atomMappingsFile = atomMappingsOpt getOrElse fatal("Please specify an atom mappings file")
+  //val atomMappingsFile = atomMappingsOpt getOrElse fatal("Please specify an atom mappings file")
+
+  val functionMappingsFile = functionMappingsOpt getOrElse fatal("Please specify a function mappings file")
 
   // The temporal interval by which we will take the evidence and annotation data for inference
   val (startTime, endTime) = intervalOpt getOrElse fatal("Please specify an interval")
@@ -126,7 +139,7 @@ object InferenceApp extends App with OptionParser with Logging {
 
   // --- 1. Create the appropriate instance of inference engine
   val inferenceEngine: CNRSInferenceEngine = taskOpt.getOrElse(fatal("Please specify a task name")) match {
-    case "CNRS" => CNRSInferenceEngine(kbFile, atomMappingsFile, queryPredicates)
+    case "CNRS" => CNRSInferenceEngine(kbFile, /*atomMappingsFile,*/ functionMappingsFile, queryPredicates)
     case _ => fatal("Please specify a task name")
   }
 

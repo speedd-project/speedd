@@ -21,7 +21,7 @@ case class Input(locId: Long,
                  vehicles: Option[Int] = None,
                  avgSpeed: Option[Double] = None)
 
-class InputTable (tag: Tag) extends Table[Input] (tag, Some("cnrs"), "input") {
+class InputTable (tag: Tag) extends Table[Input] (tag, Some("cnrs"), "collected_input") {
 
   def locId = column[Long]("loc_id")
   def lane = column[String]("lane")
@@ -30,11 +30,11 @@ class InputTable (tag: Tag) extends Table[Input] (tag, Some("cnrs"), "input") {
   def vehicles = column[Option[Int]]("vehicles")
   def avgSpeed = column[Option[Double]]("avg_speed")
 
-  def pk = primaryKey("pk_input", (locId, lane, timeStamp))
+  def pk = primaryKey("pk_collected_input", (locId, lane, timeStamp))
 
   def * = (locId, lane, timeStamp, occupancy, vehicles, avgSpeed) <> (Input.tupled, Input.unapply)
 
-  def indexInput = index("idx_input", timeStamp)
+  def indexInput = index("idx_collected_input", timeStamp)
 
   lazy val columnNames = List(locId.toString, lane.toString, timeStamp.toString,
                               occupancy.toString, vehicles.toString, avgSpeed.toString)
@@ -44,6 +44,6 @@ object InputData extends TableQuery[InputTable](new InputTable(_)) {
 
   def createSchema() =
     if (blockingExec {
-      MTable.getTables("input")
+      MTable.getTables("collected_input")
     }.isEmpty) blockingExec(this.schema.create)
 }

@@ -20,7 +20,7 @@ import org.speedd.ml.util.data._
   *   <li>event_num: event number (integer)</li>
   *   <li>start_time: string indicating the beginning date-time </li>
   *   <li>end_time: string indicating the end date-time</li>
-  *   <li>state: incident state (we are interested for `Clos`)</li>
+  *   <li>state: incident state</li>
   *   <li>location: string indicating the location of the incident</li>
   *   <li>sensor: sensor number/type</li>
   *   <li>description: the annotation (name of the incident)</li>
