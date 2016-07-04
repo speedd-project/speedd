@@ -1,8 +1,8 @@
-package org.speedd.ml.loaders.cnrs.simulation
+package org.speedd.ml.loaders.cnrs.simulation.city
 
 import java.io.File
 import org.speedd.ml.loaders.DataLoader
-import org.speedd.ml.model.cnrs.simulation.{Input, InputData}
+import org.speedd.ml.model.cnrs.simulation.city.{Input, InputData}
 import org.speedd.ml.util.data.CSV
 import org.speedd.ml.util.data.DatabaseManager._
 import slick.driver.PostgresDriver.api._
@@ -11,14 +11,14 @@ import scala.concurrent.{Await, Future}
 import scala.util.{Failure, Success}
 
 /**
-  * Loads and converts input data from CSV files. The data was simulated by CNRS.
+  * Loads and converts input city data from CSV files. The data was simulated by CNRS.
   *
   * <p>
   * The expected format of the CSV file is the following:
   * <ul>
   *   <li>did: unique simulation id, which shows the random seed (integer)</li>
   *   <li>oid: represents the detector id (integer)</li>
-  *   <li>sid: represents the the vehicle types (0 = for all vehicle type, 1 = car, 2 = truck)</li>
+  *   <li>sid: represents the vehicle types (0 = for all vehicle type, 1 = car, 2 = truck)</li>
   *   <li>ent: represents the time interval of the simulation time (integer)</li>
   *   <li>count_veh: represents the counted number of vehicles (double)</li>
   *   <li>speedd: represents the average speed of the counter vehicles (double)</li>

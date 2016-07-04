@@ -1,7 +1,7 @@
-package org.speedd.ml.model.cnrs.simulation
+package org.speedd.ml.model.cnrs.simulation.city
 
-import slick.driver.PostgresDriver.api._
 import org.speedd.ml.util.data.DatabaseManager._
+import slick.driver.PostgresDriver.api._
 import slick.jdbc.meta.MTable
 
 /**
@@ -25,7 +25,7 @@ case class Input(simulationId: Int,
                  avgSpeed: Option[Double] = None,
                  occupancy: Option[Double] = None)
 
-class InputTable (tag: Tag) extends Table[Input] (tag, Some("cnrs"), "simulation_input") {
+class InputTable (tag: Tag) extends Table[Input] (tag, Some("cnrs"), "simulation_city_input") {
 
   def simulationId = column[Int]("simulation_id")
   def trafficLevel = column[String]("traffic_level")
@@ -36,11 +36,11 @@ class InputTable (tag: Tag) extends Table[Input] (tag, Some("cnrs"), "simulation
   def avgSpeed = column[Option[Double]]("avg_speed")
   def occupancy = column[Option[Double]]("occupancy")
 
-  def pk = primaryKey("pk_simulation_input", (simulationId, trafficLevel, timeStamp, detectorId, vehicleType))
+  def pk = primaryKey("pk_simulation_city_input", (simulationId, trafficLevel, timeStamp, detectorId, vehicleType))
 
   def * = (simulationId, trafficLevel, timeStamp, detectorId, vehicleType, vehicles, avgSpeed, occupancy) <> (Input.tupled, Input.unapply)
 
-  def indexInput = index("idx_simulation_input", timeStamp)
+  def indexInput = index("idx_simulation_city_input", timeStamp)
 
   lazy val columnNames = List(simulationId.toString, trafficLevel.toString, timeStamp.toString, detectorId.toString,
     vehicleType.toString, vehicles.toString, avgSpeed.toString, occupancy.toString)
@@ -50,6 +50,6 @@ object InputData extends TableQuery[InputTable](new InputTable(_)) {
 
   def createSchema() =
     if (blockingExec {
-      MTable.getTables("simulation_input")
+      MTable.getTables("simulation_city_input")
     }.isEmpty) blockingExec(this.schema.create)
 }

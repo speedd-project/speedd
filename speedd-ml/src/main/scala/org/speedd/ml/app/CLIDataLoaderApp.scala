@@ -3,10 +3,8 @@ package org.speedd.ml.app
 import java.io.File
 import java.nio.file.Paths
 import java.util.regex.Pattern
-
 import org.speedd.ml.ModuleVersion
 import org.speedd.ml.util.IO._
-
 import scala.util.{Success, Try}
 import auxlib.log.Logging
 import auxlib.opt.OptionParser

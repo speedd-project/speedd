@@ -39,6 +39,18 @@ package object data {
   }
 
   /**
+    * Translates a time duration string value into seconds.
+    *
+    * @param duration a time duration string
+    *
+    * @return the time duration in seconds
+    */
+  def duration2Seconds(duration: String): Int = {
+    val values = duration.split(":")
+    values(0).toInt * 3600 + values(1).toInt * 60 + values(2).toInt
+  }
+
+  /**
     * Translates a date-time value into a unix time-stamp (in seconds) according to a
     * given date format for the date-times and a second short date-format in case some
     * date-time values are shorter (e.g. seconds are missing). Moreover, the unix

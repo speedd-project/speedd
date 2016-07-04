@@ -26,4 +26,4 @@ declare -r lib_dir="$base_dir/lib"
 declare -r CNRS_PLOT_JAVA_OPS=${VM_ARGS}" -XX:+AggressiveOpts"
 declare -r CNRS_PLOT_CLASSPATH=${PRJ_COMMONS_CLASSPATH}
 
-nice java ${CNRS_PLOT_JAVA_OPS} -cp ${CNRS_PLOT_CLASSPATH} org.speedd.ml.app.SimulatedCNRSCityDataPlotApp $@
+nice java ${CNRS_PLOT_JAVA_OPS} -cp ${CNRS_PLOT_CLASSPATH} org.speedd.ml.app.SimulatedCNRSDataPlotApp $@

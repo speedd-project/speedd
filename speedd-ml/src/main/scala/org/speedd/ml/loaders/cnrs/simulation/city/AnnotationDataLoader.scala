@@ -1,9 +1,8 @@
-package org.speedd.ml.loaders.cnrs.simulation
+package org.speedd.ml.loaders.cnrs.simulation.city
 
 import java.io.File
 import org.speedd.ml.loaders.DataLoader
-import org.speedd.ml.model.cnrs.simulation.{Annotation, AnnotationData}
-import org.speedd.ml.util.data.CSV
+import org.speedd.ml.model.cnrs.simulation.city.{Annotation, AnnotationData}
 import org.speedd.ml.util.data.DatabaseManager._
 import slick.driver.PostgresDriver.api._
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -11,7 +10,7 @@ import scala.util.{Failure, Success}
 import org.speedd.ml.util.data._
 
 /**
-  * Loads and converts annotation data from CSV files. The data was simulated by CNRS.
+  * Loads and converts annotation city data from CSV files. The data was simulated by CNRS.
   *
   * <p>
   * The expected format of the CSV file is the following:
@@ -66,12 +65,8 @@ object AnnotationDataLoader extends DataLoader {
     */
   private def toAnnotation(source: Array[String]): Option[Annotation] = {
     val start = ts2UnixTS(source(6), DATE_TIME_FORMAT, DATE_TIME_FORMAT_SHORT)
-    val duration = {
-        val time = source(5).split(":")
-        time(0).toInt * 3600 + time(1).toInt * 60 + time(2).toInt
-      }
     Some(Annotation(source(1).toInt, source(0).toString, source(3).toString, source(4).toInt, (start - INIT_TIME) / 15,
-      (start - INIT_TIME + duration) / 15, source(7).toDouble, "accident"))
+      (start - INIT_TIME + duration2Seconds(source(5))) / 15, source(7).toDouble, "accident"))
   }
 
 }

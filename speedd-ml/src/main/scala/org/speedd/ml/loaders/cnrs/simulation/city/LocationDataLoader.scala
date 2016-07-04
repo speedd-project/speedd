@@ -1,15 +1,26 @@
-package org.speedd.ml.loaders.cnrs.simulation
+package org.speedd.ml.loaders.cnrs.simulation.city
 
 import java.io.File
 import org.speedd.ml.loaders.DataLoader
+import org.speedd.ml.model.cnrs.simulation.city.{Location, LocationData}
 import org.speedd.ml.util.data.CSV
 import org.speedd.ml.util.data.DatabaseManager._
 import slick.driver.PostgresDriver.api._
 import scala.concurrent.ExecutionContext.Implicits.global
-import org.speedd.ml.model.cnrs.simulation.Location
-import org.speedd.ml.model.cnrs.simulation.LocationData
 import scala.util.{Failure, Success}
 
+/**
+  * Loads and converts location city data from CSV files. The data was simulated by CNRS.
+  *
+  * <p>
+  * The expected format of the CSV file is the following:
+  * <ul>
+  *   <li>detector_id: represents the detector id (integer)</li>
+  *   <li>section_id: represents the section id (integer)</li>
+  *   <li>location: represents the location name</li>
+  * </ul>
+  * </p>
+  */
 object LocationDataLoader extends DataLoader {
 
   /**
