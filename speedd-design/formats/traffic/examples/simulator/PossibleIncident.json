@@ -4,7 +4,7 @@
   "EventId": "23f21aca-d24e-45af-9b9a-b399a8c6d220",
   "dmPartition": "section5",
   "DetectionTime": "30/06/2016 14:54:08",
-  "Name": "PossibleAccident",
+  "Name": "PossibleIncident",
   "Cost": "0.0",
   "Certainty": "0.6",
   "EventSource": "",
