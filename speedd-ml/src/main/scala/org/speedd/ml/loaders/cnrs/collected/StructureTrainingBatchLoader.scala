@@ -5,9 +5,8 @@ import lomrf.logic._
 import lomrf.mln.learning.structure.TrainingEvidence
 import lomrf.mln.model._
 import lomrf.util.Cartesian.CartesianIterator
-import org.speedd.ml.loaders.TrainingBatch
+import org.speedd.ml.loaders.BatchLoader
 import org.speedd.ml.util.logic._
-
 import scala.util.{Failure, Success}
 import slick.driver.PostgresDriver.api._
 import org.speedd.ml.util.data.DatabaseManager._
@@ -19,9 +18,9 @@ class StructureTrainingBatchLoader(kb: KB,
                                    evidencePredicates: Set[AtomSignature],
                                    sqlFunctionMappings: List[TermMapping]) extends Logging {
 
-  def forInterval(startTs: Int, endTs: Int): TrainingEvidence = {
+  def forInterval(startTs: Int, endTs: Int, simulationId: Option[Int] = None): TrainingEvidence = {
 
-    val (domainsMap, annotatedLocations) = loadFor(startTs, endTs)
+    val (domainsMap, annotatedLocations) = loadFor(simulationId.get, startTs, endTs)
 
     val (functionMappings, generatedDomainMap) = {
       generateFunctionMappings(kb.functionSchema, domainsMap) match {

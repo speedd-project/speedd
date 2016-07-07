@@ -9,7 +9,7 @@ import org.speedd.ml.learners.Learner
 import org.speedd.ml.loaders.cnrs.collected.StructureTrainingBatchLoader
 import org.speedd.ml.util.logic._
 
-final class CNRSStructureLearner private(kb: KB,
+final class StructureLearner private(kb: KB,
                                          kbConstants: ConstantsDomain,
                                          predicateSchema: PredicateSchema,
                                          atomMappings: List[TermMapping],
@@ -26,7 +26,8 @@ final class CNRSStructureLearner private(kb: KB,
 
   private lazy val learner = OSLa(kb, kbConstants, nonEvidenceAtoms, targetSignatures, modes, maxLength, allowFreeVariables = false, threshold)
 
-  override def trainFor(startTs: Int, endTs: Int, batchSize: Int, excludeInterval: Option[(Int, Int)] = None): Unit = {
+  override def trainFor(startTs: Int, endTs: Int, batchSize: Int,
+                        excludeInterval: Option[(Int, Int)] = None, simulationIds: List[Int] = List.empty): Unit = {
 
     val microIntervals =
       if (excludeInterval.isDefined) {
@@ -62,7 +63,7 @@ final class CNRSStructureLearner private(kb: KB,
   }
 }
 
-object CNRSStructureLearner extends Logging {
+object StructureLearner extends Logging {
 
   val DEFAULT_NON_EVIDENCE_ATOMS = Set[AtomSignature](AtomSignature("HoldsAt", 2))
 
@@ -74,7 +75,7 @@ object CNRSStructureLearner extends Logging {
             threshold: Int,
             inputSignatures: Set[AtomSignature],
             targetSignatures: Set[AtomSignature],
-            nonEvidenceAtoms: Set[AtomSignature] = DEFAULT_NON_EVIDENCE_ATOMS): CNRSStructureLearner = {
+            nonEvidenceAtoms: Set[AtomSignature] = DEFAULT_NON_EVIDENCE_ATOMS): StructureLearner = {
     // ---
     // --- Prepare the KB:
     // ---
@@ -90,7 +91,7 @@ object CNRSStructureLearner extends Logging {
       debug(sqlFunctionMappings.mkString("\n"))
     }
 
-    new CNRSStructureLearner(
+    new StructureLearner(
       kb, kbConstants, kb.predicateSchema, sqlFunctionMappings, inputKB,
       outputKB, inputSignatures, targetSignatures, nonEvidenceAtoms, modes, maxLength, threshold)
   }

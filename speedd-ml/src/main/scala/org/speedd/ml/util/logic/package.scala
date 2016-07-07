@@ -7,6 +7,7 @@ import lomrf.util.Cartesian.CartesianIterator
 import scala.collection.mutable
 import scala.util.{Failure, Success, Try}
 import lomrf.FUNC_RET_VAR_PREFIX
+import org.speedd.ml.util.data.DomainMap
 
 package object logic {
 
@@ -66,12 +67,12 @@ package object logic {
     * @return an array of function mappings for each function signature and the refined domain mappings
     */
   def generateFunctionMappings(functionSchema: FunctionSchema, domainsMap: Map[String, Iterable[String]]):
-                               Try[(Array[(AtomSignature, Iterable[FunctionMapping])], Map[String, Iterable[String]])] = {
+                               Try[(Map[AtomSignature, Iterable[FunctionMapping]], DomainMap)] = {
 
     // ---
     // --- Compute function mappings
     // ---
-    val functionMappings = new Array[(AtomSignature, Iterable[FunctionMapping])](functionSchema.size)
+    var functionMappings = Map.empty[AtomSignature, Iterable[FunctionMapping]]
 
     var generatedDomains = Map.empty[String, Iterable[String]]
 
@@ -95,10 +96,33 @@ package object logic {
         generatedDomains += retDomain -> (generatedDomains(retDomain) ++ products.keys)
       else generatedDomains += retDomain -> products.keys
 
-      functionMappings(index) = signature -> products.values
+      functionMappings += signature -> products.values
     }
 
     Success((functionMappings, generatedDomains))
+  }
+
+  /**
+    *
+    * @param trainingEvidence
+    * @param evidenceAtoms
+    * @param nonEvidenceAtoms
+    * @return
+    */
+  def extractAnnotation(trainingEvidence: Evidence,
+                        evidenceAtoms: Set[AtomSignature],
+                        nonEvidenceAtoms: Set[AtomSignature]): (Evidence, EvidenceDB) = {
+
+    // Partition the training data into annotation and evidence databases
+    var (annotationDB, atomStateDB) = trainingEvidence.db.partition {
+      case (signature, db) => nonEvidenceAtoms.contains(signature)
+    }
+
+    // Define all non evidence atoms as unknown in the evidence database
+    for (signature <- annotationDB.keysIterator)
+      atomStateDB += (signature -> AtomEvidenceDB.allUnknown(trainingEvidence.db(signature).identity))
+
+    (new Evidence(trainingEvidence.constants, atomStateDB, trainingEvidence.functionMappers), annotationDB)
   }
 
   /**
@@ -107,6 +131,7 @@ package object logic {
     * @param ruleTransformations an iterable of rule transformation instances
     * @param outputPath the output path to export the transformations
     * @param interval
+    *
     * @return the output path
     */
   def exportTransformations(ruleTransformations: Iterable[RuleTransformation],

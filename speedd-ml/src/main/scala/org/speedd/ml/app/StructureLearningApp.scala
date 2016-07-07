@@ -8,7 +8,7 @@ import lomrf.mln.learning.structure.ModeParser
 import lomrf.util.time._
 import org.speedd.ml.ModuleVersion
 import org.speedd.ml.learners.Learner
-import org.speedd.ml.learners.cnrs.collected.CNRSStructureLearner
+import org.speedd.ml.learners.cnrs.collected.StructureLearner
 import org.speedd.ml.util.logic._
 
 import scala.util.{Success, Try}
@@ -206,7 +206,7 @@ object StructureLearningApp extends App with OptionParser with Logging {
 
   // --- 1. Create the appropriate instance of weight learner
   val structureLearner: Learner = taskOpt.getOrElse(fatal("Please specify a task name")) match {
-    case "CNRS" => CNRSStructureLearner(kbFile, outputFile, sqlFunctionMappingsFile, modes, maxLength,
+    case "CNRS" => StructureLearner(kbFile, outputFile, sqlFunctionMappingsFile, modes, maxLength,
                                         threshold, evidencePredicates, targetPredicates)
     case _ => fatal("Please specify a task name")
   }

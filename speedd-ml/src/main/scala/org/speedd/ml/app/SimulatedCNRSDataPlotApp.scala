@@ -175,7 +175,7 @@ object SimulatedCNRSDataPlotApp extends CLIDataPlotApp {
         // Print data
         if (printData) blockingExec {
           inputQuery.join(city.LocationData)
-            .on((a, b) => a.detectorId === b.detectorId && b.sectionId === locationId).result
+            .on((a, b) => a.detectorId === b.detectorId && b.sectionId === locationId).sortBy(_._1.timeStamp).result
         }.foreach { case (a, b) =>
           info(s"${a.timeStamp}, ${a.vehicles.getOrElse(0.0)}, ${a.avgSpeed.getOrElse(0.0)}, ${a.occupancy.getOrElse(0.0)}")
         }
@@ -289,7 +289,7 @@ object SimulatedCNRSDataPlotApp extends CLIDataPlotApp {
         // Print data
         if (printData) blockingExec {
           inputQuery.join(highway.LocationData)
-            .on((a, b) => a.detectorId === b.detectorId && b.sectionId === locationId).result
+            .on((a, b) => a.detectorId === b.detectorId && b.sectionId === locationId).sortBy(_._1.timeStamp).result
         }.foreach { case (a, b) =>
           info(s"${a.timeStamp}, ${a.avgSpeed.getOrElse(0.0)}, ${a.carVehicles.getOrElse(0.0)}," +
             s" ${a.trunkVehicles.getOrElse(0.0)}, ${a.density.getOrElse(0.0)}, ${a.carDensity.getOrElse(0.0)}," +

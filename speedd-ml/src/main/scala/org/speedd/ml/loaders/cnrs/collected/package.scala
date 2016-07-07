@@ -17,13 +17,11 @@ package object collected {
     * User defined occupancy levels
     */
   val occLevels = Array(0.0, 30.0, 101.0)
-  //val occLevels = Array(0.0, 10.0, 20.0, 30.0, 40.0, 50.0, 60.0, 70.0, 80.0, 90.0, 100.0)
 
   /**
     * User defined average speed levels
     */
   val speedLevels = Array(0.0, 55.0, 100.0)
-  //val speedLevels = Array(0.0, 10.0, 20.0, 30.0, 40.0, 50.0, 60.0, 70.0, 80.0, 90.0, 100.0)
 
   /**
     * User defined vehicle numbers
@@ -53,38 +51,27 @@ package object collected {
     "V" -> mkInterval(vehicleLevels,symbols2domain)
   )
 
-  def loadFor(startTs: Int, endTs: Int,
-              initial: ConstantsDomain = Map.empty) = {
+  def loadFor(simulationId: Int, startTs: Int, endTs: Int,
+              initial: ConstantsDomain = Map.empty): (DomainMap, AnnotationTuples[Int, Long, String, Option[String]]) = {
 
     var domainsMap = initial.map(pair => pair._1 -> pair._2.toIterable)
 
+    // Append all time points in the given interval
     domainsMap += "timestamp" -> (startTs to endTs).map(_.toString)
 
-    val inputValues =
-      blockingExec {
-        InputData.filter(i => i.timeStamp >= startTs && i.timeStamp <= endTs)
-          .map(i => (i.occupancy, i.vehicles, i.avgSpeed)).result
-      }.unzip3
-
-    domainsMap ++= Iterable("occupancy" -> inputValues._1.flatten.map(domain2udf("occupancy")(_)).distinct,
-      "vehicles" -> inputValues._2.flatten.map(domain2udf("vehicles")(_)).distinct,
-      "avg_speed" -> inputValues._3.flatten.map(domain2udf("avg_speed")(_)).distinct)
-
+    // Append all location and lanes found in the 'collected_location' table
     val locationValues = blockingExec {
       LocationData.map(l => (l.locId, l.lane)).result
     }.map{ case (locId, lane) =>
       (locId.toString, lane)
     }.unzip
 
-    domainsMap ++= Iterable("loc_id" -> locationValues._1.distinct,
+    domainsMap ++= Iterable(
+      "loc_id" -> locationValues._1.distinct,
       "lane" -> locationValues._2.distinct)
 
     val annotationIntervalQuery =
       AnnotationData.filter(a => a.startTs <= endTs && a.endTs >= startTs)
-
-    domainsMap += "description" -> blockingExec {
-      annotationIntervalQuery.map(_.description).result
-    }.distinct
 
     /*
      * Creates annotated location tuples for each pair of location id and lane existing

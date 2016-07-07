@@ -1,14 +1,14 @@
-package org.speedd.ml.loaders.cnrs.collected
+package org.speedd.ml.loaders.cnrs.simulation.highway
 
-import lomrf.logic._
+import lomrf.logic.{NormalForm, WeightedFormula, _}
 import lomrf.mln.learning.structure.TrainingEvidence
+import org.speedd.ml.loaders.{BatchLoader, TrainingBatch}
+import org.speedd.ml.util.logic._
 import lomrf.mln.model._
 import lomrf.util.Cartesian.CartesianIterator
-import org.speedd.ml.loaders.{BatchLoader, TrainingBatch}
-import org.speedd.ml.model.cnrs.collected.InputData
-import org.speedd.ml.util.logic._
-import slick.driver.PostgresDriver.api._
+import org.speedd.ml.model.cnrs.simulation.highway.{InputData, LocationData}
 import org.speedd.ml.util.data.DatabaseManager._
+import slick.driver.PostgresDriver.api._
 
 final class TrainingBatchLoader(kb: KB,
                                 kbConstants: ConstantsDomain,
@@ -26,12 +26,13 @@ final class TrainingBatchLoader(kb: KB,
     * @param startTs starting time point
     * @param endTs end time point
     * @param simulationId simulation id (optional)
+    *
     * @return a batch [[org.speedd.ml.loaders.Batch]] subclass specified during implementation
     */
-  def forInterval(startTs: Int, endTs: Int, simulationId: Option[Int] = None): TrainingBatch = {
+  override def forInterval(startTs: Int, endTs: Int, simulationId: Option[Int] = None): TrainingBatch = {
 
     val (constantsDomain, functionMappings, annotatedLocations) =
-      loadAll[Int, Long, String, Option[String]](kbConstants, kb.functionSchema, startTs, endTs, simulationId, loadFor)
+      loadAll[Int, Int, Int, String](kbConstants, kb.functionSchema, startTs, endTs, simulationId, loadFor)
 
     // ---
     // --- Create a new evidence builder
@@ -76,10 +77,15 @@ final class TrainingBatchLoader(kb: KB,
       iterator.map(_.map(Constant))
         .foreach { case constants =>
 
+          val detectorId = blockingExec {
+            LocationData.filter(l => l.sectionId === constants.head.symbol.toInt)
+              .map(_.detectorId).distinct.result
+          }.head
+
           val time_points = blockingExec {
             sql"""select timestamp from #${InputData.baseTableRow.schemaName.get}.#${InputData.baseTableRow.tableName}
-                  where #${bindSQLVariables(sqlFunction.sqlConstraint, constants)}
-                  AND timestamp between #$startTs AND #$endTs""".as[Int]
+                  where #${bindSQLVariables(sqlFunction.sqlConstraint, Array(Constant(detectorId.toString)))}
+                  AND simulation_id = #${simulationId.get} AND timestamp between #$startTs AND #$endTs""".as[Int]
           }
 
           val happens = for {
@@ -107,13 +113,12 @@ final class TrainingBatchLoader(kb: KB,
 
         val domainMap = Map[String, Constant](
           "timestamp" -> Constant(r._1.toString),
-          "loc_id" -> Constant(r._2.toString),
-          "lane" -> Constant(r._3.toString)
+          "section_id" -> Constant(r._3.toString)
         )
 
         val tuple = domain.map(domainMap)
 
-        if(r._4.isDefined && r._4.get == fluentSignature.symbol)
+        if(r._4 == fluentSignature.symbol)
           for {
             mapper <- functionMappingsMap.get(fluentSignature)
             resultingSymbol <- mapper.get(tuple.map(_.toText))
@@ -174,12 +179,13 @@ final class TrainingBatchLoader(kb: KB,
     * @param startTs starting time point
     * @param endTs end time point
     * @param simulationId simulation id (optional)
+    *
     * @return a training evidence batch [[lomrf.mln.learning.structure.TrainingEvidence]]
     */
   override def forIntervalSL(startTs: Int, endTs: Int, simulationId: Option[Int] = None): TrainingEvidence = {
 
     val (constantsDomain, functionMappings, annotatedLocations) =
-      loadAll[Int, Long, String, Option[String]](kbConstants, kb.functionSchema, startTs, endTs, simulationId, loadFor)
+      loadAll[Int, Int, Int, String](kbConstants, kb.functionSchema, startTs, endTs, simulationId, loadFor)
 
     // ---
     // --- Create a new evidence builder
@@ -231,10 +237,15 @@ final class TrainingBatchLoader(kb: KB,
       iterator.map(_.map(Constant))
         .foreach { case constants =>
 
+          val detectorId = blockingExec {
+            LocationData.filter(l => l.sectionId === constants.head.symbol.toInt)
+              .map(_.detectorId).distinct.result
+          }.head
+
           val time_points = blockingExec {
             sql"""select timestamp from #${InputData.baseTableRow.schemaName.get}.#${InputData.baseTableRow.tableName}
-                  where #${bindSQLVariables(sqlFunction.sqlConstraint, constants)}
-                  AND timestamp between #$startTs AND #$endTs""".as[Int]
+                  where #${bindSQLVariables(sqlFunction.sqlConstraint, Array(Constant(detectorId.toString)))}
+                  AND simulation_id = #${simulationId.get} AND timestamp between #$startTs AND #$endTs""".as[Int]
           }
 
           val happens = for {
@@ -264,13 +275,12 @@ final class TrainingBatchLoader(kb: KB,
 
         val domainMap = Map[String, Constant](
           "timestamp" -> Constant(r._1.toString),
-          "loc_id" -> Constant(r._2.toString),
-          "lane" -> Constant(r._3.toString)
+          "section_id" -> Constant(r._3.toString)
         )
 
         val tuple = domain.map(domainMap)
 
-        if(r._4.isDefined && r._4.get == fluentSignature.symbol)
+        if(r._4 == fluentSignature.symbol)
           for {
             mapper <- functionMappingsMap.get(fluentSignature)
             resultingSymbol <- mapper.get(tuple.map(_.toText))
@@ -307,4 +317,5 @@ final class TrainingBatchLoader(kb: KB,
 
     TrainingEvidence(evidence, annotation, convertedEvidence)
   }
+
 }

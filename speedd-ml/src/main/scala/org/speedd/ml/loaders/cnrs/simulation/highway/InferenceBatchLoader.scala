@@ -1,21 +1,21 @@
-package org.speedd.ml.loaders.cnrs.collected
+package org.speedd.ml.loaders.cnrs.simulation.highway
 
 import lomrf.logic._
 import lomrf.mln.learning.structure.TrainingEvidence
 import lomrf.mln.model._
 import lomrf.util.Cartesian.CartesianIterator
 import org.speedd.ml.loaders.{BatchLoader, InferenceBatch}
-import org.speedd.ml.model.cnrs.collected.InputData
+import org.speedd.ml.model.cnrs.simulation.highway.{InputData, LocationData}
 import org.speedd.ml.util.data.DatabaseManager._
 import slick.driver.PostgresDriver.api._
 import org.speedd.ml.util.logic._
 
 final class InferenceBatchLoader(kb: KB,
-                                kbConstants: ConstantsDomain,
-                                predicateSchema: PredicateSchema,
-                                evidencePredicates: Set[AtomSignature],
-                                queryPredicates: Set[AtomSignature],
-                                sqlFunctionMappings: List[TermMapping]) extends BatchLoader {
+                                 kbConstants: ConstantsDomain,
+                                 predicateSchema: PredicateSchema,
+                                 evidencePredicates: Set[AtomSignature],
+                                 queryPredicates: Set[AtomSignature],
+                                 sqlFunctionMappings: List[TermMapping]) extends BatchLoader {
 
   /**
     * Loads a (micro) batch, either training [[org.speedd.ml.loaders.TrainingBatch]] or
@@ -32,12 +32,12 @@ final class InferenceBatchLoader(kb: KB,
   def forInterval(startTs: Int, endTs: Int, simulationId: Option[Int] = None): InferenceBatch = {
 
     val (constantsDomain, functionMappings, annotatedLocations) =
-      loadAll[Int, Long, String, Option[String]](kbConstants, kb.functionSchema, startTs, endTs, simulationId, loadFor)
+      loadAll[Int, Int, Int, String](kbConstants, kb.functionSchema, startTs, endTs, simulationId, loadFor)
 
     // ---
     // --- Create a new evidence builder
     // ---
-    // Evidence builder can incrementally create an evidence database for LoMRF
+    // Evidence builder can incrementally create an evidence database. Everything not given is considered as false (CWA).
     val annotatedDB = EvidenceBuilder(predicateSchema, kb.functionSchema, queryPredicates, hiddenPredicates = Set.empty, constantsDomain)
       .withDynamicFunctions(predef.dynFunctions).withCWAForAll(true)
 
@@ -57,6 +57,12 @@ final class InferenceBatchLoader(kb: KB,
       case pair => annotatedDB.evidence ++= EvidenceAtom.asTrue("Next", pair.map(t => Constant(t.toString)).reverse.toVector)
     }
 
+    // ---
+    // --- Create auxiliary predicates and give them as evidence facts:
+    // ---
+    // Compute instances of the auxiliary derived atoms from the raw data in the specified temporal interval.
+    info(s"Generating derived events for the temporal interval [$startTs, $endTs]")
+
     for (sqlFunction <- sqlFunctionMappings) {
 
       val domain = sqlFunction.domain
@@ -71,10 +77,15 @@ final class InferenceBatchLoader(kb: KB,
       iterator.map(_.map(Constant))
         .foreach { case constants =>
 
+          val detectorId = blockingExec {
+            LocationData.filter(l => l.sectionId === constants.head.symbol.toInt)
+              .map(_.detectorId).distinct.result
+          }.head
+
           val time_points = blockingExec {
             sql"""select timestamp from #${InputData.baseTableRow.schemaName.get}.#${InputData.baseTableRow.tableName}
-                  where #${bindSQLVariables(sqlFunction.sqlConstraint, constants)}
-                  AND timestamp between #$startTs AND #$endTs""".as[Int]
+                  where #${bindSQLVariables(sqlFunction.sqlConstraint, Array(Constant(detectorId.toString)))}
+                  AND simulation_id = #${simulationId.get} AND timestamp between #$startTs AND #$endTs""".as[Int]
           }
 
           val happens = for {
@@ -102,13 +113,12 @@ final class InferenceBatchLoader(kb: KB,
 
         val domainMap = Map[String, Constant](
           "timestamp" -> Constant(r._1.toString),
-          "loc_id" -> Constant(r._2.toString),
-          "lane" -> Constant(r._3.toString)
+          "section_id" -> Constant(r._3.toString)
         )
 
         val tuple = domain.map(domainMap)
 
-        if(r._4.isDefined && r._4.get == fluentSignature.symbol)
+        if(r._4 == fluentSignature.symbol)
           for {
             mapper <- functionMappingsMap.get(fluentSignature)
             resultingSymbol <- mapper.get(tuple.map(_.toText))
