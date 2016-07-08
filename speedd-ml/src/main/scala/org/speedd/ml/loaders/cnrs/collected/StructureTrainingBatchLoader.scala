@@ -20,7 +20,7 @@ class StructureTrainingBatchLoader(kb: KB,
 
   def forInterval(startTs: Int, endTs: Int, simulationId: Option[Int] = None): TrainingEvidence = {
 
-    val (domainsMap, annotatedLocations) = loadFor(simulationId.get, startTs, endTs)
+    val (domainsMap, annotatedLocations) = loadFor(simulationId, startTs, endTs)
 
     val (functionMappings, generatedDomainMap) = {
       generateFunctionMappings(kb.functionSchema, domainsMap) match {

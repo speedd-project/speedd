@@ -8,7 +8,7 @@ import slick.driver.PostgresDriver.api._
 
 package object highway {
 
-  def loadFor(simulationId: Int, startTs: Int, endTs: Int,
+  def loadFor(simulationId: Option[Int] = None, startTs: Int, endTs: Int,
               initial: ConstantsDomain = Map.empty): (DomainMap, AnnotationTuples[Int, Int, Int, String]) = {
 
     var domainsMap = initial.map(pair => pair._1 -> pair._2.toIterable)
@@ -23,7 +23,7 @@ package object highway {
 
     val annotationIntervalQuery =
       AnnotationData
-        .filter(a => a.simulationId === simulationId &&
+        .filter(a => a.simulationId === simulationId.get &&
         a.startTs <= endTs && a.endTs >= startTs)
 
     LocationData.join(annotationIntervalQuery)

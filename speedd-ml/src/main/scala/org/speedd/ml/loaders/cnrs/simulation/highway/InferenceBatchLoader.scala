@@ -74,30 +74,30 @@ final class InferenceBatchLoader(kb: KB,
 
       val iterator = CartesianIterator(argDomainValues)
 
-      iterator.map(_.map(Constant))
-        .foreach { case constants =>
+      val happensAtInstances = iterator.map(_.map(Constant))
+        .flatMap { case constants =>
 
           val detectorId = blockingExec {
             LocationData.filter(l => l.sectionId === constants.head.symbol.toInt)
               .map(_.detectorId).distinct.result
           }.head
 
-          val time_points = blockingExec {
+          val timePoints = blockingExec {
             sql"""select timestamp from #${InputData.baseTableRow.schemaName.get}.#${InputData.baseTableRow.tableName}
                   where #${bindSQLVariables(sqlFunction.sqlConstraint, Array(Constant(detectorId.toString)))}
                   AND simulation_id = #${simulationId.get} AND timestamp between #$startTs AND #$endTs""".as[Int]
           }
 
-          val happens = for {
-            t <- time_points
+          for {
+            t <- timePoints
             mapper <- functionMappingsMap.get(eventSignature)
             resultingSymbol <- mapper.get(constants.map(_.toText).toVector)
             groundTerms = Vector(Constant(resultingSymbol), Constant(t.toString))
           } yield EvidenceAtom.asTrue("HappensAt", groundTerms)
-
-          for (h <- happens)
-            annotatedDB.evidence += h
         }
+
+      for (happensAt <- happensAtInstances)
+        annotatedDB.evidence += happensAt
     }
 
     // ---
@@ -105,9 +105,14 @@ final class InferenceBatchLoader(kb: KB,
     // ---
     info(s"Generating annotation predicates for the temporal interval [$startTs, $endTs]")
 
-    val fluents = kb.functionSchema.filter(f => f._2._1 == "fluent")
+    val fluents = kb.formulas.flatMap(_.toCNF(kbConstants)).flatMap { c =>
+      c.literals.filter(l => queryPredicates.contains(l.sentence.signature)).map(_.sentence.terms.head).flatMap {
+        case TermFunction(symbol, terms, "fluent") => Some((symbol, terms, kb.functionSchema(AtomSignature(symbol, terms.length))._2))
+        case _ => None
+      }
+    }
 
-    for ((fluentSignature, (ret, domain)) <- fluents) {
+    for ((symbol, terms, domain) <- fluents) {
 
       val holdsAtInstances = annotatedLocations.flatMap { r =>
 
@@ -116,23 +121,36 @@ final class InferenceBatchLoader(kb: KB,
           "section_id" -> Constant(r._3.toString)
         )
 
-        val tuple = domain.map(domainMap)
+        val constantsExist =
+          for { t <- terms
+                d <- domain
+                if t.isConstant
+          } yield domainMap(d) == t
 
-        if(r._4 == fluentSignature.symbol)
+        val theta = terms.withFilter(_.isVariable)
+          .map(_.asInstanceOf[Variable])
+          .map(v => v -> domainMap(v.domain))
+          .toMap[Term, Term]
+
+        val substitutedTerms = terms.map(_.substitute(theta))
+
+        val fluentSignature = AtomSignature(symbol, substitutedTerms.size)
+
+        if(r._4 == fluentSignature.symbol && constantsExist.forall(_ == true))
           for {
             mapper <- functionMappingsMap.get(fluentSignature)
-            resultingSymbol <- mapper.get(tuple.map(_.toText))
+            resultingSymbol <- mapper.get(substitutedTerms.map(_.toText))
             groundTerms = Vector(Constant(resultingSymbol), Constant(r._1.toString))
           } yield EvidenceAtom.asTrue("HoldsAt", groundTerms)
         else None
       }
 
-      for (atom <- holdsAtInstances) try {
-        annotatedDB.evidence += atom
+      for (holdsAt <- holdsAtInstances) try {
+        annotatedDB.evidence += holdsAt
       } catch {
         case ex: java.util.NoSuchElementException =>
-          val fluent = atom.terms.head
-          val timestamp = atom.terms.last
+          val fluent = holdsAt.terms.head
+          val timestamp = holdsAt.terms.last
 
           constantsDomain("fluent").get(fluent.symbol) match {
             case None => error(s"fluent constant ${fluent.symbol} is missing from constants domain}")

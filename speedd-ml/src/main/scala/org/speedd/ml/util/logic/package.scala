@@ -103,11 +103,13 @@ package object logic {
   }
 
   /**
+    * Partition training evidence into evidence and annotation.
     *
-    * @param trainingEvidence
-    * @param evidenceAtoms
-    * @param nonEvidenceAtoms
-    * @return
+    * @param trainingEvidence the training evidence, containing truth values for non evidence predicates
+    * @param evidenceAtoms the set of evidence atom signatures
+    * @param nonEvidenceAtoms the set of non evidence atom signatures
+    *
+    * @return a tuple containing evidence and annotation databases
     */
   def extractAnnotation(trainingEvidence: Evidence,
                         evidenceAtoms: Set[AtomSignature],

@@ -74,30 +74,30 @@ final class TrainingBatchLoader(kb: KB,
 
       val iterator = CartesianIterator(argDomainValues)
 
-      iterator.map(_.map(Constant))
-        .foreach { case constants =>
+      val happensAtInstances = iterator.map(_.map(Constant))
+        .flatMap { case constants =>
 
           val detectorId = blockingExec {
             LocationData.filter(l => l.sectionId === constants.head.symbol.toInt)
               .map(_.detectorId).distinct.result
           }.head
 
-          val time_points = blockingExec {
+          val timeStamps = blockingExec {
             sql"""select timestamp from #${InputData.baseTableRow.schemaName.get}.#${InputData.baseTableRow.tableName}
                   where #${bindSQLVariables(sqlFunction.sqlConstraint, Array(Constant(detectorId.toString)))}
                   AND simulation_id = #${simulationId.get} AND timestamp between #$startTs AND #$endTs""".as[Int]
           }
 
-          val happens = for {
-            t <- time_points
+          for {
+            t <- timeStamps
             mapper <- functionMappingsMap.get(eventSignature)
             resultingSymbol <- mapper.get(constants.map(_.toText).toVector)
             groundTerms = Vector(Constant(resultingSymbol), Constant(t.toString))
           } yield EvidenceAtom.asTrue("HappensAt", groundTerms)
-
-          for (h <- happens)
-            trainingDB.evidence += h
         }
+
+      for (happensAt <- happensAtInstances)
+        trainingDB.evidence += happensAt
     }
 
     // ---
@@ -127,12 +127,12 @@ final class TrainingBatchLoader(kb: KB,
         else None
       }
 
-      for (atom <- holdsAtInstances) try {
-        trainingDB.evidence += atom
+      for (holdsAt <- holdsAtInstances) try {
+        trainingDB.evidence += holdsAt
       } catch {
         case ex: java.util.NoSuchElementException =>
-          val fluent = atom.terms.head
-          val timestamp = atom.terms.last
+          val fluent = holdsAt.terms.head
+          val timestamp = holdsAt.terms.last
 
           constantsDomain("fluent").get(fluent.symbol) match {
             case None => error(s"fluent constant ${fluent.symbol} is missing from constants domain}")
@@ -148,6 +148,9 @@ final class TrainingBatchLoader(kb: KB,
 
     val trainingEvidence = trainingDB.result()
 
+    // ---
+    // --- Compile clauses
+    // ---
     val completedFormulas =
       PredicateCompletion(kb.formulas, kb.definiteClauses)(predicateSchema, kb.functionSchema, trainingEvidence.constants)
 
@@ -160,6 +163,9 @@ final class TrainingBatchLoader(kb: KB,
       .compileCNF(completedFormulas.map(initialiseWeight))(trainingEvidence.constants)
       .toVector
 
+    // ---
+    // --- Extract evidence and annotation
+    // ---
     val (evidence, annotationDB) = extractAnnotation(trainingEvidence, evidencePredicates, nonEvidencePredicates)
 
     // Return the resulting TrainingBatch for the specified interval
@@ -234,32 +240,32 @@ final class TrainingBatchLoader(kb: KB,
 
       val iterator = CartesianIterator(argDomainValues)
 
-      iterator.map(_.map(Constant))
-        .foreach { case constants =>
+      val happensAtInstances = iterator.map(_.map(Constant))
+        .flatMap { case constants =>
 
           val detectorId = blockingExec {
             LocationData.filter(l => l.sectionId === constants.head.symbol.toInt)
               .map(_.detectorId).distinct.result
           }.head
 
-          val time_points = blockingExec {
+          val timeStamps = blockingExec {
             sql"""select timestamp from #${InputData.baseTableRow.schemaName.get}.#${InputData.baseTableRow.tableName}
                   where #${bindSQLVariables(sqlFunction.sqlConstraint, Array(Constant(detectorId.toString)))}
                   AND simulation_id = #${simulationId.get} AND timestamp between #$startTs AND #$endTs""".as[Int]
           }
 
-          val happens = for {
-            t <- time_points
+         for {
+            t <- timeStamps
             mapper <- functionMappingsMap.get(eventSignature)
             resultingSymbol <- mapper.get(constants.map(_.toText).toVector)
             groundTerms = Vector(Constant(resultingSymbol), Constant(t.toString))
           } yield EvidenceAtom.asTrue("HappensAt", groundTerms)
-
-          for (h <- happens) {
-            trainingDB.evidence += h
-            trainingDBNoFunctions.evidence += h
-          }
         }
+
+      for (happensAt <- happensAtInstances) {
+        trainingDB.evidence += happensAt
+        trainingDBNoFunctions.evidence += happensAt
+      }
     }
 
     // ---
@@ -289,13 +295,13 @@ final class TrainingBatchLoader(kb: KB,
         else None
       }
 
-      for (atom <- holdsAtInstances) try {
-        trainingDB.evidence += atom
-        trainingDBNoFunctions.evidence += atom
+      for (holdsAt <- holdsAtInstances) try {
+        trainingDB.evidence += holdsAt
+        trainingDBNoFunctions.evidence += holdsAt
       } catch {
         case ex: java.util.NoSuchElementException =>
-          val fluent = atom.terms.head
-          val timestamp = atom.terms.last
+          val fluent = holdsAt.terms.head
+          val timestamp = holdsAt.terms.last
 
           constantsDomain("fluent").get(fluent.symbol) match {
             case None => error(s"fluent constant ${fluent.symbol} is missing from constants domain}")
@@ -309,6 +315,9 @@ final class TrainingBatchLoader(kb: KB,
       }
     }
 
+    // ---
+    // --- Extract evidence, converted evidence and annotation
+    // ---
     val (evidence, annotation) =
       extractAnnotation(trainingDB.result(), evidencePredicates, nonEvidencePredicates)
 

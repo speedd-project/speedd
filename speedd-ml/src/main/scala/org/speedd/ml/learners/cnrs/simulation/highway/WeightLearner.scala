@@ -47,14 +47,36 @@ final class WeightLearner private(kb: KB,
 
       val microIntervals =
         if (excludeInterval.isDefined) {
+
           info(s"Excluding interval ${excludeInterval.get} from $startTs,$endTs")
           val (excludeStart, excludeEnd) = excludeInterval.get
-          val range1 = startTs to excludeStart by batchSize
-          val range2 = excludeEnd to endTs by batchSize
-          val intervals = if (excludeEnd < endTs) range2 :+ endTs else range2
+          info(s"Train intervals are: $startTs to $excludeStart and $excludeEnd to $endTs")
 
-          range1.sliding(2).map(i => (i.head, i.last)).toList ++
-            intervals.sliding(2).map(i => (i.head, i.last)).toList
+          val trainIntervalA =
+            if (excludeStart - startTs > 1) {
+              val range = startTs to excludeStart by batchSize
+              if (!range.contains(excludeStart))
+                (range :+ excludeStart).sliding(2).map(i => (i.head, i.last)).toList
+              else range.sliding(2).map(i => (i.head, i.last)).toList
+            }
+            else {
+              warn(s"There are no time points between $startTs and $excludeStart")
+              List.empty
+            }
+
+          val trainIntervalB =
+            if (endTs - excludeEnd > 1) {
+              val range = excludeEnd to endTs by batchSize
+              if (!range.contains(endTs))
+                (range :+ endTs).sliding(2).map(i => (i.head, i.last)).toList
+              else range.sliding(2).map(i => (i.head, i.last)).toList
+            }
+            else {
+              warn(s"There are no time points between $excludeEnd and $endTs")
+              List.empty
+            }
+
+          trainIntervalA ++ trainIntervalB
         }
         else {
           val range = startTs to endTs by batchSize
@@ -62,6 +84,7 @@ final class WeightLearner private(kb: KB,
           intervals.sliding(2).map(i => (i.head, i.last)).toList
         }
 
+      debug(s"Micro intervals used for training:\n${microIntervals.mkString("\n")}")
       info(s"Number of micro-intervals: ${microIntervals.size}")
 
       var learner: OnlineLearner = null

@@ -66,11 +66,11 @@ trait BatchLoader extends Logging {
     */
   protected def loadAll[A, B, C, D](kbConstants: ConstantsDomain, functionSchema: FunctionSchema,
                                     startTs: Int, endTs: Int , simulationId: Option[Int] = None,
-                                    loader: (Int, Int, Int, ConstantsDomain) => (DomainMap, AnnotationTuples[A, B, C, D])):
+                                    loader: (Option[Int], Int, Int, ConstantsDomain) => (DomainMap, AnnotationTuples[A, B, C, D])):
                                     (ConstantsDomain, Map[AtomSignature, Iterable[FunctionMapping]], AnnotationTuples[A, B, C, D]) = {
 
     // Load domains mappings and annotation tuples
-    val (domainsMap, annotationTuples) = loader(simulationId.get, startTs, endTs, kbConstants)
+    val (domainsMap, annotationTuples) = loader(simulationId, startTs, endTs, kbConstants)
 
     // Generate function mappings
     val (functionMappings, generatedDomainMap) = {

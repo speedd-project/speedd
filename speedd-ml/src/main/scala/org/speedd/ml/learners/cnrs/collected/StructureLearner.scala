@@ -6,7 +6,7 @@ import lomrf.logic.AtomSignature
 import lomrf.mln.learning.structure.{OSLa, TrainingEvidence}
 import lomrf.mln.model._
 import org.speedd.ml.learners.Learner
-import org.speedd.ml.loaders.cnrs.collected.StructureTrainingBatchLoader
+import org.speedd.ml.loaders.cnrs.collected.{StructureTrainingBatchLoader, TrainingBatchLoader}
 import org.speedd.ml.util.logic._
 
 final class StructureLearner private(kb: KB,
@@ -22,7 +22,7 @@ final class StructureLearner private(kb: KB,
                                          maxLength: Int,
                                          threshold: Int) extends Learner {
 
-  private lazy val batchLoader = new StructureTrainingBatchLoader(kb, kbConstants, predicateSchema, nonEvidenceAtoms, inputSignatures, atomMappings)
+  private lazy val batchLoader = new TrainingBatchLoader(kb, kbConstants, predicateSchema, inputSignatures, nonEvidenceAtoms, atomMappings)
 
   private lazy val learner = OSLa(kb, kbConstants, nonEvidenceAtoms, targetSignatures, modes, maxLength, allowFreeVariables = false, threshold)
 
@@ -31,14 +31,36 @@ final class StructureLearner private(kb: KB,
 
     val microIntervals =
       if (excludeInterval.isDefined) {
+
         info(s"Excluding interval ${excludeInterval.get} from $startTs,$endTs")
         val (excludeStart, excludeEnd) = excludeInterval.get
-        val range1 = startTs until excludeStart by batchSize
-        val range2 = excludeEnd to endTs by batchSize
-        val intervals = if (excludeEnd < endTs) range2 :+ endTs else range2
+        info(s"Train intervals are: $startTs to $excludeStart and $excludeEnd to $endTs")
 
-        range1.sliding(2).map(i => (i.head, i.last)).toList ++
-          intervals.sliding(2).map(i => (i.head, i.last)).toList
+        val trainIntervalA =
+          if (excludeStart - startTs > 1) {
+            val range = startTs to excludeStart by batchSize
+            if (!range.contains(excludeStart))
+              (range :+ excludeStart).sliding(2).map(i => (i.head, i.last)).toList
+            else range.sliding(2).map(i => (i.head, i.last)).toList
+          }
+          else {
+            warn(s"There are no time points between $startTs and $excludeStart")
+            List.empty
+          }
+
+        val trainIntervalB =
+          if (endTs - excludeEnd > 1) {
+            val range = excludeEnd to endTs by batchSize
+            if (!range.contains(endTs))
+              (range :+ endTs).sliding(2).map(i => (i.head, i.last)).toList
+            else range.sliding(2).map(i => (i.head, i.last)).toList
+          }
+          else {
+            warn(s"There are no time points between $excludeEnd and $endTs")
+            List.empty
+          }
+
+        trainIntervalA ++ trainIntervalB
       }
       else {
         val range = startTs to endTs by batchSize
@@ -46,11 +68,12 @@ final class StructureLearner private(kb: KB,
         intervals.sliding(2).map(i => (i.head, i.last)).toList
       }
 
+    debug(s"Micro intervals used for training:\n${microIntervals.mkString("\n")}")
     info(s"Number of micro-intervals: ${microIntervals.size}")
 
     for ( ((currStartTime, currEndTime), idx) <- microIntervals.zipWithIndex) {
       info(s"Loading micro-batch training data no. $idx, for the temporal interval [$currStartTime, $currEndTime]")
-      val batch = batchLoader.forInterval(currStartTime, currEndTime)
+      val batch = batchLoader.forIntervalSL(currStartTime, currEndTime)
 
       learner.reviseTheory(batch)
     }

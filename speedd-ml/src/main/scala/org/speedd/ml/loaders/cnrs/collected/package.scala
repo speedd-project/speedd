@@ -51,7 +51,7 @@ package object collected {
     "V" -> mkInterval(vehicleLevels,symbols2domain)
   )
 
-  def loadFor(simulationId: Int, startTs: Int, endTs: Int,
+  def loadFor(simulationId: Option[Int] = None, startTs: Int, endTs: Int,
               initial: ConstantsDomain = Map.empty): (DomainMap, AnnotationTuples[Int, Long, String, Option[String]]) = {
 
     var domainsMap = initial.map(pair => pair._1 -> pair._2.toIterable)
