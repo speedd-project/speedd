@@ -105,7 +105,10 @@ final class TrainingBatchLoader(kb: KB,
     // ---
     info(s"Generating annotation predicates for the temporal interval [$startTs, $endTs]")
 
-    val fluents = kb.functionSchema.filter(f => f._2._1 == "fluent")
+    // Find all function signatures that have a fluent return type
+    val fluents = kb.functionSchema.filter {
+      case (signature, (ret, domain)) => ret == "fluent"
+    }
 
     for ((fluentSignature, (ret, domain)) <- fluents) {
 
@@ -273,7 +276,10 @@ final class TrainingBatchLoader(kb: KB,
     // ---
     info(s"Generating annotation predicates for the temporal interval [$startTs, $endTs]")
 
-    val fluents = kb.functionSchema.filter(f => f._2._1 == "fluent")
+    // Find all function signatures that have a fluent return type
+    val fluents = kb.functionSchema.filter {
+      case (signature, (ret, domain)) => ret == "fluent"
+    }
 
     for ((fluentSignature, (ret, domain)) <- fluents) {
 

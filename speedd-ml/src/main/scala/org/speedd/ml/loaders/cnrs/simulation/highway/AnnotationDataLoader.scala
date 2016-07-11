@@ -61,9 +61,9 @@ object AnnotationDataLoader extends DataLoader {
     * @return an Annotation object
     */
   private def toAnnotation(source: Array[String]): Option[Annotation] = {
-    val start = ts2UnixTS("2015-12-16 " + source(3), DATE_TIME_FORMAT, DATE_TIME_FORMAT_SHORT)
+    val start = ts2UnixTS("2015-12-16 " + source(3), DATE_TIME_FORMAT, DATE_TIME_FORMAT_SHORT, startTs = 1450281615, round = true)
     Some(Annotation(source(0).toInt, source(1).toInt, start,
-      start + duration2Seconds(source(2)), source(4).toDouble, "traffic_jam"))
+      start + duration2Seconds(source(2)) / 15, source(4).toDouble, "traffic_jam"))
   }
 
 }

@@ -89,7 +89,7 @@ object InputDataLoader extends DataLoader {
       else Some(number)
     }
 
-    val timeStamp = ts2UnixTS(source(0), DATE_TIME_FORMAT, DATE_TIME_FORMAT_SHORT, round = true)
+    val timeStamp = ts2UnixTS(source(0), DATE_TIME_FORMAT, DATE_TIME_FORMAT_SHORT, startTs = 1450281615, round = true)
 
     /*
      * Note that occupancy, vehicles and avgSpeed are implicitly converted to Option instances, when their values are

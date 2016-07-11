@@ -8,7 +8,7 @@ import lomrf.mln.learning.structure.ModeParser
 import lomrf.util.time._
 import org.speedd.ml.ModuleVersion
 import org.speedd.ml.learners.Learner
-import org.speedd.ml.learners.cnrs.collected.StructureLearner
+import org.speedd.ml.learners.cnrs._
 import org.speedd.ml.util.logic._
 
 import scala.util.{Success, Try}
@@ -27,6 +27,7 @@ object StructureLearningApp extends App with OptionParser with Logging {
   private var intervalOpt: Option[(Int, Int)] = None
   private var excludeIntervalOpt: Option[(Int, Int)] = None
   private var batchSizeOpt: Option[Long] = None
+  private var simulationIdsOpt: Option[List[Int]] = None
   private var taskOpt: Option[String] = None
 
   private var targetPredicates = Set(AtomSignature("InitiatedAt", 2), AtomSignature("TerminatedAt", 2))
@@ -58,14 +59,6 @@ object StructureLearningApp extends App with OptionParser with Logging {
 
   opt("m", "modes", "<mode file>", "Specify the mode declarations file.", {
     v: String => modesFileOpt = Some(v)
-
-      /*val file = new File(v)
-
-      modesFileOpt = {
-        if (!file.isFile) fatal("The specified mode declarations file does not exist.")
-        else if (!file.canRead) fatal("Cannot read the specified mode declaration file, please check the file permissions.")
-        else Some(file)
-      }*/
   })
 
   opt("f2sql", "sql-function-mappings", "<string>", "Specify the sql function mappings file containing mappings of event functions to sql constraints.", {
@@ -107,8 +100,16 @@ object StructureLearningApp extends App with OptionParser with Logging {
 
   })
 
-  opt("t", "task", "<string>", "The name of the task to call (CNRS or FZ).", {
-    v: String => taskOpt = Some(v.trim.toUpperCase)
+  opt("sids", "simulation-ids", "Comma separated <sid>", "Specify the simulation id set used for training, e.g. 1,2,5", {
+    v: String =>
+      val sids = v.split(",")
+      simulationIdsOpt = Option {
+        Try(sids.map(_.toInt).toList) getOrElse fatal("Please specify a valid set of simulation ids. For example: 1,2,5")
+      }
+  })
+
+  opt("t", "task", "<string>", "The name of the task to call (cnrs.collected, cnrs.simulation.city, cnrs.simulation.highway or fz).", {
+    v: String => taskOpt = Some(v.trim.toLowerCase)
   })
 
   opt("target", "target-predicates", "<string>", "Comma separated target atoms. Target atoms are atoms that appear in the" +
@@ -202,13 +203,23 @@ object StructureLearningApp extends App with OptionParser with Logging {
     case _ => fatal("Please specify a batch size")
   }
 
+  // Check if simulation ids exist, otherwise return an empty list
+  val simulationIds = simulationIdsOpt.getOrElse(List.empty)
+
   import org.speedd.ml.util.data.DatabaseManager._
 
   // --- 1. Create the appropriate instance of weight learner
   val structureLearner: Learner = taskOpt.getOrElse(fatal("Please specify a task name")) match {
-    case "CNRS" => StructureLearner(kbFile, outputFile, sqlFunctionMappingsFile, modes, maxLength,
-                                        threshold, evidencePredicates, targetPredicates)
-    case _ => fatal("Please specify a task name")
+    case " cnrs.collected" =>
+      collected.StructureLearner(kbFile, outputFile, sqlFunctionMappingsFile, modes, maxLength,
+        threshold, evidencePredicates, targetPredicates, nonEvidencePredicates)
+    case "cnrs.simulation.highway" =>
+      if (simulationIds.isEmpty) fatal("Please specify a set of simulation ids for this task!")
+      simulation.highway.StructureLearner(kbFile, outputFile, sqlFunctionMappingsFile, modes, maxLength,
+        threshold, evidencePredicates, targetPredicates, nonEvidencePredicates)
+    case "cnrs.simulation.city" | "fz" =>
+      fatal(s"Task '${taskOpt.get}' is not implemented yet!")
+    case _ => fatal(s"Unknown task '${taskOpt.get}'. Please specify a valid task name.")
   }
 
   // --- 2. Perform training for all intervals

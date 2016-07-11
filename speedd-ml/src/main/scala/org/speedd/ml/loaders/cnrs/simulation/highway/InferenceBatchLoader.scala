@@ -105,6 +105,7 @@ final class InferenceBatchLoader(kb: KB,
     // ---
     info(s"Generating annotation predicates for the temporal interval [$startTs, $endTs]")
 
+    // Find all function signatures that have a fluent return type in the given KB
     val fluents = kb.formulas.flatMap(_.toCNF(kbConstants)).flatMap { c =>
       c.literals.filter(l => queryPredicates.contains(l.sentence.signature)).map(_.sentence.terms.head).flatMap {
         case TermFunction(symbol, terms, "fluent") => Some((symbol, terms, kb.functionSchema(AtomSignature(symbol, terms.length))._2))
