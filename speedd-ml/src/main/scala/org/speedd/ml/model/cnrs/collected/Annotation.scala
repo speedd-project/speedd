@@ -23,7 +23,7 @@ case class Annotation(startTs: Int,
                       startLoc: Int,
                       endLoc: Int)
 
-class AnnotationTable(tag: Tag) extends Table[Annotation] (tag, Some("cnrs"), "annotation") {
+class AnnotationTable(tag: Tag) extends Table[Annotation] (tag, Some("cnrs"), "collected_annotation") {
 
   def startTs = column[Int]("start_ts")
   def endTs = column[Int]("end_ts")
@@ -33,17 +33,17 @@ class AnnotationTable(tag: Tag) extends Table[Annotation] (tag, Some("cnrs"), "a
   def startLoc = column[Int]("start_loc")
   def endLoc = column[Int]("end_loc")
 
-  def pk = primaryKey("pk_annotation", (startTs, endTs, eventId))
+  def pk = primaryKey("pk_collected_annotation", (startTs, endTs, eventId))
 
   def * = (startTs, endTs, eventId, description, sensor, startLoc, endLoc) <> (Annotation.tupled, Annotation.unapply)
 
-  def indexAnnotation = index("idx_annotation", description)
+  def indexAnnotation = index("idx_collected_annotation", description)
 }
 
 object AnnotationData extends TableQuery[AnnotationTable](new AnnotationTable(_)) {
 
   def createSchema() =
     if (blockingExec {
-      MTable.getTables("annotation")
+      MTable.getTables("collected_annotation")
     }.isEmpty) blockingExec(this.schema.create)
 }

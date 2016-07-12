@@ -5,9 +5,9 @@ import scala.util.Success
 import lomrf.util.time._
 
 /**
-  * Command line interface for loading the CNRS real data into the database.
+  * Command line interface for loading the CNRS real or simulated data into the database.
   */
-object CNRSCollectedDataLoader extends CLIDataLoaderApp {
+object DataLoaderApp extends CLIDataLoaderApp {
 
   // -------------------------------------------------------------------------------------------------------------------
   // --- Configuration parameters
@@ -17,7 +17,9 @@ object CNRSCollectedDataLoader extends CLIDataLoaderApp {
   // -------------------------------------------------------------------------------------------------------------------
   // --- Command line interface options
   // -------------------------------------------------------------------------------------------------------------------
-  opt("t", "task", "Specify one of the following tasks: input, annotation, location.", {
+  opt("t", "task", "Specify one of the following tasks: cnrs.collected.input, cnrs.collected.annotation," +
+    " cnrs.collected.location, cnrs.simulation.city.input, cnrs.simulation.city.annotation, cnrs.simulation.city.location," +
+    " cnrs.simulation.highway.input, cnrs.simulation.highway.annotation, cnrs.simulation.highway.location.", {
     v: String => taskOpt = Some(v.trim.toLowerCase)
   })
 
@@ -52,11 +54,20 @@ object CNRSCollectedDataLoader extends CLIDataLoaderApp {
 
   // --- 2. Create the appropriate instance of data loader
   val loader: DataLoader = taskOpt.getOrElse(fatal("Please specify a task")) match {
-    case "input" => cnrs.collected.InputDataLoader
-    case "annotation" => cnrs.collected.AnnotationDataLoader
-    case "location" => cnrs.collected.LocationDataLoader
+    case "cnrs.collected.input" => cnrs.collected.InputDataLoader
+    case "cnrs.collected.annotation" => cnrs.collected.AnnotationDataLoader
+    case "cnrs.collected.location" => cnrs.collected.LocationDataLoader
+    case "cnrs.simulation.city.input" => cnrs.simulation.city.InputDataLoader
+    case "cnrs.simulation.city.annotation" => cnrs.simulation.city.AnnotationDataLoader
+    case "cnrs.simulation.city.location" => cnrs.simulation.city.LocationDataLoader
+    case "cnrs.simulation.highway.input" => cnrs.simulation.highway.InputDataLoader
+    case "cnrs.simulation.highway.annotation" => cnrs.simulation.highway.AnnotationDataLoader
+    case "cnrs.simulation.highway.location" => cnrs.simulation.highway.LocationDataLoader
     case name =>
-      fatal(s"Unknown task '$name', please set one of the following tasks: (1) input, (2) annotation or (3) location.")
+      fatal(s"Unknown task '$name', please set one of the following tasks:" +
+        s"\n(1) cnrs.collected.input\n(2) cnrs.collected.annotation\n(3) cnrs.collected.location" +
+        s"\n(4) cnrs.simulation.city.input\n(5) cnrs.simulation.city.annotation\n(6) cnrs.simulation.city.location" +
+        s"\n(7) cnrs.simulation.highway.input\n(8) cnrs.simulation.highway.annotation\n(9) cnrs.simulation.highway.location")
   }
 
   // --- 3. Execute data loading task

@@ -6,6 +6,8 @@ import lomrf.mln.model._
 import lomrf.util.Cartesian.CartesianIterator
 import scala.collection.mutable
 import scala.util.{Failure, Success, Try}
+import lomrf.FUNC_RET_VAR_PREFIX
+import org.speedd.ml.util.data.DomainMap
 
 package object logic {
 
@@ -62,16 +64,15 @@ package object logic {
     *
     * @param functionSchema a function schema
     * @param domainsMap a set of domain mappings
-    *
     * @return an array of function mappings for each function signature and the refined domain mappings
     */
   def generateFunctionMappings(functionSchema: FunctionSchema, domainsMap: Map[String, Iterable[String]]):
-                               Try[(Array[(AtomSignature, Iterable[FunctionMapping])], Map[String, Iterable[String]])] = {
+                               Try[(Map[AtomSignature, Iterable[FunctionMapping]], DomainMap)] = {
 
     // ---
     // --- Compute function mappings
     // ---
-    val functionMappings = new Array[(AtomSignature, Iterable[FunctionMapping])](functionSchema.size)
+    var functionMappings = Map.empty[AtomSignature, Iterable[FunctionMapping]]
 
     var generatedDomains = Map.empty[String, Iterable[String]]
 
@@ -86,16 +87,44 @@ package object logic {
 
       val products = iterator.map { _.map(Constant) }.zipWithIndex.map {
         case (constants, uid) =>
-          val retConstant = s"r_${index}_$uid"
+          val retConstant = s"${FUNC_RET_VAR_PREFIX}_${index}_$uid"
           retConstant -> FunctionMapping(retConstant, symbol, constants.toVector)
       }.toMap
 
-      generatedDomains += retDomain -> products.keys
+      // If constants exist for this return type domain, then append the the keys
+      if (generatedDomains.contains(retDomain))
+        generatedDomains += retDomain -> (generatedDomains(retDomain) ++ products.keys)
+      else generatedDomains += retDomain -> products.keys
 
-      functionMappings(index) = signature -> products.values
+      functionMappings += signature -> products.values
     }
 
     Success((functionMappings, generatedDomains))
+  }
+
+  /**
+    * Partition training evidence into evidence and annotation.
+    *
+    * @param trainingEvidence the training evidence, containing truth values for non evidence predicates
+    * @param evidenceAtoms the set of evidence atom signatures
+    * @param nonEvidenceAtoms the set of non evidence atom signatures
+    *
+    * @return a tuple containing evidence and annotation databases
+    */
+  def extractAnnotation(trainingEvidence: Evidence,
+                        evidenceAtoms: Set[AtomSignature],
+                        nonEvidenceAtoms: Set[AtomSignature]): (Evidence, EvidenceDB) = {
+
+    // Partition the training data into annotation and evidence databases
+    var (annotationDB, atomStateDB) = trainingEvidence.db.partition {
+      case (signature, db) => nonEvidenceAtoms.contains(signature)
+    }
+
+    // Define all non evidence atoms as unknown in the evidence database
+    for (signature <- annotationDB.keysIterator)
+      atomStateDB += (signature -> AtomEvidenceDB.allUnknown(trainingEvidence.db(signature).identity))
+
+    (new Evidence(trainingEvidence.constants, atomStateDB, trainingEvidence.functionMappers), annotationDB)
   }
 
   /**

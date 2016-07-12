@@ -1,12 +1,28 @@
 package org.speedd.ml.util.data
 
+import lomrf.logic.Constant
 import slick.driver.PostgresDriver.api._
 import scala.concurrent.duration.Duration
 import scala.concurrent.{Await, Future}
+import scala.util.matching.Regex.Match
 
 object DatabaseManager {
 
   private lazy val db = Database.forConfig("speeddDB")
+
+  /**
+    * Bind sql variables defined as $idx to the specified constant
+    * in the position of a given indexed sequence.
+    *
+    * @param sql the sql string
+    * @param values the values to be substituted
+    *
+    * @return an sql string having its variables bound
+    */
+  def bindSQLVariables(sql: String, values: IndexedSeq[Constant]) =
+    """\$(\d+)""".r.replaceAllIn(sql, _ match {
+      case Match(index) => s"'${values(index.substring(1).toInt).symbol}'"
+    })
 
   /**
     * Asynchronous execution of a given action.

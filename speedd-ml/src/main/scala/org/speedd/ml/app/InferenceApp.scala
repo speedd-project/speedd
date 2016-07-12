@@ -5,9 +5,10 @@ import auxlib.log.Logging
 import auxlib.opt.OptionParser
 import lomrf.logic.AtomSignature
 import org.speedd.ml.ModuleVersion
-import org.speedd.ml.inference.CNRSInferenceEngine
 import org.speedd.ml.util.logic._
 import lomrf.util.time._
+import org.speedd.ml.inference.Reasoner
+import org.speedd.ml.inference.cnrs._
 import scala.util.{Success, Try}
 
 object InferenceApp extends App with OptionParser with Logging {
@@ -18,12 +19,19 @@ object InferenceApp extends App with OptionParser with Logging {
   // --- Variables accessible from command-line
   // -------------------------------------------------------------------------------------------------------------------
   private var inputKBOpt: Option[File] = None
-  private var atomMappingsOpt: Option[File] = None
+  private var sqlFunctionsFileOpt: Option[File] = None
   private var intervalOpt: Option[(Int, Int)] = None
   private var batchSizeOpt: Option[Int] = None
+  private var simulationIdsOpt: Option[List[Int]] = None
   private var taskOpt: Option[String] = None
 
   private var queryPredicates = Set(AtomSignature("HoldsAt", 2))
+  private var evidencePredicates = Set(
+      AtomSignature("HappensAt", 2),
+      AtomSignature("InitiatedAt", 2),
+      AtomSignature("TerminatedAt", 2),
+      AtomSignature("Next", 2)
+  )
 
   // -------------------------------------------------------------------------------------------------------------------
   // --- Command-line options
@@ -35,6 +43,17 @@ object InferenceApp extends App with OptionParser with Logging {
       inputKBOpt = {
         if (!file.isFile) fatal("The specified input knowledge base file does not exist.")
         else if (!file.canRead) fatal("Cannot read the specified input knowledge base file, please check the file permissions.")
+        else Some(file)
+      }
+  })
+
+  opt("f2sql", "sql-function-mappings", "<string>", "Specify the sql function mappings file containing mappings of event functions to sql constraints.", {
+    v: String =>
+      val file = new File(v)
+
+      sqlFunctionsFileOpt = {
+        if (!file.isFile) fatal("The specified function mappings file does not exist.")
+        else if (!file.canRead) fatal("Cannot read the specified sql function mappings file, please check the file permissions.")
         else Some(file)
       }
   })
@@ -58,8 +77,26 @@ object InferenceApp extends App with OptionParser with Logging {
 
   })
 
-  opt("t", "task", "<string>", "The name of the task to call (CNRS or FZ).", {
-    v: String => taskOpt = Some(v.trim.toUpperCase)
+  opt("sids", "simulation-ids", "Comma separated <sid>", "Specify the simulation id set used for training, e.g. 1,2,5", {
+    v: String =>
+      val sids = v.split(",")
+      simulationIdsOpt = Option {
+        Try(sids.map(_.toInt).toList) getOrElse fatal("Please specify a valid set of simulation ids. For example: 1,2,5")
+      }
+  })
+
+  opt("t", "task", "<string>", "The name of the task to call (cnrs.collected, cnrs.simulation.highway or fz).", {
+    v: String => taskOpt = Some(v.trim.toLowerCase)
+  })
+
+  opt("e", "evidence-predicates", "<string>", "Comma separated evidence atoms. Each atom must be defined using its "+
+    "identity (i.e., Name/arity). For example the identity of predicate HappensAt(event, time) is 'HappensAt/2'. " +
+    "'HappensAt/2, InitiatedAt/2, TerminatedAt/2 and Next/2' are the default evidence atoms.", {
+    v: String =>
+      evidencePredicates = parseSignatures(v) getOrElse {
+        fatal(s"Failed to parse the atomic signatures of the specified evidence predicates '$v'. " +
+          s"Please make sure that you gave the correct format.")
+      }
   })
 
   opt("q", "query-predicates", "<string>", "Comma separated query atoms. Each atom must be defined using its " +
@@ -69,17 +106,6 @@ object InferenceApp extends App with OptionParser with Logging {
       queryPredicates = parseSignatures(v) getOrElse {
         fatal(s"Failed to parse the atomic signatures of the specified non-evidence predicates '$v'. " +
           s"Please make sure that you gave the correct format.")
-      }
-  })
-
-  opt("am", "atom-mappings", "<string>", "Specify the atom mappings file containing mappings of predicates to sql constraints.", {
-    v: String =>
-      val file = new File(v)
-
-      atomMappingsOpt = {
-        if (!file.isFile) fatal("The specified atom mappings file does not exist.")
-        else if (!file.canRead) fatal("Cannot read the specified atom mappings file, please check the file permissions.")
-        else Some(file)
       }
   })
 
@@ -104,8 +130,8 @@ object InferenceApp extends App with OptionParser with Logging {
   // File indicating the input MLN knowledge file
   val kbFile = inputKBOpt getOrElse fatal("Please specify an input KB file")
 
-  // File indicating the input MLN knowledge file
-  val atomMappingsFile = atomMappingsOpt getOrElse fatal("Please specify an atom mappings file")
+  // File indicating the mappings of event functions to sql statements
+  val sqlFunctionMappingsFile = sqlFunctionsFileOpt getOrElse fatal("Please specify sql function mappings file")
 
   // The temporal interval by which we will take the evidence and annotation data for inference
   val (startTime, endTime) = intervalOpt getOrElse fatal("Please specify an interval")
@@ -122,17 +148,25 @@ object InferenceApp extends App with OptionParser with Logging {
     case _ => fatal("Please specify a batch size")
   }
 
+  // Check if simulation ids exist, otherwise return an empty list
+  val simulationIds = simulationIdsOpt.getOrElse(List.empty)
+
   import org.speedd.ml.util.data.DatabaseManager._
 
   // --- 1. Create the appropriate instance of inference engine
-  val inferenceEngine: CNRSInferenceEngine = taskOpt.getOrElse(fatal("Please specify a task name")) match {
-    case "CNRS" => CNRSInferenceEngine(kbFile, atomMappingsFile, queryPredicates)
-    case _ => fatal("Please specify a task name")
+  val inferenceEngine: Reasoner = taskOpt.getOrElse(fatal("Please specify a task name")) match {
+    case "cnrs.collected" => collected.InferenceEngine(kbFile, sqlFunctionMappingsFile, evidencePredicates, queryPredicates)
+    case "cnrs.simulation.highway" =>
+      if (simulationIds.isEmpty) fatal("Please specify a set of simulation ids for this task!")
+      simulation.highway.InferenceEngine(kbFile, sqlFunctionMappingsFile, evidencePredicates, queryPredicates)
+    case "cnrs.simulation.city" | "fz" =>
+      fatal(s"Task '${taskOpt.get}' is not implemented yet!")
+    case _ => fatal(s"Unknown task '${taskOpt.get}'. Please specify a valid task name.")
   }
 
   // --- 2. Perform inference for all intervals
   val t = System.currentTimeMillis()
-  inferenceEngine.inferFor(startTime, endTime, batchSize)
+  inferenceEngine.inferFor(startTime, endTime, batchSize, simulationIds)
   info(s"Inference for task ${taskOpt.get} completed in ${msecTimeToTextUntilNow(t)}")
 
   // --- 3. Close database connection

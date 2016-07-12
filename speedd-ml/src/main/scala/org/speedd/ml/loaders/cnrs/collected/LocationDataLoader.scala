@@ -9,6 +9,22 @@ import slick.driver.PostgresDriver.api._
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.util.{Failure, Success}
 
+/**
+  * Loads and converts location data from CSV files. The data is collected and provided by CNRS.
+  *
+  * <p>
+  * The expected format of the CSV file is the following:
+  * <ul>
+  *   <li>loc_id: location id (long)</li>
+  *   <li>lane: lane type (string)</li>
+  *   <li>prev_lane: previous lane type (string)</li>
+  *   <li>coordinate_x: x coordinate</li>
+  *   <li>coordinate_y: y coordinate</li>
+  *   <li>num: location number</li>
+  *   <li>distance: distance of the location from PR0</li>
+  * </ul>
+  * </p>
+  */
 object LocationDataLoader extends DataLoader {
 
   /**

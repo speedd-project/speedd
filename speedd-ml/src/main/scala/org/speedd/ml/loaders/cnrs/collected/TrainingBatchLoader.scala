@@ -1,47 +1,44 @@
 package org.speedd.ml.loaders.cnrs.collected
 
 import lomrf.logic._
+import lomrf.mln.learning.structure.TrainingEvidence
 import lomrf.mln.model._
+import lomrf.util.Cartesian.CartesianIterator
 import org.speedd.ml.loaders.{BatchLoader, TrainingBatch}
+import org.speedd.ml.model.cnrs.collected.InputData
 import org.speedd.ml.util.logic._
 import slick.driver.PostgresDriver.api._
 import org.speedd.ml.util.data.DatabaseManager._
-import scala.util.{Failure, Success}
-import scala.collection.breakOut
 
 final class TrainingBatchLoader(kb: KB,
                                 kbConstants: ConstantsDomain,
                                 predicateSchema: PredicateSchema,
-                                queryPredicates: Set[AtomSignature],
-                                ruleTransformations: Iterable[RuleTransformation]) extends BatchLoader {
+                                evidencePredicates: Set[AtomSignature],
+                                nonEvidencePredicates: Set[AtomSignature],
+                                sqlFunctionMappings: List[TermMapping]) extends BatchLoader {
 
-  def forInterval(startTs: Int, endTs: Int): TrainingBatch = {
+  /**
+    * Loads a (micro) batch, either training [[org.speedd.ml.loaders.TrainingBatch]] or
+    * inference [[org.speedd.ml.loaders.InferenceBatch]], that holds the data for the
+    * specified interval. Furthermore, a simulation id can be provided in case of
+    * simulation data.
+    *
+    * @param startTs starting time point
+    * @param endTs end time point
+    * @param simulationId simulation id (optional)
+    * @return a batch [[org.speedd.ml.loaders.Batch]] subclass specified during implementation
+    */
+  def forInterval(startTs: Int, endTs: Int, simulationId: Option[Int] = None): TrainingBatch = {
 
-    val (domainsMap, annotatedLocations) = loadFor(startTs, endTs)
-
-    val (functionMappings, generatedDomainMap) = {
-      generateFunctionMappings(kb.functionSchema, domainsMap) match {
-        case Success(result) => result
-        case Failure(exception) => fatal("Failed to generate function mappings", exception)
-      }
-    }
-
-    val constantsDomainBuilder = ConstantsDomainBuilder.from(kbConstants)
-
-    for ((name, symbols) <- domainsMap)
-      constantsDomainBuilder ++=(name, symbols)
-
-    for ((name, symbols) <- generatedDomainMap)
-      constantsDomainBuilder ++=(name, symbols)
-
-    val constantsDomain = constantsDomainBuilder.result()
+    val (constantsDomain, functionMappings, annotatedLocations) =
+      loadAll[Int, Long, String, Option[String]](kbConstants, kb.functionSchema, startTs, endTs, simulationId, loadFor)
 
     // ---
     // --- Create a new evidence builder
     // ---
-    // Evidence builder can incrementally create an evidence database for LoMRF
-    val trainingDB = EvidenceBuilder(predicateSchema, kb.functionSchema, queryPredicates, hiddenPredicates = Set.empty, constantsDomain)
-                      .withDynamicFunctions(predef.dynFunctions)
+    // Evidence builder can incrementally create an evidence database. Everything not given is considered as false (CWA).
+    val trainingDB = EvidenceBuilder(predicateSchema, kb.functionSchema, nonEvidencePredicates, hiddenPredicates = Set.empty, constantsDomain)
+      .withDynamicFunctions(predef.dynFunctions).withCWAForAll(true)
 
     // ---
     // --- Store previously computed function mappings
@@ -49,7 +46,15 @@ final class TrainingBatchLoader(kb: KB,
     for ((_, fm) <- functionMappings)
       trainingDB.functions ++= fm
 
-    debug(s"Domains:\n${constantsDomain.map(a => s"${a._1} -> [${a._2.mkString(", ")}]").mkString("\n")}")
+    val functionMappingsMap = trainingDB.functions.result()
+
+    // ---
+    // --- Create 'Next' predicates and give them as evidence facts:
+    // ---
+    info(s"Generating 'Next' predicates for the temporal interval [$startTs, $endTs]")
+    (startTs to endTs).sliding(2).foreach {
+      case pair => trainingDB.evidence ++= EvidenceAtom.asTrue("Next", pair.map(t => Constant(t.toString)).reverse.toVector)
+    }
 
     // ---
     // --- Create auxiliary predicates and give them as evidence facts:
@@ -57,99 +62,75 @@ final class TrainingBatchLoader(kb: KB,
     // Compute instances of the auxiliary derived atoms from the raw data in the specified temporal interval.
     info(s"Generating derived events for the temporal interval [$startTs, $endTs]")
 
-    for {transformation <- ruleTransformations
-         transformedRule = transformation.transformedRule
-         (derivedAtom, sqlConstraint) <- transformation.atomMappings} {
+    for (sqlFunction <- sqlFunctionMappings) {
 
-      val terms = transformation.schema(derivedAtom.signature).mkString(",")
-      val arity = derivedAtom.arity
-      val symbol = derivedAtom.symbol
+      val domain = sqlFunction.domain
+      val arity = sqlFunction.domain.length
+      val symbol = sqlFunction.symbol
+      val eventSignature = AtomSignature(symbol, arity)
 
-      val symbols = """[O|S][0-9]""".r.findAllMatchIn {
-        sqlConstraint
-      }.map(_ group 0).toIndexedSeq
+      val argDomainValues = domain.map(t => constantsDomain.get(t).get).map(_.toIterable)
 
-      val intervals = symbols.map(symbol => symbols2udf(symbol.head.toString)(symbol))
+      val iterator = CartesianIterator(argDomainValues)
 
-      debug(s"${symbols.mkString(", ")} -> ${intervals.map(_.toString).mkString(", ")}")
+      val happensAtInstances = iterator.map(_.map(Constant))
+        .flatMap { case constants =>
 
-      var result = sqlConstraint
-      for(i <- symbols.indices)
-        result = result.replace(s"${symbols2domain(symbols(i).head.toString)} = '${symbols(i)}'", intervals(i))
+          val timeStamps = blockingExec {
+            sql"""select timestamp from #${InputData.baseTableRow.schemaName.get}.#${InputData.baseTableRow.tableName}
+                  where #${bindSQLVariables(sqlFunction.sqlConstraint, constants)}
+                  AND timestamp between #$startTs AND #$endTs""".as[Int]
+          }
 
-      // TODO As Int should be changed if the derived atoms have different domain
-      trainingDB.evidence ++= blockingExec {
-        sql"""select distinct #$terms from cnrs.input where timestamp >= #$startTs and timestamp <= #$endTs and #$result""".as[Int]
-      }.map { t =>
-        val constants: Vector[Constant] = (0 until arity).map(i => Constant(t.toString))(breakOut)
-        EvidenceAtom.asTrue(symbol, constants)
-      }
+          for {
+            t <- timeStamps
+            mapper <- functionMappingsMap.get(eventSignature)
+            resultingSymbol <- mapper.get(constants.map(_.toText).toVector)
+            groundTerms = Vector(Constant(resultingSymbol), Constant(t.toString))
+          } yield EvidenceAtom.asTrue("HappensAt", groundTerms)
+        }
+
+      for (happensAt <- happensAtInstances)
+        trainingDB.evidence += happensAt
     }
-
-    val functionMappingsMap = trainingDB.functions.result()
 
     // ---
     // --- Create ground-truth predicates (HoldsAt/2)
     // ---
     info(s"Generating annotation predicates for the temporal interval [$startTs, $endTs]")
-    val headSignatures = ruleTransformations.map(_.transformedRule.clause.head.signature).toSet
 
-    val fluents = kb.definiteClauses
-      .withFilter(wc => headSignatures.contains(wc.clause.head.signature))
-      .map(_.clause.head.terms.head)
-      .flatMap {
-        case TermFunction(symbol, terms, "fluent") => Some((symbol, terms, kb.functionSchema(AtomSignature(symbol, terms.length))._2))
-        case _ => None
-      }
+    // Find all function signatures that have a fluent return type
+    val fluents = kb.functionSchema.filter {
+      case (signature, (ret, domain)) => ret == "fluent"
+    }
 
-    for ((symbol, terms, domain) <- fluents) {
+    for ((fluentSignature, (ret, domain)) <- fluents) {
 
       val holdsAtInstances = annotatedLocations.flatMap { r =>
 
         val domainMap = Map[String, Constant](
           "timestamp" -> Constant(r._1.toString),
-          "loc_id" -> Constant(r._2.toString)
+          "loc_id" -> Constant(r._2.toString),
+          "lane" -> Constant(r._3.toString)
         )
 
-        /* Check if the constants of the fluent exist in the current tuple. If not then
-         * the tuple will be discarded in the following code.
-         */
-        val constantsExist =
-          for { t <- terms
-                d <- domain
-                if t.isConstant
-        } yield domainMap(d) == t
+        val tuple = domain.map(domainMap)
 
-        val theta = terms.withFilter(_.isVariable)
-          .map(_.asInstanceOf[Variable])
-          .map(v => v -> domainMap(v.domain))
-          .toMap[Term, Term]
-
-        val substitutedTerms = terms.map(_.substitute(theta))
-
-        if (substitutedTerms.forall(_.isConstant) && constantsExist.forall(_ == true)) {
-          val fluentSignature = AtomSignature(symbol, substitutedTerms.size)
-          if(r._4.isDefined && r._4.get == symbol)
-            for {
-              mapper <- functionMappingsMap.get(fluentSignature)
-              resultingSymbol <- mapper.get(substitutedTerms.map(_.toText))
-              groundTerms = Vector(Constant(resultingSymbol), Constant(r._1.toString))
-            } yield EvidenceAtom.asTrue("HoldsAt", groundTerms)
-          else
-            for {
-              mapper <- functionMappingsMap.get(fluentSignature)
-              resultingSymbol <- mapper.get(substitutedTerms.map(_.toText))
-              groundTerms = Vector(Constant(resultingSymbol), Constant(r._1.toString))
-            } yield EvidenceAtom.asFalse("HoldsAt", groundTerms)
-        } else None
+        if(r._4.isDefined && r._4.get == fluentSignature.symbol)
+          for {
+            mapper <- functionMappingsMap.get(fluentSignature)
+            resultingSymbol <- mapper.get(tuple.map(_.toText))
+            groundTerms = Vector(Constant(resultingSymbol), Constant(r._1.toString))
+          } yield EvidenceAtom.asTrue("HoldsAt", groundTerms)
+        else None
       }
 
-      for (atom <- holdsAtInstances) try {
-        trainingDB.evidence += atom
+      for (holdsAt <- holdsAtInstances) try {
+        trainingDB.evidence += holdsAt
       } catch {
         case ex: java.util.NoSuchElementException =>
-          val fluent = atom.terms.head
-          val timestamp = atom.terms.last
+          val fluent = holdsAt.terms.head
+          val timestamp = holdsAt.terms.last
 
           constantsDomain("fluent").get(fluent.symbol) match {
             case None => error(s"fluent constant ${fluent.symbol} is missing from constants domain}")
@@ -165,9 +146,11 @@ final class TrainingBatchLoader(kb: KB,
 
     val trainingEvidence = trainingDB.result()
 
-    val definiteClauses = (kb.definiteClauses -- ruleTransformations.map(_.originalRule)) ++ ruleTransformations.map(_.transformedRule)
-
-    val completedFormulas = PredicateCompletion(kb.formulas, definiteClauses)(predicateSchema, kb.functionSchema, trainingEvidence.constants)
+    // ---
+    // --- Compile clauses
+    // ---
+    val completedFormulas =
+      PredicateCompletion(kb.formulas, kb.definiteClauses)(predicateSchema, kb.functionSchema, trainingEvidence.constants)
 
     def initialiseWeight(formula: WeightedFormula): WeightedFormula = {
       if (formula.weight.isNaN) formula.copy(weight = 1.0)
@@ -178,11 +161,165 @@ final class TrainingBatchLoader(kb: KB,
       .compileCNF(completedFormulas.map(initialiseWeight))(trainingEvidence.constants)
       .toVector
 
-    // Give the resulting TrainingBatch for the specified interval
+    // ---
+    // --- Extract evidence and annotation
+    // ---
+    val (evidence, annotationDB) = extractAnnotation(trainingEvidence, evidencePredicates, nonEvidencePredicates)
+
+    // Return the resulting TrainingBatch for the specified interval
     TrainingBatch(
       mlnSchema = MLNSchema(predicateSchema, kb.functionSchema, kb.dynamicPredicates, kb.dynamicFunctions),
-      trainingEvidence,
-      nonEvidenceAtoms = queryPredicates,
+      evidence,
+      annotationDB,
+      nonEvidenceAtoms = nonEvidencePredicates,
       clauses)
+  }
+
+  /**
+    * Loads a training evidence batch [[lomrf.mln.learning.structure.TrainingEvidence]] that holds
+    * the data for the specified interval. Furthermore, a simulation id can be provided in case of
+    * simulation data. Should be used only for loading data during structure learning.
+    *
+    * @param startTs starting time point
+    * @param endTs end time point
+    * @param simulationId simulation id (optional)
+    * @return a training evidence batch [[lomrf.mln.learning.structure.TrainingEvidence]]
+    */
+  override def forIntervalSL(startTs: Int, endTs: Int, simulationId: Option[Int] = None): TrainingEvidence = {
+
+    val (constantsDomain, functionMappings, annotatedLocations) =
+      loadAll[Int, Long, String, Option[String]](kbConstants, kb.functionSchema, startTs, endTs, simulationId, loadFor)
+
+    // ---
+    // --- Create a new evidence builder
+    // ---
+    // Evidence builder can incrementally create an evidence database. Everything not given is considered as false (CWA).
+    val trainingDB = EvidenceBuilder(predicateSchema, kb.functionSchema, nonEvidencePredicates, hiddenPredicates = Set.empty, constantsDomain)
+      .withDynamicFunctions(predef.dynFunctions).withCWAForAll(true)
+
+    val trainingDBNoFunctions = EvidenceBuilder(predicateSchema, kb.functionSchema, nonEvidencePredicates, hiddenPredicates = Set.empty,
+      constantsDomain, convertFunctionsToPredicates = true).withDynamicFunctions(predef.dynFunctions).withCWAForAll(true)
+
+    // ---
+    // --- Store previously computed function mappings
+    // ---
+    for ((_, fm) <- functionMappings) {
+      trainingDB.functions ++= fm
+      trainingDBNoFunctions.functions ++= fm
+    }
+
+    val functionMappingsMap = trainingDB.functions.result()
+
+    // ---
+    // --- Create 'Next' predicates and give them as evidence facts:
+    // ---
+    info(s"Generating 'Next' predicates for the temporal interval [$startTs, $endTs]")
+    (startTs to endTs).sliding(2).foreach { pair =>
+      val nextAtom = EvidenceAtom.asTrue("Next", pair.map(t => Constant(t.toString)).reverse.toVector)
+      trainingDB.evidence ++= nextAtom
+      trainingDBNoFunctions.evidence ++= nextAtom
+    }
+
+    // ---
+    // --- Create auxiliary predicates and give them as evidence facts:
+    // ---
+    // Compute instances of the auxiliary derived atoms from the raw data in the specified temporal interval.
+    info(s"Generating derived events for the temporal interval [$startTs, $endTs]")
+
+    for (sqlFunction <- sqlFunctionMappings) {
+
+      val domain = sqlFunction.domain
+      val arity = sqlFunction.domain.length
+      val symbol = sqlFunction.symbol
+      val eventSignature = AtomSignature(symbol, arity)
+
+      val argDomainValues = domain.map(t => constantsDomain.get(t).get).map(_.toIterable)
+
+      val iterator = CartesianIterator(argDomainValues)
+
+      val happensAtInstances = iterator.map(_.map(Constant))
+        .flatMap { case constants =>
+
+          val timeStamps = blockingExec {
+            sql"""select timestamp from #${InputData.baseTableRow.schemaName.get}.#${InputData.baseTableRow.tableName}
+                  where #${bindSQLVariables(sqlFunction.sqlConstraint, constants)}
+                  AND timestamp between #$startTs AND #$endTs""".as[Int]
+          }
+
+          for {
+            t <- timeStamps
+            mapper <- functionMappingsMap.get(eventSignature)
+            resultingSymbol <- mapper.get(constants.map(_.toText).toVector)
+            groundTerms = Vector(Constant(resultingSymbol), Constant(t.toString))
+          } yield EvidenceAtom.asTrue("HappensAt", groundTerms)
+        }
+
+      for (happensAt <- happensAtInstances) {
+        trainingDB.evidence += happensAt
+        trainingDBNoFunctions.evidence += happensAt
+      }
+    }
+
+    // ---
+    // --- Create ground-truth predicates (HoldsAt/2)
+    // ---
+    info(s"Generating annotation predicates for the temporal interval [$startTs, $endTs]")
+
+    // Find all function signatures that have a fluent return type
+    val fluents = kb.functionSchema.filter {
+      case (signature, (ret, domain)) => ret == "fluent"
+    }
+
+    for ((fluentSignature, (ret, domain)) <- fluents) {
+
+      val holdsAtInstances = annotatedLocations.flatMap { r =>
+
+        val domainMap = Map[String, Constant](
+          "timestamp" -> Constant(r._1.toString),
+          "loc_id" -> Constant(r._2.toString),
+          "lane" -> Constant(r._3.toString)
+        )
+
+        val tuple = domain.map(domainMap)
+
+        if(r._4.isDefined && r._4.get == fluentSignature.symbol)
+          for {
+            mapper <- functionMappingsMap.get(fluentSignature)
+            resultingSymbol <- mapper.get(tuple.map(_.toText))
+            groundTerms = Vector(Constant(resultingSymbol), Constant(r._1.toString))
+          } yield EvidenceAtom.asTrue("HoldsAt", groundTerms)
+        else None
+      }
+
+      for (holdsAt <- holdsAtInstances) try {
+        trainingDB.evidence += holdsAt
+        trainingDBNoFunctions.evidence += holdsAt
+      } catch {
+        case ex: java.util.NoSuchElementException =>
+          val fluent = holdsAt.terms.head
+          val timestamp = holdsAt.terms.last
+
+          constantsDomain("fluent").get(fluent.symbol) match {
+            case None => error(s"fluent constant ${fluent.symbol} is missing from constants domain}")
+            case _ =>
+          }
+
+          constantsDomain("timestamp").get(timestamp.symbol) match {
+            case None => error(s"timestamp constant ${timestamp.symbol} is missing from constants domain}")
+            case _ =>
+          }
+      }
+    }
+
+    // ---
+    // --- Extract evidence, converted evidence and annotation
+    // ---
+    val (evidence, annotation) =
+      extractAnnotation(trainingDB.result(), evidencePredicates, nonEvidencePredicates)
+
+    val (convertedEvidence, _) =
+      extractAnnotation(trainingDBNoFunctions.result(), evidencePredicates, nonEvidencePredicates)
+
+    TrainingEvidence(evidence, annotation, convertedEvidence)
   }
 }

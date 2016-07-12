@@ -5,6 +5,12 @@ import java.util.Arrays._
 
 package object data {
 
+  // A mapping of domain types to constant symbols
+  type DomainMap = Map[String, Iterable[String]]
+
+  // Annotation tuples retrieved from the database (up to 4 values)
+  type AnnotationTuples[A, B, C, D] = Seq[(A, B, C, D)]
+
   /**
     * Each bin has limits lb <= x < ub
     *
@@ -36,6 +42,18 @@ package object data {
       val pos = x.last.toString.toInt
       val symbol = x.head.toString
       s"${symbols2domain(symbol)} >= ${sortedThresholds(pos)} and ${symbols2domain(symbol)} < ${sortedThresholds(pos + 1)}"
+  }
+
+  /**
+    * Translates a time duration string value into seconds.
+    *
+    * @param duration a time duration string
+    *
+    * @return the time duration in seconds
+    */
+  def duration2Seconds(duration: String): Int = {
+    val values = duration.split(":")
+    values(0).toInt * 3600 + values(1).toInt * 60 + values(2).toInt
   }
 
   /**

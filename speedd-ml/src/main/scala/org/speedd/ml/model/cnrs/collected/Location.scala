@@ -23,7 +23,7 @@ case class Location(locId: Long,
                     num: Int,
                     distance: Int)
 
-class LocationTable(tag: Tag) extends Table[Location] (tag, Some("cnrs"), "location") {
+class LocationTable(tag: Tag) extends Table[Location] (tag, Some("cnrs"), "collected_location") {
 
   def locId = column[Long]("lod_id")
   def lane = column[String]("lane")
@@ -33,7 +33,7 @@ class LocationTable(tag: Tag) extends Table[Location] (tag, Some("cnrs"), "locat
   def num = column[Int]("num")
   def distance = column[Int]("dist")
 
-  def pk = primaryKey("pk_location", (locId, lane))
+  def pk = primaryKey("pk_collected_location", (locId, lane))
 
   def * = (locId, lane, prevLane, coordinateX, coordinateY, num, distance) <> (Location.tupled, Location.unapply)
 }
@@ -42,6 +42,6 @@ object LocationData extends TableQuery[LocationTable](new LocationTable(_)) {
 
   def createSchema() =
     if (blockingExec {
-      MTable.getTables("location")
+      MTable.getTables("collected_location")
     }.isEmpty) blockingExec(this.schema.create)
 }

@@ -6,7 +6,7 @@ import auxlib.opt.OptionParser
 import lomrf.logic.AtomSignature
 import lomrf.util.time._
 import org.speedd.ml.ModuleVersion
-import org.speedd.ml.learners.cnrs.collected.CNRSWeightLearner
+import org.speedd.ml.learners.cnrs._
 import org.speedd.ml.learners.Learner
 import org.speedd.ml.util.logic._
 import scala.util.{Success, Try}
@@ -20,8 +20,11 @@ object WeightLearningApp extends App with OptionParser with Logging {
   // -------------------------------------------------------------------------------------------------------------------
   private var inputKBOpt: Option[File] = None
   private var outputKBOpt: Option[File] = None
+  private var sqlFunctionsFileOpt: Option[File] = None
   private var intervalOpt: Option[(Int, Int)] = None
+  private var excludeIntervalOpt: Option[(Int, Int)] = None
   private var batchSizeOpt: Option[Long] = None
+  private var simulationIdsOpt: Option[List[Int]] = None
   private var taskOpt: Option[String] = None
 
   private var targetPredicates = Set(AtomSignature("InitiatedAt", 2), AtomSignature("TerminatedAt", 2))
@@ -48,11 +51,31 @@ object WeightLearningApp extends App with OptionParser with Logging {
     v: String => outputKBOpt = Some(new File(v))
   })
 
-  opt("i", "interval", "<start time-point>,<end time-point>", "Specify the temporal interval for training, e.g. 10,100 ", {
+  opt("f2sql", "sql-function-mappings", "<string>", "Specify the sql function mappings file containing mappings of event functions to sql constraints.", {
+    v: String =>
+      val file = new File(v)
+
+      sqlFunctionsFileOpt = {
+        if (!file.isFile) fatal("The specified function mappings file does not exist.")
+        else if (!file.canRead) fatal("Cannot read the specified sql function mappings file, please check the file permissions.")
+        else Some(file)
+      }
+  })
+
+  opt("i", "interval", "<start time-point>,<end time-point>", "Specify the temporal interval for training, e.g. 10,100", {
     v: String =>
       val t = v.split(",")
       if(t.length != 2) fatal("Please specify a valid temporal interval, e.g. 10,100")
       else intervalOpt = Option {
+        Try((t(0).toInt, t(1).toInt)) getOrElse fatal("Please specify a valid temporal interval. For example: 10,100")
+      }
+  })
+
+  opt("exclude", "exclude-interval", "<start time-point>,<end time-point>", "Specify the temporal intervals to exclude from training, e.g. 20,40 ", {
+    v: String =>
+      val t = v.split(",")
+      if(t.length != 2) fatal("Please specify a valid temporal interval, e.g. 20,40")
+      else excludeIntervalOpt = Option {
         Try((t(0).toInt, t(1).toInt)) getOrElse fatal("Please specify a valid temporal interval. For example: 10,100")
       }
   })
@@ -67,8 +90,16 @@ object WeightLearningApp extends App with OptionParser with Logging {
 
   })
 
-  opt("t", "task", "<string>", "The name of the task to call (CNRS or FZ).", {
-    v: String => taskOpt = Some(v.trim.toUpperCase)
+  opt("sids", "simulation-ids", "Comma separated <sid>", "Specify the simulation id set used for training, e.g. 1,2,5", {
+    v: String =>
+      val sids = v.split(",")
+      simulationIdsOpt = Option {
+        Try(sids.map(_.toInt).toList) getOrElse fatal("Please specify a valid set of simulation ids. For example: 1,2,5")
+      }
+  })
+
+  opt("t", "task", "<string>", "The name of the task to call (cnrs.collected, cnrs.simulation.city, cnrs.simulation.highway or fz).", {
+    v: String => taskOpt = Some(v.trim.toLowerCase)
   })
 
   opt("target", "target-predicates", "<string>", "Comma separated target atoms. Target atoms are atoms that appear in the" +
@@ -129,9 +160,16 @@ object WeightLearningApp extends App with OptionParser with Logging {
     new File(kbFile.getPath + name.substring(0, name.lastIndexOf('.')) + "_trained.mln")
   }
 
+  // File indicating the mappings of event functions to sql statements
+  val sqlFunctionMappingsFile = sqlFunctionsFileOpt getOrElse fatal("Please specify sql function mappings file")
+
   // The temporal interval by which we will take the evidence that annotation data
   val (startTime, endTime) = intervalOpt getOrElse fatal("Please specify an interval")
-  val intervalLength = endTime - startTime
+  val intervalLength =
+    if (excludeIntervalOpt.isDefined)
+      endTime - startTime - (excludeIntervalOpt.get._2 - excludeIntervalOpt.get._1)
+    else
+      endTime - startTime
 
   // The batch size of the data that will given each time to the online learner
   val batchSize = batchSizeOpt match {
@@ -144,17 +182,28 @@ object WeightLearningApp extends App with OptionParser with Logging {
     case _ => fatal("Please specify a batch size")
   }
 
+  // Check if simulation ids exist, otherwise return an empty list
+  val simulationIds = simulationIdsOpt.getOrElse(List.empty)
+
   import org.speedd.ml.util.data.DatabaseManager._
 
   // --- 1. Create the appropriate instance of weight learner
   val weightLearner: Learner = taskOpt.getOrElse(fatal("Please specify a task name")) match {
-    case "CNRS" => CNRSWeightLearner(kbFile, outputFile, evidencePredicates, targetPredicates)
-    case _ => fatal("Please specify a task name")
+    case "cnrs.collected" =>
+      collected.WeightLearner(kbFile, outputFile, sqlFunctionMappingsFile,
+        evidencePredicates, targetPredicates, nonEvidencePredicates)
+    case "cnrs.simulation.highway" =>
+      if (simulationIds.isEmpty) fatal("Please specify a set of simulation ids for this task!")
+      simulation.highway.WeightLearner(kbFile, outputFile, sqlFunctionMappingsFile,
+        evidencePredicates, targetPredicates, nonEvidencePredicates)
+    case "cnrs.simulation.city" | "fz" =>
+      fatal(s"Task '${taskOpt.get}' is not implemented yet!")
+    case _ => fatal(s"Unknown task '${taskOpt.get}'. Please specify a valid task name.")
   }
 
-  // --- 2. Perform training for all intervals
+  // --- 2. Perform training for all intervals and simulation ids (if any exists)
   val t = System.currentTimeMillis()
-  weightLearner.trainFor(startTime, endTime, batchSize)
+  weightLearner.trainFor(startTime, endTime, batchSize, excludeIntervalOpt, simulationIds)
   info(s"Weight learning for task ${taskOpt.get} completed in ${msecTimeToTextUntilNow(t)}")
 
   // --- 3. Close database connection
