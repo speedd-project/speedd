@@ -10,14 +10,18 @@
 		<h3>{{selection.name}}</h3>
 		<br>
 		<h4>Location: {{selection.node}}</h4>
-		<h4>Occurrence Time: {{selection.time}}</h4>
+		<h4>Occurrence Time: {{selection.attributes.OccurrenceTime}}</h4>
+		<h4>Detection Time: {{selection.attributes.DetectionTime}}</h4>
 		<h4>Density: {{selection.density}}</h4>
+		<h4>Certainty: {{selection.attributes.Certainty}}</h4>
 		<h4>Problem ID: {{selection.problem_id}}</h4>
 
 		<!--to be implemented-->
 <!--		<div histogram-directive chart-data="data"></div>	-->
 	</div>		
 	<div class="modal-footer">
+        <!-- this button shows only if incident icon is present -->
+        <button ng-show="selection.name == 'PossibleIncident' && incidentPresent" class="btn btn-primary" ng-click="clearAlert()" >Clear Alert</button>
         <button class="btn btn-warning" ng-click="close()" style="background-color:#F1C40F; border-color:#F1C40F;">Close</button>
     </div>
 </div>

@@ -83,6 +83,15 @@ app.factory('dataService', function ($rootScope,socket,$http) { // this service 
 			data.TransactionsInFarAwayPlaces();
             data.broadcastMapCountriesData();
 		}
+        else if (event.Name == "IncreasingAmounts" || event.name == "IncreasingAmounts")
+		{
+			// decode country
+			var country = data.map_data.get(data.getCountryCode(event.attributes.card_country));
+			// increment flagged
+			country.financial.flagged[country.financial.flagged.length-1]++;
+			// notify listeners of change
+			data.broadcastIncreasingAmounts();
+		}
 		else if (event.Name == "Transaction" || event.name == "Transaction")
 		{
             console.log(data.receivedTransactions);

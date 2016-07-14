@@ -28,6 +28,7 @@ app.controller('EventListControllerAnalyst', ['$scope','$interval','$window','da
 	$scope.reasonImg;
 	$scope.certaintyImg;
     $scope.amountSum = 50;
+    $scope.increasingAmounts = [50,12,123];
     
     $scope.tSeq = $scope.transaction.transactions;
 	
@@ -90,8 +91,12 @@ app.controller('EventListControllerAnalyst', ['$scope','$interval','$window','da
 		event.name = (dataToFormat.name != undefined)? dataToFormat.name : "";
 		event.country = (dataToFormat.attributes.card_country != undefined)? dataService.map_data2.get(dataToFormat.attributes.card_country).name.common : "";
 	//	event.usedIn = (dataToFormat.acquirer_country != undefined)? dataService.map_data2.get(dataToFormat.acquirer_country[0]).name.common : "";
-		event.cost = (dataToFormat.attributes.Cost != undefined)? dataToFormat.attributes.Cost : "";
-		event.reason = (dataToFormat.reason != undefined)? dataToFormat.reason : "";
+		if (dataToFormat.name == "IncreasingAmounts")
+            event.cost = dataToFormat.attributes.amounts;
+        else
+            event.cost = (dataToFormat.attributes.Cost != undefined)? dataToFormat.attributes.Cost : "";
+		
+        event.reason = (dataToFormat.reason != undefined)? dataToFormat.reason : "";
         event.certainty = (dataToFormat.attributes.Certainty != undefined)? (parseFloat(dataToFormat.attributes.Certainty)*100).toFixed(2) : "";
 		event.confirmed = "false";
         event.analyst = "img/analyst_idle.png";
@@ -156,7 +161,16 @@ app.controller('EventListControllerAnalyst', ['$scope','$interval','$window','da
 		$scope.transactionTime = dateFormat(item.time, "dddd, mmmm dS, yyyy, h:MM:ss TT");
 		
 		// change reason Image
-		$scope.reasonImg = (item.name == "TransactionsInFarAwayPlaces")? "img/far_away.png":"img/sudden.png";
+        if(item.name == "TransactionsInFarAwayPlaces")
+		    $scope.reasonImg = "img/far_away.png";
+        else if (item.name == "SuddenCardUseNearExpirationDate")
+            $scope.reasonImg = "img/sudden.png";
+        else{
+            $scope.reasonImg = "img/increasing.png";
+            
+            $scope.increasingAmounts = item.cost;
+        }
+            
 		// change certainty Image
 		$scope.certaintyImg = (item.certainty > 70)? "img/system_fraud2.png":"img/system_yellow2.png";
 		
