@@ -1,0 +1,59 @@
+{
+        "name": "PossibleIncident",
+        "createdDate": "Sun Aug 31 2014",
+        "attributes": [
+          {
+            "name": "Certainty",
+            "type": "Double",
+            "defaultValue": "1",
+            "dimension": 0,
+            "description": "The certainty that this event happen (value between 0 to 1)"
+          },
+          {
+            "name": "OccurrenceTime",
+            "type": "Date",
+            "dimension": 0,
+            "description": "No value means it equals the event detection time, other option is to use one of the defined distribution functions with parameters"
+          },
+          {
+            "name": "ExpirationTime",
+            "type": "Date",
+            "dimension": 0,
+            "description": "Only till this time the cost and certainty parameters of the event are valid, and only till this time a proactive action is considered"
+          },
+          {
+            "name": "Cost",
+            "type": "Double",
+            "dimension": 0,
+            "description": "The cost of this event occurrence. Negative if this is an opportunity"
+          },
+          {
+            "name": "Duration",
+            "type": "Double",
+            "defaultValue": "0",
+            "dimension": 0,
+            "description": "Used in case the this event occur within an interval"
+          },
+         
+          {
+            "name": "sensorId",
+            "type": "String",
+            "dimension": 0
+          },                  
+          {
+            "name": "problem_id",
+            "type": "String",
+            "dimension": 0
+          },
+           {
+            "name": "dmPartition",
+            "type": "String",
+            "dimension": 0
+          },
+          {
+            "name": "location",
+            "type": "String",
+            "dimension": 0
+          }
+        ]
+      }

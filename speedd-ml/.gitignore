@@ -1,82 +1,48 @@
-# use glob syntax.
-syntax: glob
-*.ser
+### Scala and SBT
+
 *.class
-*~
-*.bak
-#*.off
-*.old
-
-# eclipse conf file
-.settings
-.classpath
-.project
-.manager
-.scala_dependencies
-
-# idea
-.idea
-*.iml
-*.ipr
-*.iws
-
-# building
-target
-build
-null
-tmp*
-temp*
-test-output
-build.log
-
-# other scm
-.svn
-.CVS
-.hg*
-
-# switch to regexp syntax.
-#  syntax: regexp
-#  ^\.pc/
-
-#SHITTY output not in target directory
-build.log
-
-# other
-tmp
-*.swp
-! .gitkeep
-*.log
-.directory
-*.result
-*.counts
-*.fg
-*.description
-
-Release
-
-.ensime
-.ensime_*
-
-
-# sbt specific
-.cache/
-.history/
-.lib/
-dist/*
+*.sc
 target/
 lib_managed/
 src_managed/
 project/boot/
-project/plugins/project/
-project/project/
-project/target/
+.cache
 
-# Scala-IDE specific
-.scala_dependencies
-.worksheet
+### Eclipse
 
-# ignore locally managed libraries
-lib/
+.metadata
+bin/
+tmp/
+*.tmp
+*.bak
+*.swp
+*~.nib
+local.properties
+.settings/
+.loadpath
+.recommenders
+.project
+.target
 
-# ignore scala worksheet files
-*.sc
+### JetBrains
+
+.idea/workspace.xml
+.idea/tasks.xml
+.idea/dictionaries
+.idea/vcs.xml
+.idea/jsLibraryMappings.xml
+
+.idea/dataSources.ids
+.idea/dataSources.xml
+.idea/dataSources.local.xml
+.idea/sqlDataSources.xml
+.idea/dynamic.xml
+.idea/uiDesigner.xml
+
+*.iws
+/out/
+
+# Mac OSx
+
+.DS_Store
+

@@ -126,13 +126,13 @@ public class TestNetworkCreation{
 		// use "section4", since it is sufficiently "intersesting"
 		System.out.println(Arrays.toString(section4.sensor2road.entrySet().toArray()));
 		// check sensors-roads
-		assertEquals((Integer) 16, section4.sensor2road.get(4057));
-		assertEquals((Integer) 17, section4.sensor2road.get(4166));
-		assertEquals((Integer) 116, section4.sensor2road.get(1650));
-		assertEquals((Integer) 114, section4.sensor2road.get(1658));
+		assertEquals((Integer) 15, section4.sensor2road.get(4057));
+		assertEquals((Integer) 16, section4.sensor2road.get(4166));
+		assertEquals((Integer) 115, section4.sensor2road.get(1650));
+		assertEquals((Integer) 113, section4.sensor2road.get(1658));
 		// check actuators-intersections
-		assertEquals((Integer) 14, section4.actuator2intersection.get(4486));
-		assertEquals((Integer) 16, section4.actuator2intersection.get(4453));
+		assertEquals((Integer) 13, section4.actuator2intersection.get(4486));
+		assertEquals((Integer) 15, section4.actuator2intersection.get(4453));
 		
 		
 	}

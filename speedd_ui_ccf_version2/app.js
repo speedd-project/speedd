@@ -68,6 +68,8 @@ var ser = http.createServer(app).listen(app.get('port'), function(){
   setSocket();
 });
 
+var kafkaInitialized = false;
+
 function setSocket(){
 	io = require('socket.io')(ser);
 	console.log("Setting up Client-Server communication");
@@ -92,8 +94,10 @@ function setSocket(){
 		});
         
         
-        
-		setKafka();	
+		if(!kafkaInitialized) {
+			setKafka();
+			kafkaInitialized = true;	
+		}
 	});
 }
 
