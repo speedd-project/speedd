@@ -54,6 +54,11 @@
             "type": "String",
             "dimension": 1
           },
+		  {
+            "name": "amounts",
+            "type": "Long",
+            "dimension": 1
+          },  
            {
             "name": "timestamps",
             "type": "Long",

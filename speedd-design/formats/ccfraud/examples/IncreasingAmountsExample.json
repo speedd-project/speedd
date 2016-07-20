@@ -32,6 +32,7 @@
 		49,
 		49
 		],
+		"amounts": [10, 11, 13, 16],
 		"card_pan": "8de8552de9b94c1da2f798fcefe1ac16"
 	}
 }

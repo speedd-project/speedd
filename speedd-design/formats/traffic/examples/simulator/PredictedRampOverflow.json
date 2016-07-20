@@ -1,4 +1,7 @@
 {
+	"timestamp":0,
+	"name":"PredictedRampOverflow",
+	"attributes":	{
   "Cost": "0.0",
   "Certainty": "0.5998883688639982",
   "Name": "PredictedRampOverflow",
@@ -12,3 +15,4 @@
   "location": "0024a4dc00000ddd",
   "DetectionTime": "11/02/2016 13:37:09"
 } 
+}

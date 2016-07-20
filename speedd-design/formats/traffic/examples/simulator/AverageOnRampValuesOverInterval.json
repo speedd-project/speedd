@@ -1,4 +1,8 @@
 {
+	"timestamp":0,
+	"name":"AverageOnRampValuesOverInterval",
+	"attributes":	
+{
   "location": "0024a4dc00003445",
   "average_flow": "1.0",
   "EventId": "28a29080-8b80-479b-be20-48b4dc540862",
@@ -14,4 +18,5 @@
   "Annotation": "",
   "sensorId": "1679",
   "average_speed": "12.732156"
+}
 }
