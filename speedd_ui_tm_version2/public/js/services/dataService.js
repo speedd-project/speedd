@@ -191,7 +191,7 @@ app.factory('dataService', function ($rootScope,socket) { // this service broadc
 	};
 	
 	data.parseEvent = function(event){
-		if (event.name == "Congestion" || event.name == "PredictedTrend" || event.name == "ClearCongestion")
+		if (event.name == "Congestion" || event.name == "PredictedTrend" || event.name == "ClearCongestion" || event.name =="PossibleIncident")
 		{
 			data.mapEventList.push(event);
 			data.currentMapEvent = event;
@@ -204,12 +204,14 @@ app.factory('dataService', function ($rootScope,socket) { // this service broadc
 			data.broadcastRampEvent();
 		}
 		// updates main road density colour
-		else if (event.name == "AverageDensityAndSpeedPerLocation" || event.name =="AverageDensityAndSpeedPerLocationOverInterval" || event.name == "AverageOffRampValuesOverInterval" || event.name == "AverageOnRampValuesOverInterval")
+		else if (event.name == "AverageDensityAndSpeedPerLocation" || event.name =="AverageDensityAndSpeedPerLocationOverInterval" 
+                || event.name == "AverageOffRampValuesOverInterval" || event.name == "AverageOnRampValuesOverInterval")
 		{
 			data.mainRoadEventList.push(event);
 			data.currentMainRoadEvent = event;
 			data.broadcastMainRoadEvent();
 		}
+        else;
 	};
 	
 	data.rampLocationToId = function(location,lane){// TRANSFORMS sensor location to id

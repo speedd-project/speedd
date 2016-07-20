@@ -204,6 +204,18 @@ app.controller('CircularMapController', ['$scope','$interval','$window','dataSer
             else
                 console.log("location " + event.attributes.location + " not found")
         }
+        else if (event.name == "PossibleIncident"){
+            var node = dataService.locationToNode(event.attributes.location);
+        
+            if(node){
+                // append incident icon on schmatic map
+                $scope.appendIncident(event);
+                
+                console.log(event);
+            }
+            else
+                console.log("location " + event.attributes.location + " not found")
+        }
         else;
     }     
 	
@@ -318,7 +330,8 @@ app.controller('CircularMapController', ['$scope','$interval','$window','dataSer
                 .text(function (){return $scope.sbarScale2(d3.select(circularMap).select('#ps'+barNo).attr('height')).toFixed(2)+" kmph"});
        
         d3.select(circularMap).select('#po'+barNo).attr("class", $scope.barClass("oprob"));
-        d3.select(circularMap).select('#ps'+barNo).attr("class", $scope.barClass("sprob"));  
+        d3.select(circularMap).select('#ps'+barNo).attr("class", $scope.barClass("sprob")); 
+        d3.select(circularMap).select('#pr'+barNo).attr("class", $scope.barClass("rprob"));   
         
         
     }
@@ -345,6 +358,7 @@ app.controller('CircularMapController', ['$scope','$interval','$window','dataSer
         
         d3.select(circularMap).select('#po'+barNo).attr("class", $scope.barClass("oother"));
         d3.select(circularMap).select('#ps'+barNo).attr("class", $scope.barClass("sother"));
+        d3.select(circularMap).select('#pr'+barNo).attr("class", $scope.barClass("rother"));  
 
     }
     
@@ -588,7 +602,35 @@ app.controller('CircularMapController', ['$scope','$interval','$window','dataSer
         .attr('y', node.camY)
         .attr('width', 25)
         .attr('height', 30)
+        .style('z-index', '10')
         .attr("xlink:href","vidCam.png");
+        
+    }
+    
+    $scope.appendIncident = function (event){
+        // appends cam icon to circular map
+//        var node = dataService.nodes[dataService.randomInt(0,dataService.nodes.length)];
+        var nodeId = dataService.locationToNode(event.attributes.location);
+        var node = dataService.idToNode(nodeId);
+        
+        d3.select(circularMap).select("svg").append("svg:image").attr("id","incident"+event.attributes.problem_id)
+            .attr('x', node.camX + 15)
+            .attr('y', node.camY)
+            .attr('width', 40)
+            .attr('height', 40)
+            .style('z-index', '5')
+            .attr("xlink:href","incident_2.png")
+            .on("click", function(){
+                // code to show extra info at incident location (modal)
+            //    d3.select(this).remove();
+            });
+    }
+    $scope.removeIncident = function (){
+        // appends cam icon to circular map
+//        var node = dataService.nodes[dataService.randomInt(0,dataService.nodes.length)];
+        var node = dataService.nodes[10] // "node8"
+        
+        d3.select(circularMap).select("svg").remove();
     }
 
     setTimeout(function(){
