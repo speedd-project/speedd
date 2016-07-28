@@ -1,6 +1,7 @@
 package org.speedd.ml.learners
 
 import auxlib.log.Logging
+import org.speedd.ml.util.data.DomainMap
 
 /**
   * Learner interface. Should be implemented by all learner classes.
@@ -16,9 +17,12 @@ trait Learner extends Logging {
     * @param endTs end time point
     * @param batchSize batch size for each learning step
     * @param excludeInterval interval to be excluded from the training sequence (optional)
+    * @param useOnlyConstants a constant domain to be used (optional)
     * @param simulationIds a set of simulation ids to be used for training
     */
   def trainFor(startTs: Int, endTs: Int, batchSize: Int,
-               excludeInterval: Option[(Int, Int)] = None, simulationIds: List[Int] = List.empty): Unit
+               excludeInterval: Option[(Int, Int)] = None,
+               useOnlyConstants: Option[DomainMap] = None,
+               simulationIds: List[Int] = List.empty): Unit
 
 }

@@ -8,18 +8,22 @@ import slick.driver.PostgresDriver.api._
 
 package object highway {
 
-  def loadFor(simulationId: Option[Int] = None, startTs: Int, endTs: Int,
-              initial: ConstantsDomain = Map.empty): (DomainMap, AnnotationTuples[Int, Int, Int, String]) = {
+  def loadFor(simulationId: Option[Int] = None,
+              startTs: Int, endTs: Int,
+              initial: ConstantsDomain = Map.empty,
+              useOnlyConstants: DomainMap = Map.empty): (DomainMap, AnnotationTuples[Int, Int, Int, String]) = {
 
     var domainsMap = initial.map(pair => pair._1 -> pair._2.toIterable)
 
     // Append all time points in the given interval
     domainsMap += "timestamp" -> (startTs to endTs).map(_.toString)
 
+    val excludeLocations = useOnlyConstants.getOrElse("section_id", Iterable.empty).toVector
+
     // Append all section ids (locations)
     domainsMap += "section_id" -> blockingExec {
       LocationData.map(l => l.sectionId).result
-    }.map(_.toString)
+    }.map(_.toString).filter(excludeLocations.contains)
 
     val annotationIntervalQuery =
       AnnotationData

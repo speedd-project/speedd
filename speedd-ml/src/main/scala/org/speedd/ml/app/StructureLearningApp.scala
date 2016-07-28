@@ -5,12 +5,12 @@ import auxlib.log.Logging
 import auxlib.opt.OptionParser
 import lomrf.logic.AtomSignature
 import lomrf.mln.learning.structure.ModeParser
+import lomrf.mln.model.{ConstantsDomain, ConstantsSet}
 import lomrf.util.time._
 import org.speedd.ml.ModuleVersion
 import org.speedd.ml.learners.Learner
 import org.speedd.ml.learners.cnrs._
 import org.speedd.ml.util.logic._
-
 import scala.util.{Success, Try}
 
 object StructureLearningApp extends App with OptionParser with Logging {
@@ -28,6 +28,7 @@ object StructureLearningApp extends App with OptionParser with Logging {
   private var excludeIntervalOpt: Option[(Int, Int)] = None
   private var batchSizeOpt: Option[Long] = None
   private var simulationIdsOpt: Option[List[Int]] = None
+  private var locationIdsOpt: Option[Iterable[String]] = None
   private var taskOpt: Option[String] = None
 
   private var targetPredicates = Set(AtomSignature("InitiatedAt", 2), AtomSignature("TerminatedAt", 2))
@@ -36,6 +37,7 @@ object StructureLearningApp extends App with OptionParser with Logging {
 
   private var maxLength: Int = 8
   private var threshold: Int = 1
+  private var theta: Double = 0.0
 
   // -------------------------------------------------------------------------------------------------------------------
   // --- Command-line options
@@ -100,6 +102,10 @@ object StructureLearningApp extends App with OptionParser with Logging {
 
   })
 
+  opt("lids", "location-ids", "Comma separated <lid>", "Specify the location id set used for training, e.g. 1324,2454,5128", {
+    v: String => locationIdsOpt = Option(v.split(",").toIterable)
+  })
+
   opt("sids", "simulation-ids", "Comma separated <sid>", "Specify the simulation id set used for training, e.g. 1,2,5", {
     v: String =>
       val sids = v.split(",")
@@ -149,6 +155,10 @@ object StructureLearningApp extends App with OptionParser with Logging {
 
   intOpt("threshold", "threshold", "Evaluation threshold for each new clause produced (default is " + threshold + ").", {
     v: Int => if (v < 0) fatal("The evaluation threshold must be any integer above zero, but you gave: " + v) else threshold = v
+  })
+
+  doubleOpt("theta", "theta-threshold", "Pruning threshold for clauses having weights below this value (default is " + theta + ").", {
+    v: Double => if (v < 0) fatal("The pruning theta threshold must be any double above zero, but you gave: " + v) else theta = v
   })
 
   flagOpt("h", "help", "Print usage options.", {
@@ -206,17 +216,24 @@ object StructureLearningApp extends App with OptionParser with Logging {
   // Check if simulation ids exist, otherwise return an empty list
   val simulationIds = simulationIdsOpt.getOrElse(List.empty)
 
+  // Check if location ids exist, otherwise return an empty list
+  val locationIds = if (locationIdsOpt.isDefined) taskOpt match {
+      case Some("cnrs.collected") => Some(Map("loc_id" -> locationIdsOpt.get))
+      case Some("cnrs.simulation.highway") => Some(Map("section_id" -> locationIdsOpt.get))
+    }
+    else None
+
   import org.speedd.ml.util.data.DatabaseManager._
 
   // --- 1. Create the appropriate instance of weight learner
   val structureLearner: Learner = taskOpt.getOrElse(fatal("Please specify a task name")) match {
-    case " cnrs.collected" =>
+    case "cnrs.collected" =>
       collected.StructureLearner(kbFile, outputFile, sqlFunctionMappingsFile, modes, maxLength,
-        threshold, evidencePredicates, targetPredicates, nonEvidencePredicates)
+        threshold, theta, evidencePredicates, targetPredicates, nonEvidencePredicates)
     case "cnrs.simulation.highway" =>
       if (simulationIds.isEmpty) fatal("Please specify a set of simulation ids for this task!")
       simulation.highway.StructureLearner(kbFile, outputFile, sqlFunctionMappingsFile, modes, maxLength,
-        threshold, evidencePredicates, targetPredicates, nonEvidencePredicates)
+        threshold, theta, evidencePredicates, targetPredicates, nonEvidencePredicates)
     case "cnrs.simulation.city" | "fz" =>
       fatal(s"Task '${taskOpt.get}' is not implemented yet!")
     case _ => fatal(s"Unknown task '${taskOpt.get}'. Please specify a valid task name.")
@@ -224,7 +241,7 @@ object StructureLearningApp extends App with OptionParser with Logging {
 
   // --- 2. Perform training for all intervals
   val t = System.currentTimeMillis()
-  structureLearner.trainFor(startTime, endTime, batchSize, excludeIntervalOpt)
+  structureLearner.trainFor(startTime, endTime, batchSize, excludeIntervalOpt, locationIds, simulationIds)
   info(s"Structure learning for task ${taskOpt.get} completed in ${msecTimeToTextUntilNow(t)}")
 
   // --- 3. Close database connection
