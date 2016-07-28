@@ -8,6 +8,7 @@ import lomrf.mln.model._
 import lomrf.util.Cartesian.CartesianIterator
 import org.speedd.ml.model.cnrs.simulation.highway.{InputData, LocationData}
 import org.speedd.ml.util.data.DatabaseManager._
+import org.speedd.ml.util.data.DomainMap
 import slick.driver.PostgresDriver.api._
 
 final class TrainingBatchLoader(kb: KB,
@@ -32,7 +33,7 @@ final class TrainingBatchLoader(kb: KB,
   override def forInterval(startTs: Int, endTs: Int, simulationId: Option[Int] = None): TrainingBatch = {
 
     val (constantsDomain, functionMappings, annotatedLocations) =
-      loadAll[Int, Int, Int, String](kbConstants, kb.functionSchema, startTs, endTs, simulationId, loadFor)
+      loadAll[Int, Int, Int, String](kbConstants, kb.functionSchema, None, startTs, endTs, simulationId, loadFor)
 
     // ---
     // --- Create a new evidence builder
@@ -188,13 +189,16 @@ final class TrainingBatchLoader(kb: KB,
     * @param startTs starting time point
     * @param endTs end time point
     * @param simulationId simulation id (optional)
+    * @param useOnlyConstants a constant domain to be used (optional)
     *
     * @return a training evidence batch [[lomrf.mln.learning.structure.TrainingEvidence]]
     */
-  override def forIntervalSL(startTs: Int, endTs: Int, simulationId: Option[Int] = None): TrainingEvidence = {
+  override def forIntervalSL(startTs: Int, endTs: Int,
+                             simulationId: Option[Int] = None,
+                             useOnlyConstants: Option[DomainMap] = None): TrainingEvidence = {
 
     val (constantsDomain, functionMappings, annotatedLocations) =
-      loadAll[Int, Int, Int, String](kbConstants, kb.functionSchema, startTs, endTs, simulationId, loadFor)
+      loadAll[Int, Int, Int, String](kbConstants, kb.functionSchema, useOnlyConstants, startTs, endTs, simulationId, loadFor)
 
     // ---
     // --- Create a new evidence builder

@@ -1,7 +1,7 @@
 package org.speedd.ml.loaders.cnrs
 
 import lomrf.mln.model._
-import org.speedd.ml.model.cnrs.collected.{AnnotationData, InputData, LocationData}
+import org.speedd.ml.model.cnrs.collected.{AnnotationData, LocationData}
 import org.speedd.ml.util.data.DatabaseManager._
 import slick.driver.PostgresDriver.api._
 import org.speedd.ml.util.data._
@@ -51,13 +51,15 @@ package object collected {
     "V" -> mkInterval(vehicleLevels,symbols2domain)
   )
 
-  def loadFor(simulationId: Option[Int] = None, startTs: Int, endTs: Int,
-              initial: ConstantsDomain = Map.empty): (DomainMap, AnnotationTuples[Int, Long, String, Option[String]]) = {
+  def loadFor(simulationId: Option[Int] = None,
+              startTs: Int, endTs: Int,
+              initial: ConstantsDomain = Map.empty,
+              useOnlyConstants: DomainMap = Map.empty): (DomainMap, AnnotationTuples[Int, Long, String, Option[String]]) = {
 
     var domainsMap = initial.map(pair => pair._1 -> pair._2.toIterable)
 
     // Append all time points in the given interval
-    domainsMap += "timestamp" -> (startTs to endTs).map(_.toString)
+    domainsMap += "timestamp" -> (startTs to endTs).map(_.toString).toIterable
 
     // Append all location and lanes found in the 'collected_location' table
     val locationValues = blockingExec {
@@ -66,8 +68,10 @@ package object collected {
       (locId.toString, lane)
     }.unzip
 
+    val excludeLocations = useOnlyConstants.getOrElse("loc_id", locationValues._1.distinct).toVector
+
     domainsMap ++= Iterable(
-      "loc_id" -> locationValues._1.distinct,
+      "loc_id" -> locationValues._1.distinct.filter(excludeLocations.contains),
       "lane" -> locationValues._2.distinct)
 
     val annotationIntervalQuery =

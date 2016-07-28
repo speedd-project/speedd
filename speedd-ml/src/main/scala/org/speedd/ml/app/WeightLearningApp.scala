@@ -203,7 +203,7 @@ object WeightLearningApp extends App with OptionParser with Logging {
 
   // --- 2. Perform training for all intervals and simulation ids (if any exists)
   val t = System.currentTimeMillis()
-  weightLearner.trainFor(startTime, endTime, batchSize, excludeIntervalOpt, simulationIds)
+  weightLearner.trainFor(startTime, endTime, batchSize, excludeIntervalOpt, None, simulationIds)
   info(s"Weight learning for task ${taskOpt.get} completed in ${msecTimeToTextUntilNow(t)}")
 
   // --- 3. Close database connection

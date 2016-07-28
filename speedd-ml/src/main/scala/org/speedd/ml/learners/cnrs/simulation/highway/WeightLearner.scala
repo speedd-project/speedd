@@ -12,6 +12,7 @@ import lomrf.mln.model._
 import org.speedd.ml.learners.Learner
 import org.speedd.ml.loaders.TrainingBatch
 import org.speedd.ml.loaders.cnrs.simulation.highway.TrainingBatchLoader
+import org.speedd.ml.util.data.DomainMap
 import org.speedd.ml.util.logic.{Term2SQLParser, TermMapping}
 
 final class WeightLearner private(kb: KB,
@@ -36,10 +37,13 @@ final class WeightLearner private(kb: KB,
     * @param endTs end time point
     * @param batchSize batch size for each learning step
     * @param excludeInterval interval to be excluded from the training sequence (optional)
+    * @param useOnlyConstants a constant domain to be used (optional)
     * @param simulationIds a set of simulation ids to be used for training
     */
   override def trainFor(startTs: Int, endTs: Int, batchSize: Int,
-                        excludeInterval: Option[(Int, Int)] = None, simulationIds: List[Int] = List.empty) = {
+                        excludeInterval: Option[(Int, Int)] = None,
+                        useOnlyConstants: Option[DomainMap] = None,
+                        simulationIds: List[Int] = List.empty) = {
 
     // For all given simulation ids
     for (id <- simulationIds) {
@@ -87,6 +91,8 @@ final class WeightLearner private(kb: KB,
       debug(s"Micro intervals used for training:\n${microIntervals.mkString("\n")}")
       info(s"Number of micro-intervals: ${microIntervals.size}")
 
+      var averageSDEs: Int = 0
+
       var learner: OnlineLearner = null
 
       for ( ((currStartTime, currEndTime), idx) <- microIntervals.zipWithIndex) {
@@ -103,6 +109,7 @@ final class WeightLearner private(kb: KB,
              |Total number of 'True' non-evidence atom instances: ${batch.annotation.values.map(_.numberOfTrue).sum}
           """.stripMargin
         }
+        averageSDEs += batch.trainingEvidence.db.values.map(_.numberOfTrue).sum
 
         val mln = new MLN(batch.mlnSchema, domainSpace, batch.trainingEvidence, batch.clauses)
         info(mln.toString())
@@ -118,6 +125,8 @@ final class WeightLearner private(kb: KB,
 
         learner.learningStep(idx + 1, mrf, batch.annotation)
       }
+
+      info(s"Average number of SDEs across all micro batches: ${averageSDEs / microIntervals.length}")
 
       learner.writeResults(new PrintStream(outputKB))
 

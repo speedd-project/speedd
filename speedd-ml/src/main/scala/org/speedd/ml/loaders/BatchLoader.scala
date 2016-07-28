@@ -40,10 +40,11 @@ trait BatchLoader extends Logging {
     * @param startTs starting time point
     * @param endTs end time point
     * @param simulationId simulation id (optional)
+    * @param excludeConstants a constant domain to be excluded (optional)
     *
     * @return a training evidence batch [[lomrf.mln.learning.structure.TrainingEvidence]]
     */
-  def forIntervalSL(startTs: Int, endTs: Int, simulationId: Option[Int] = None): TrainingEvidence
+  def forIntervalSL(startTs: Int, endTs: Int, simulationId: Option[Int] = None, excludeConstants: Option[DomainMap] = None): TrainingEvidence
 
   /**
     * Creates the constant domain, function mappings and loads the annotation tuples
@@ -56,6 +57,7 @@ trait BatchLoader extends Logging {
     *
     * @param kbConstants a constant domain containing the KB constants
     * @param functionSchema a function schema
+    * @param useOnlyConstants a constant domain to be used (optional)
     * @param startTs start time point
     * @param endTs end time point
     * @param simulationId simulation id (optional)
@@ -65,12 +67,13 @@ trait BatchLoader extends Logging {
     * @return a tuple containing the constant domain, function mappings and annotation tuples
     */
   protected def loadAll[A, B, C, D](kbConstants: ConstantsDomain, functionSchema: FunctionSchema,
-                                    startTs: Int, endTs: Int , simulationId: Option[Int] = None,
-                                    loader: (Option[Int], Int, Int, ConstantsDomain) => (DomainMap, AnnotationTuples[A, B, C, D])):
+                                    useOnlyConstants: Option[DomainMap] = None,
+                                    startTs: Int, endTs: Int, simulationId: Option[Int] = None,
+                                    loader: (Option[Int], Int, Int, ConstantsDomain, DomainMap) => (DomainMap, AnnotationTuples[A, B, C, D])):
                                     (ConstantsDomain, Map[AtomSignature, Iterable[FunctionMapping]], AnnotationTuples[A, B, C, D]) = {
 
     // Load domains mappings and annotation tuples
-    val (domainsMap, annotationTuples) = loader(simulationId, startTs, endTs, kbConstants)
+    val (domainsMap, annotationTuples) = loader(simulationId, startTs, endTs, kbConstants, useOnlyConstants.getOrElse(Map.empty))
 
     // Generate function mappings
     val (functionMappings, generatedDomainMap) = {

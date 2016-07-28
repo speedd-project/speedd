@@ -7,6 +7,7 @@ import lomrf.util.Cartesian.CartesianIterator
 import org.speedd.ml.loaders.{BatchLoader, InferenceBatch}
 import org.speedd.ml.model.cnrs.collected.InputData
 import org.speedd.ml.util.data.DatabaseManager._
+import org.speedd.ml.util.data.DomainMap
 import slick.driver.PostgresDriver.api._
 import org.speedd.ml.util.logic._
 
@@ -32,7 +33,7 @@ final class InferenceBatchLoader(kb: KB,
   def forInterval(startTs: Int, endTs: Int, simulationId: Option[Int] = None): InferenceBatch = {
 
     val (constantsDomain, functionMappings, annotatedLocations) =
-      loadAll[Int, Long, String, Option[String]](kbConstants, kb.functionSchema, startTs, endTs, simulationId, loadFor)
+      loadAll[Int, Long, String, Option[String]](kbConstants, kb.functionSchema, None, startTs, endTs, simulationId, loadFor)
 
     // ---
     // --- Create a new evidence builder
@@ -183,9 +184,11 @@ final class InferenceBatchLoader(kb: KB,
     * @param startTs starting time point
     * @param endTs end time point
     * @param simulationId simulation id (optional)
+    * @param useOnlyConstants a constant domain to be used (optional)
     *
     * @return a training evidence batch [[lomrf.mln.learning.structure.TrainingEvidence]]
     */
-  override def forIntervalSL(startTs: Int, endTs: Int, simulationId: Option[Int] = None): TrainingEvidence =
+  override def forIntervalSL(startTs: Int, endTs: Int, simulationId: Option[Int] = None,
+                             useOnlyConstants: Option[DomainMap] = None): TrainingEvidence =
     fatal("Cannot load structure learning training batch during inference.")
 }
