@@ -3,20 +3,22 @@
 	"name":"AverageOnRampValuesOverInterval",
 	"attributes":	
 {
-  "location": "0024a4dc00003445",
-  "average_flow": "1.0",
-  "EventId": "28a29080-8b80-479b-be20-48b4dc540862",
-  "dmPartition": "section2",
-  "DetectionTime": "11/02/2016 15:13:52",
+  "location": "0024a4dc000025eb",
+  "average_flow": "4.0",
+  "EventId": "d060d84d-3832-4503-bbdd-5d1e7dec258e",
+  "dmPartition": "section4",
+  "DetectionTime": "12/09/2016 13:37:19",
   "Name": "AverageOnRampValuesOverInterval",
   "Cost": "0.0",
   "Certainty": "1",
   "EventSource": "",
-  "OccurrenceTime": "11/02/2016 15:13:52",
-  "average_occupancy": "0.3364",
+  "OccurrenceTime": "16/12/2015 18:01:15",
+  "average_occupancy": "0.8434815555555556",
+  "standard_dev_flow": "0.4969039949999533",
+  "standard_dev_density": "53.88513423038251",
   "Duration": "0",
   "Annotation": "",
-  "sensorId": "1679",
-  "average_speed": "12.732156"
+  "sensorId": "1650",
+  "average_speed": "28.499318444444448"
 }
 }
