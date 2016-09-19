@@ -10,7 +10,9 @@ fi
 
 if [ -z ${STORM_HOME+x} ];
 then
-	STORM_HOME=~/storm-mesos-0.9.6
+	STORM_HOME=~/storm-mesos-0.1.6-SNAPSHOT-storm0.10.1-mesos0.28.2
+
+        # STORM_HOME=~/storm-mesos-0.9.6
 #	echo "STORM_HOME is unset, setting to $STORM_HOME";
 #else
 #	echo "STORM_HOME is set to $STORM_HOME";
