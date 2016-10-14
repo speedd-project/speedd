@@ -2,7 +2,7 @@ import com.typesafe.sbt.packager.archetypes.JavaAppPackaging
 
 name := "SPEEDD-ML"
 
-version := "0.4"
+version := "0.5"
 
 scalaVersion := "2.11.8"
 
@@ -41,10 +41,10 @@ libraryDependencies ++= Seq(
 )
 
 // AuxLib library requires local publishing
-libraryDependencies += "com.github.anskarl" %% "auxlib" % "0.1"
+libraryDependencies += "com.github.anskarl" %% "auxlib" % "0.2.0"
 
 // Logical Markov Random Fields
-libraryDependencies += "com.github.anskarl" %% "lomrf" % "0.5.0-SNAPSHOT"
+libraryDependencies += "com.github.anskarl" %% "lomrf" % "0.5.1"
 
 // Unit testing
 libraryDependencies += "org.scalatest" %% "scalatest" % "2.2.4" % "test"

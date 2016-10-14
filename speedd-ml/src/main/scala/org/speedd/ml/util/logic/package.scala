@@ -182,8 +182,8 @@ package object logic {
     */
   def parseSignatures(src: String): Try[Set[AtomSignature]] = Try {
     src.split(",").map { entry =>
-      val (symbol, arity) = entry.span(_ == '/')
-      AtomSignature(symbol.trim, arity.trim.toInt)
+      val (symbol, arity) = entry.splitAt(entry.indexOf('/'))
+      AtomSignature(symbol.trim, arity.replace("/","").trim.toInt)
     }(scala.collection.breakOut)
   }
 

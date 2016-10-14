@@ -10,8 +10,8 @@ su - postgres
 
 ## SPEEDD ML Module Configuration
 
-All configuration files of the SPEEDD ML module are located in the `path/to/speedd-ml-0.4/etc`. Depending on your
-installation of PostgreSQL database you may need to change url, user or password parameters of the `speedd-ml-0.4/etc/application.conf` file.
+All configuration files of the SPEEDD ML module are located in the `path/to/speedd-ml-<version>/etc`. Depending on your
+installation of PostgreSQL database you may need to change url, user or password parameters of the `speedd-ml-<version>/etc/application.conf` file.
 It is not recommended to change anything else unless you are aware of the consequences.
 
 
