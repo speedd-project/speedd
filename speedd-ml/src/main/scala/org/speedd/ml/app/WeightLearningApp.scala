@@ -21,6 +21,7 @@ object WeightLearningApp extends App with OptionParser with Logging {
   private var inputKBOpt: Option[File] = None
   private var outputKBOpt: Option[File] = None
   private var sqlFunctionsFileOpt: Option[File] = None
+  private var sqlAtomsFileOpt: Option[File] = None
   private var intervalOpt: Option[(Int, Int)] = None
   private var excludeIntervalOpt: Option[(Int, Int)] = None
   private var batchSizeOpt: Option[Long] = None
@@ -58,6 +59,17 @@ object WeightLearningApp extends App with OptionParser with Logging {
       sqlFunctionsFileOpt = {
         if (!file.isFile) fatal("The specified function mappings file does not exist.")
         else if (!file.canRead) fatal("Cannot read the specified sql function mappings file, please check the file permissions.")
+        else Some(file)
+      }
+  })
+
+  opt("a2sql", "sql-atom-mappings", "<string>", "Specify the sql atom mappings file containing mappings of atoms to sql constraints.", {
+    v: String =>
+      val file = new File(v)
+
+      sqlAtomsFileOpt = {
+        if (!file.isFile) fatal("The specified atom mappings file does not exist.")
+        else if (!file.canRead) fatal("Cannot read the specified sql atom mappings file, please check the file permissions.")
         else Some(file)
       }
   })

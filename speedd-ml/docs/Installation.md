@@ -7,9 +7,9 @@ All library dependencies are defined inside the `build.sbt`. In addition, the mo
 
 **1.** Clone and publish locally the auxlib project:
 ```bash
-$ git clone -b v0.1 --depth 1 https://github.com/anskarl/auxlib.git
+$ git clone -b v0.2 --depth 1 https://github.com/anskarl/auxlib.git
 $ cd auxlib
-$ sbt ++2.11.7 publishLocal
+$ sbt ++2.11.8 publishLocal
 ```
 
 **2.** Clone and publish locally the Optimus project (additional instructions can be found [here](https://github.com/vagm/Optimus)).
@@ -22,7 +22,7 @@ $ sbt publishLocal
 **3.** Clone and publish locally the LoMRF project (additional instructions can be found [here](https://github.com/anskarl/LoMRF)).
 
 ```bash
-$ git clone -b v0.4.2 --depth 1 https://github.com/anskarl/LoMRF.git
+$ git clone -b v0.5.1 --depth 1 https://github.com/anskarl/LoMRF.git
 $ cd LoMRF
 $ sbt publishLocal
 ```

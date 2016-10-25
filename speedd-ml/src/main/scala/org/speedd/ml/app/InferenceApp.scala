@@ -8,7 +8,7 @@ import org.speedd.ml.ModuleVersion
 import org.speedd.ml.util.logic._
 import lomrf.util.time._
 import org.speedd.ml.inference.Reasoner
-import org.speedd.ml.inference.cnrs._
+import org.speedd.ml.inference._
 import scala.util.{Success, Try}
 
 object InferenceApp extends App with OptionParser with Logging {
@@ -20,6 +20,7 @@ object InferenceApp extends App with OptionParser with Logging {
   // -------------------------------------------------------------------------------------------------------------------
   private var inputKBOpt: Option[File] = None
   private var sqlFunctionsFileOpt: Option[File] = None
+  private var sqlAtomsFileOpt: Option[File] = None
   private var intervalOpt: Option[(Int, Int)] = None
   private var batchSizeOpt: Option[Int] = None
   private var simulationIdsOpt: Option[List[Int]] = None
@@ -54,6 +55,17 @@ object InferenceApp extends App with OptionParser with Logging {
       sqlFunctionsFileOpt = {
         if (!file.isFile) fatal("The specified function mappings file does not exist.")
         else if (!file.canRead) fatal("Cannot read the specified sql function mappings file, please check the file permissions.")
+        else Some(file)
+      }
+  })
+
+  opt("a2sql", "sql-atom-mappings", "<string>", "Specify the sql atom mappings file containing mappings of atoms to sql constraints.", {
+    v: String =>
+      val file = new File(v)
+
+      sqlAtomsFileOpt = {
+        if (!file.isFile) fatal("The specified atom mappings file does not exist.")
+        else if (!file.canRead) fatal("Cannot read the specified sql atom mappings file, please check the file permissions.")
         else Some(file)
       }
   })
@@ -130,8 +142,11 @@ object InferenceApp extends App with OptionParser with Logging {
   // File indicating the input MLN knowledge file
   val kbFile = inputKBOpt getOrElse fatal("Please specify an input KB file")
 
-  // File indicating the mappings of event functions to sql statements
-  val sqlFunctionMappingsFile = sqlFunctionsFileOpt getOrElse fatal("Please specify sql function mappings file")
+  // File indicating the mappings of event functions or atoms to sql statements
+  val sqlMappingsFile =
+    if (sqlFunctionsFileOpt.isDefined) sqlFunctionsFileOpt.get
+    else if (sqlAtomsFileOpt.isDefined) sqlAtomsFileOpt.get
+    else fatal("Please specify sql mappings file")
 
   // The temporal interval by which we will take the evidence and annotation data for inference
   val (startTime, endTime) = intervalOpt getOrElse fatal("Please specify an interval")
@@ -155,11 +170,13 @@ object InferenceApp extends App with OptionParser with Logging {
 
   // --- 1. Create the appropriate instance of inference engine
   val inferenceEngine: Reasoner = taskOpt.getOrElse(fatal("Please specify a task name")) match {
-    case "cnrs.collected" => collected.InferenceEngine(kbFile, sqlFunctionMappingsFile, evidencePredicates, queryPredicates)
+    case "cnrs.collected" => cnrs.collected.InferenceEngine(kbFile, sqlMappingsFile, evidencePredicates, queryPredicates)
     case "cnrs.simulation.highway" =>
       if (simulationIds.isEmpty) fatal("Please specify a set of simulation ids for this task!")
-      simulation.highway.InferenceEngine(kbFile, sqlFunctionMappingsFile, evidencePredicates, queryPredicates)
-    case "cnrs.simulation.city" | "fz" =>
+      cnrs.simulation.highway.InferenceEngine(kbFile, sqlMappingsFile, evidencePredicates, queryPredicates)
+    case "fz" =>
+      fz.InferenceEngine(kbFile, sqlMappingsFile, evidencePredicates, queryPredicates)
+    case "cnrs.simulation.city" =>
       fatal(s"Task '${taskOpt.get}' is not implemented yet!")
     case _ => fatal(s"Unknown task '${taskOpt.get}'. Please specify a valid task name.")
   }

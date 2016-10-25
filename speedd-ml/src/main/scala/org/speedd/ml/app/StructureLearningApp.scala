@@ -5,11 +5,10 @@ import auxlib.log.Logging
 import auxlib.opt.OptionParser
 import lomrf.logic.AtomSignature
 import lomrf.mln.learning.structure.ModeParser
-import lomrf.mln.model.{ConstantsDomain, ConstantsSet}
 import lomrf.util.time._
 import org.speedd.ml.ModuleVersion
 import org.speedd.ml.learners.Learner
-import org.speedd.ml.learners.cnrs._
+import org.speedd.ml.learners._
 import org.speedd.ml.util.logic._
 import scala.util.{Success, Try}
 
@@ -24,6 +23,7 @@ object StructureLearningApp extends App with OptionParser with Logging {
   private var outputKBOpt: Option[File] = None
   private var modesFileOpt: Option[String] = None
   private var sqlFunctionsFileOpt: Option[File] = None
+  private var sqlAtomsFileOpt: Option[File] = None
   private var intervalOpt: Option[(Int, Int)] = None
   private var excludeIntervalOpt: Option[(Int, Int)] = None
   private var batchSizeOpt: Option[Long] = None
@@ -70,6 +70,17 @@ object StructureLearningApp extends App with OptionParser with Logging {
       sqlFunctionsFileOpt = {
         if (!file.isFile) fatal("The specified function mappings file does not exist.")
         else if (!file.canRead) fatal("Cannot read the specified sql function mappings file, please check the file permissions.")
+        else Some(file)
+      }
+  })
+
+  opt("a2sql", "sql-atom-mappings", "<string>", "Specify the sql atom mappings file containing mappings of atoms to sql constraints.", {
+    v: String =>
+      val file = new File(v)
+
+      sqlAtomsFileOpt = {
+        if (!file.isFile) fatal("The specified atom mappings file does not exist.")
+        else if (!file.canRead) fatal("Cannot read the specified sql atom mappings file, please check the file permissions.")
         else Some(file)
       }
   })
@@ -191,8 +202,11 @@ object StructureLearningApp extends App with OptionParser with Logging {
   val modes = ModeParser.parseFrom(modesFile)
   info("Modes Declarations: \n" + modes.map(pair => "\t" + pair._1 + " -> " + pair._2).reduce(_ + "\n" + _))
 
-  // File indicating the mappings of event functions to sql statements
-  val sqlFunctionMappingsFile = sqlFunctionsFileOpt getOrElse fatal("Please specify sql function mappings file")
+  // File indicating the mappings of event functions or atoms to sql statements
+  val sqlMappingsFile =
+    if (sqlFunctionsFileOpt.isDefined) sqlFunctionsFileOpt.get
+    else if (sqlAtomsFileOpt.isDefined) sqlAtomsFileOpt.get
+    else fatal("Please specify sql mappings file")
 
   // The temporal interval by which we will take the evidence that annotation data
   val (startTime, endTime) = intervalOpt getOrElse fatal("Please specify an interval")
@@ -228,13 +242,16 @@ object StructureLearningApp extends App with OptionParser with Logging {
   // --- 1. Create the appropriate instance of weight learner
   val structureLearner: Learner = taskOpt.getOrElse(fatal("Please specify a task name")) match {
     case "cnrs.collected" =>
-      collected.StructureLearner(kbFile, outputFile, sqlFunctionMappingsFile, modes, maxLength,
+      cnrs.collected.StructureLearner(kbFile, outputFile, sqlMappingsFile, modes, maxLength,
         threshold, theta, evidencePredicates, targetPredicates, nonEvidencePredicates)
     case "cnrs.simulation.highway" =>
       if (simulationIds.isEmpty) fatal("Please specify a set of simulation ids for this task!")
-      simulation.highway.StructureLearner(kbFile, outputFile, sqlFunctionMappingsFile, modes, maxLength,
+      cnrs.simulation.highway.StructureLearner(kbFile, outputFile, sqlMappingsFile, modes, maxLength,
         threshold, theta, evidencePredicates, targetPredicates, nonEvidencePredicates)
-    case "cnrs.simulation.city" | "fz" =>
+    case "fz" =>
+      fz.StructureLearner(kbFile, outputFile, sqlMappingsFile, modes, maxLength,
+        threshold, theta, evidencePredicates, targetPredicates, nonEvidencePredicates)
+    case "cnrs.simulation.city" =>
       fatal(s"Task '${taskOpt.get}' is not implemented yet!")
     case _ => fatal(s"Unknown task '${taskOpt.get}'. Please specify a valid task name.")
   }
