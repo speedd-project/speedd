@@ -115,7 +115,45 @@ var testMessages = [
     {"name": "TransactionStats","timestamp": 1409901066030,"attributes": {"country": 49,"average_transaction_amount_eur": "20","transaction_volume": 15}},
 	{"name": "TransactionStats","timestamp": 1409901066030,"attributes": {"country": 46,"average_transaction_amount_eur": "10","transaction_volume": 10}},
 	{"name": "TransactionStats","timestamp": 1409901066030,"attributes": {"country": 1,"average_transaction_amount_eur": "20","transaction_volume": 2}},
-	{"name": "TransactionStats","timestamp": 1409901066030,"attributes": {"country": 886,"average_transaction_amount_eur": "5","transaction_volume": 1}}
+	{"name": "TransactionStats","timestamp": 1409901066030,"attributes": {"country": 886,"average_transaction_amount_eur": "5","transaction_volume": 1}},
+    {
+        "name": "IncreasingAmounts",
+        "timestamp": 1409901066030,
+        "attributes": {				
+            "terminal_id": 12345567,
+            "TrendCount": 1.2,
+            "is_cnp": 0,
+            "timestamps": [
+            2224699200000,
+            2224699203000,
+            2224699206000
+            ],
+            "amounts": [15, 50, 150],
+            "transaction_ids": [
+            "9d47b44380024e82aedcf359f8be8dfb",
+            "8727070543664142bc7d2ba980dc1f19",
+            "b1dedbeb44ad431f995076153c7bdcc8"
+            ],
+            "EventId": "8d778bac-a7be-4435-9d74-eb9fca610672",
+            "Chronon": null,
+            "DetectionTime": 1457011687602,
+            "Name": "IncreasingAmounts",
+            "Certainty": 0.5998883688639982,
+            "Cost": 0,
+            "EventSource": "",
+            "OccurrenceTime": 2224699206000,
+            "Annotation": "",
+            "Duration": 0,
+            "card_country": 81,
+            "ExpirationTime": null,
+            "acquirer_country": [
+            "81",
+            "81",
+            "81"
+            ],
+            "card_pan": "8de8552de9b94c1da2f798fcefe1ac16"
+        }
+    }
 ];
 
 var stdin = process.openStdin(); 

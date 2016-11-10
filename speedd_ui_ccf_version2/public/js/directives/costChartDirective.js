@@ -10,7 +10,7 @@ app.directive('costChart', function ($parse) {
 
 			// listens for WINDOW RESIZE
 			scope.$watch(function(){
-			//	drawChart();
+				drawChart();
 			})
 			
 			scope.$watchCollection(exp, function(newVal, oldVal){	// don't know what happens to scope if more controllers are added to the same directive (DOM elem)
@@ -23,6 +23,8 @@ app.directive('costChart', function ($parse) {
                     
 			          
             function drawChart(){
+                chartCont.select('#increasing').remove();
+                
                 nv.addGraph(function() {  
                     var chart = nv.models.bulletChart();
 

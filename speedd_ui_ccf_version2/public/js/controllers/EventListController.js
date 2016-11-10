@@ -36,15 +36,13 @@ app.controller('EventListController', ['$scope','$interval','$window','dataServi
 		formatEvent(event);
 		console.log(event);
 	});
+    
 	$scope.$on("broadcastIncreasingAmounts", function(){
 		var event = clone(dataService.rawEventList[dataService.rawEventList.length-1]);
 		$scope.eventList.push(event);
-
 		formatEvent(event);
-		
 		console.log(event);
 	});
-    
     $scope.$on("SuddenCardUseNearExpirationDate", function(){
 		var event = clone(dataService.rawEventList[dataService.rawEventList.length-1]);
 		$scope.eventList.push(event);

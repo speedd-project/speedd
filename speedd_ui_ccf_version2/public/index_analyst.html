@@ -34,10 +34,12 @@
 	<script src="bower_components/angular-numeraljs/dist/angular-numeraljs.js"></script>
 	<script src="bower_components/numeral/numeral.js"></script>
     
-    <script src="//cdnjs.cloudflare.com/ajax/libs/topojson/1.6.9/topojson.min.js"></script>
+<!--    <script src="//cdnjs.cloudflare.com/ajax/libs/topojson/1.6.9/topojson.min.js"></script>	-->
+	<script src="libs/topojson-169.js"></script>
 	<script src="bower_components/datamaps/dist/datamaps.world.min.js"></script>
 	
-	<script src="http://cdnjs.cloudflare.com/ajax/libs/queue-async/1.0.7/queue.min.js"></script>
+<!--	<script src="http://cdnjs.cloudflare.com/ajax/libs/queue-async/1.0.7/queue.min.js"></script>	-->
+	<script src="libs/queue-async-107.js"></script>
 	
 	<script src="js/angapp.js"></script>
 <!--	<script src="libs/topojson.js"></script>   -->
@@ -50,6 +52,7 @@
 	<script src="js/directives/costChartDirective.js"></script>
 	<script src="js/directives/clockDirective.js"></script>
 	<script src="js/directives/transactionSequenceDirective.js"></script>
+	<script src="js/directives/increasingAmountsDirective.js"></script>
 	<script src="js/directives/mapsDirective.js"></script>
 	<script src="js/controllers/CartogramController.js"></script>
 	<script src="js/controllers/CartogramModalController.js"></script>
@@ -156,7 +159,7 @@
 					<h3 class="panel-title">
 		<!--				<img src="img/traffic_light_stop.png" height="28px">	-->
 						
-							Transactions to Investigate
+							Patterns to Investigate
 						
 					</h3>
 				</div>
@@ -178,13 +181,13 @@
 					<h3 class="panel-title">
 		<!--				<img src="img/traffic_light_stop.png" height="28px">	-->
 						
-							Transaction View
+							Pattern View
 						
 						<a href="#" style="overflow: hidden;"><span class="glyphicon glyphicon-refresh pull-right" ng-click="refreshClick()" aria-hidden="true"></span></a>
 					</h3>
 				</div>
 				<div collapse="isCollapsed">
-				  <div class="panel-body" style="height: 870px; " >
+				  <div class="panel-body" style="height: 900px; " >
                       <div  class="row" >
                             <div id="trans-seq" class="col-lg-6 col-md-6 col-xs-6">
                                 <label style="font-size: 20px ">Transaction Sequence</label>
@@ -192,8 +195,9 @@
                             </div>
                           
                             <div class="col-lg-6 col-md-6 col-xs-6">
-                                <label style="font-size: 20px">Sum</label>
-                                <svg cost-chart data="amountSum" style="height:60px; width:100%"></svg>
+                                <label ng-show="transactionData.name != 'IncreasingAmounts'" style="font-size: 20px">Sum</label>
+                                <svg id = "sums" ng-show="transactionData.name != 'IncreasingAmounts'" cost-chart data="amountSum" style="height:60px; width:100%"></svg>
+                                <svg id = "increasing" ng-show="transactionData.name == 'IncreasingAmounts'" increasing-amounts data="increasingAmounts" style="height:161px; width:100%"></svg>  
                             </div>
                       </div>
                       
@@ -208,10 +212,10 @@
                             </div>
                       </div>
                       
-                      <div  class="row" style = "height:110px; font-family:sans-serif; text-align: left ;font-size: 20px;">
-                          <label class="col-lg-4 col-md-4 col-xs-4" style="">Detection Time:<span><img ng-src="img/time.png" style="width:60px"></img> {{transactionTime}}</label>
-                          <label class="col-lg-4 col-md-4 col-xs-4" style="">Certainty:<span><img ng-src="{{certaintyImg}}" style="width:60px"></img></span> {{transactionData.certainty+"%"}}</label>
-                          <label class="col-lg-4 col-md-4 col-xs-4" style="">Reason:<span><img ng-src="{{reasonImg}}" style="width:60px"></img></span> {{transactionData.name}}</label>
+                      <div  class="row" style = "height:140px; font-family:sans-serif; text-align: left ;font-size: 20px;">
+                          <label class="col-lg-4 col-md-4 col-xs-4" style="">Detection Time:<span><img ng-src="img/time.png" style="width:60px"></img></span> <span><label style="font-size:16px;">{{transactionTime}}</label></span></label>
+                          <label class="col-lg-4 col-md-4 col-xs-4" style="">Certainty:<span><img ng-src="{{certaintyImg}}" style="width:60px"></img></span><span><label style="font-size:16px;"> {{transactionData.certainty+"%"}}</label></span></label>
+                          <label class="col-lg-4 col-md-4 col-xs-4" style="">Reason:<span><img ng-src="{{reasonImg}}" style="width:60px"></img></span>  <span><label style="font-size:16px;">{{transactionData.name}}</label></span></label>
                  
                       </div>
                             

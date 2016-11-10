@@ -47,7 +47,7 @@ var testMessages = [
 	{ "name": "Congestion", "timestamp": 12151, "attributes": { "location": "0024a4dc0000343f", "problem_id": 3, "Certainty": 1, "average_density": 0.78 } },
 	{ "name": "SetTrafficLightPhases", "timestamp": 1424439193610, "attributes": { "density": 0.89 ,"location": "0024a4dc0000343b", "phase_id": 2, "phase_time": 50, "controlType": "auto", "lane": "offramp"} },
 	{ "name": "SetTrafficLightPhases", "timestamp": 1424439205378, "attributes": { "density": 0.76 ,"location": "0024a4dc0000343b", "phase_id": 2, "phase_time": 12, "controlType": "auto", "lane": "offramp"} },
-	{ "name": "SetTrafficLightPhases", "timestamp": 1424439205378, "attributes": { "density": 0.76 ,"location": "0024a4dc0000343b", "phase_id": 1, "phase_time": 12, "controlType": "auto", "lane": "offramp"} },
+	{ "name": "PossibleIncident", "timestamp": 1424439205378, "attributes": {"problem_id": "4052", "density": 0.76 ,"location": "0024a4dc0000343b", "Certainty": 0.6, "OccurrenceTime": 1426341062831} },
 	{ "name": "AverageOffRampValuesOverInterval", "timestamp": 1426341062831, "attributes": { "OccurrenceTime": 1426341062831, "average_occupancy": 0.7 ,"location": "0024a4dc00003356", "average_speed": 150, "average_flow": 90} },
     { "name": "AverageOnRampValuesOverInterval", "timestamp": 1426341062831, "attributes": {"OccurrenceTime": 1426341062831, "average_occupancy": 0.7 ,"location": "0024a4dc00003356", "average_speed": 150, "average_flow": 90} },
 	{ "name": "ClearRampOverflow", "timestamp": 1426341055520, "attributes": { "density": 76 ,"location": "0024a4dc0000343b", "newMeteringRate": 12, "controlType": "auto", "lane": "offramp"} },
