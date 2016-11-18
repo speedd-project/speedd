@@ -1,15 +1,23 @@
 package org.speedd.dm;
 
 public class Ctm {
-	// class containing ctm parameters for one road
+		// local parameters
 	    public Double v;
 	    public Double w;
 	    public Double rhoc;
 	    public Double rhom;
 	    public Double l;
-	    public double F = 0;
+	    public double F;
 	    
-	    // default constructor: all parameters are set by the user
+	    /**
+	     * Default constructor with the minimal amount of information, missing
+	     * data are automatically computed
+	     * 
+	     * @param v		free-flow velocity (km/h)
+	     * @param rhoc	critical density (cars/km)
+	     * @param rhom	jam density (cars/km)
+	     * @param l		cell length (km)
+	     */
 	    public Ctm(Double v, Double rhoc, Double rhom, Double l) {
 	        this.v = v;
 	        this.w = v * (rhoc)/(rhom-rhoc);
@@ -19,7 +27,12 @@ public class Ctm {
 	        this.F = v*rhoc;
 	    }
 	    
-	    // "lazy" constructor: uses default values for different road types
+	    /**
+	     * Automatic constructor. DEPRECATED.
+	     * 
+	     * @param type
+	     * @param length
+	     */
 	    public Ctm(String type, Double length) {
 	        this.l = length; // no default value
 	        if(type.equals("freeway")) {

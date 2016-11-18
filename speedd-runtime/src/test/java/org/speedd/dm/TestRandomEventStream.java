@@ -15,7 +15,6 @@ import org.junit.Test;
 import org.speedd.data.Event;
 import org.speedd.data.EventFactory;
 import org.speedd.data.impl.SpeeddEventFactory;
-import org.speedd.dm.TestEventProcessing.TestCollector;
 
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
@@ -70,8 +69,8 @@ public class TestRandomEventStream {
 		final int p_predictedCongestion = 10;
 		final int p_congestion = 5;
 		final int p_clear = 10;
-		final int p_limits = 10;
-		final int p_coordinate = 0; // not implemented yet
+		final int p_limits = 5;
+		final int p_coordinate = 5; // not implemented yet
 		final int p_overflow = 5;
 		final int p_clearOverflow = 5;
 		final int p_onramp = 20;
@@ -144,7 +143,7 @@ public class TestRandomEventStream {
 				 Event outEvent = (Event)outTuple.get(1);
 				 if (outEvent.getEventName().equals("SetTrafficLightPhases")) {
 					 double phase_time = (double)((int)outEvent.getAttributes().get("phase_time"));
-					 String junction_id = (String) outEvent.getAttributes().get("junction_id");
+					 String junction_id = Integer.toString( (Integer) outEvent.getAttributes().get("junction_id") );
 					 assertTrue(phase_time >= 0);
 					 assertTrue(phase_time <= 60);
 					 assertTrue(junction_id.equals("4489") || junction_id.equals("4488") || junction_id.equals("4487") || 
@@ -258,13 +257,13 @@ public class TestRandomEventStream {
 
 	// ======= events to consider =======
 	// DONE - "PredictedCongestion"
-	//  - "Congestion"
+	// DONE - "Congestion"
 	// DONE - "ClearCongestion"
 	// DONE - "setMeteringRateLimits" 
 	//  - "RampCooperation" 
-	//  - "PredictedRampOverflow" 
-	//  - "ClearRampOverflow" 
-	//  - "AverageOnRampValuesOverInterval" 
+	// DONE - "PredictedRampOverflow" 
+	// DONE - "ClearRampOverflow" 
+	// DONE - "AverageOnRampValuesOverInterval" 
 	// DONE - "AverageDensityAndSpeedPerLocation"
 	
 	// functions to create events
@@ -274,6 +273,7 @@ public class TestRandomEventStream {
 		sensorData newSensor = getSensor();
 		attrs.put("sensorId", newSensor.sensorId);
 		attrs.put("dmPartition", newSensor.dmPartition);
+		attrs.put("certainty", randGen.nextDouble());
 		return SpeeddEventFactory.getInstance().createEvent("PredictedCongestion", timestamp, attrs);
 	}
 	private Event createCongestion(long timestamp) {
@@ -324,12 +324,12 @@ public class TestRandomEventStream {
 		}
 	private Event createCoordinate(long timestamp) {
 		// Create a congestion event
-		/* Map<String, Object> attrs = new HashMap<String, Object>();
+		Map<String, Object> attrs = new HashMap<String, Object>();
 		sensorData newSensor = getSensor();
 		attrs.put("sensorId", newSensor.sensorId);
 		attrs.put("dmPartition", newSensor.dmPartition);
-		return SpeeddEventFactory.getInstance().createEvent("Congestion", timestamp, attrs); */
-		return null; // not implemented yet
+		attrs.put("target_occupancy", 50.);
+		return SpeeddEventFactory.getInstance().createEvent("CoordinateRamps", timestamp, attrs); 
 	}
 	private Event createOverflow(long timestamp) {
 		// Create a ramp overflow event
@@ -337,7 +337,7 @@ public class TestRandomEventStream {
 		sensorData newSensor = getOnramp();
 		attrs.put("sensorId", newSensor.sensorId);
 		attrs.put("dmPartition", newSensor.dmPartition);
-		attrs.put("certainty", 50); // FIXME: make random
+		attrs.put("certainty", randGen.nextDouble());
 		return SpeeddEventFactory.getInstance().createEvent("PredictedRampOverflow", timestamp, attrs);
 	}	
 	private Event createClearOverflow(long timestamp) {
