@@ -172,5 +172,3 @@ public class TrafficDecisionMakerBolt extends BaseRichBolt {
 	}
 	
 }
-
-

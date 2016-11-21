@@ -1,0 +1,18 @@
+{
+	"timestamp":0,
+	"name":"PossibleIncident",
+	"attributes":	{		
+		"location": "0024a4dc000025ec",
+		"EventId": "23f21aca-d24e-45af-9b9a-b399a8c6d220",
+		"dmPartition": "section5",
+		"DetectionTime": "30/06/2016 14:54:08",
+		"Name": "PossibleIncident",
+		"Cost": "0.0",
+		"Certainty": "0.6",
+		"EventSource": "",
+		"OccurrenceTime": "16/12/2015 18:47:45",
+		"sensorId": "4052",
+		"Annotation": "",
+		"Duration": "0"
+	}
+}

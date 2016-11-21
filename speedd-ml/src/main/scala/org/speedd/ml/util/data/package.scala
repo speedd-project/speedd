@@ -1,102 +1,109 @@
-/*
- *  __   ___   ____  ____  ___   ___
- * ( (` | |_) | |_  | |_  | | \ | | \
- * _)_) |_|   |_|__ |_|__ |_|_/ |_|_/
- *
- * SPEEDD project (www.speedd-project.eu)
- * Machine Learning module
- *
- * Copyright (c) Complex Event Recognition Group (cer.iit.demokritos.gr)
- *
- * NCSR Demokritos
- * Institute of Informatics and Telecommunications
- * Software and Knowledge Engineering Laboratory
- *
- * This program is free software: you can redistribute it and/or modify it
- * under the terms of the GNU Lesser General Public License as published
- * by the Free Software Foundation, either version 3 of the License,
- * or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
- * or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public
- * License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public License
- * along with program. If not, see <http://www.gnu.org/licenses/>.
- */
-
 package org.speedd.ml.util
 
+import java.text.SimpleDateFormat
 import java.util.Arrays._
-
-import com.datastax.spark.connector.{ColumnName, ColumnRef}
-import org.apache.spark.rdd.RDD
-import org.apache.spark.sql.{DataFrame, UserDefinedFunction}
-import org.apache.spark.sql.functions._
-import scala.collection.breakOut
-import scala.language.implicitConversions
 
 package object data {
 
-  /**
-   * Implicitly convert a sequence of string constants to a sequence of ColumnRef instances
-   *
-   * @param names collection of string constants
-   *
-   * @return the resulting sequence of ColumnRef instances
-   */
-  implicit def string2ColumnNames(names: Seq[String]): Seq[ColumnRef] = {
-    names.map(name => new ColumnName(name))
-  }
+  // A mapping of domain types to constant symbols
+  type DomainMap = Map[String, Iterable[String]]
+
+  // Annotation tuples retrieved from the database (up to 4 values)
+  type AnnotationTuples[A, B, C, D] = Seq[(A, B, C, D)]
 
   /**
-   * This function gives the distinct collection of symbols per column from a specified collection of Data Frames.
-   * The columns that exist in more than one data frames, will be merged. Please note that all column values are
-   * converted to Strings.
-   *
-   *
-   * @param source the data frames to
-   * @param columnAliases mapping of column aliases, i.e., columns with different names that we would like to be treated
-   *                      as columns with the same name.
-   *
-   * @return a Map of column names to an RDD of their distinct symbols
-   */
-  def symbolsPerColumn(source: DataFrame*)(implicit columnAliases: Map[String, String] = Map.empty): Map[String, RDD[String]] = {
-
-    def symbolsPerDFColumn(df: DataFrame): Map[String, DataFrame] = {
-      df.columns.map { colName =>
-        columnAliases.getOrElse(colName, colName) -> df.select(colName).filter(df(colName).isNotNull).distinct()
-      }(breakOut)
-    }
-
-    def mergeColumns(m1: Map[String, DataFrame], m2: Map[String, DataFrame]): Map[String, DataFrame] = m1 ++ m2.map {
-      case (k, v) => m1.get(k) match {
-        case Some(d) => k -> d.unionAll(v)
-        case None => k -> v
-      }
-    }
-
-    source.map(symbolsPerDFColumn)
-      .aggregate(Map.empty[String, DataFrame])(mergeColumns, mergeColumns)
-      .mapValues(_.distinct().map(_.get(0).toString))
-  }
-
-  /**
-   *
-   * @param thresholds input array of user-defined threshold values
-   * @param prefix a string to use as a prefix symbol
-   *
-   * @return the UDF that discretizes
-   */
-  def mkSymbolicDiscretizerUDF(thresholds: Array[Double], prefix: String): UserDefinedFunction = {
+    * Each bin has limits lb <= x < ub
+    *
+    * @param thresholds input array of user-defined threshold values
+    * @param prefix a string to use as a prefix symbol
+    *
+    * @return the function that discretizes
+    */
+  def mkSymbolic(thresholds: Array[Double], prefix: String): Double => String = {
     val sortedThresholds = thresholds.sorted
-    udf {
-      (x: Double) =>
-        val pos = binarySearch(sortedThresholds, x)
-        val bin = if (pos < 0) -pos - 2 else pos
-        prefix + bin
-    }
+
+    (x: Double) =>
+      val pos = binarySearch(sortedThresholds, x)
+      val bin = if (pos < 0) -pos - 2 else pos
+      prefix + bin
+  }
+
+  /**
+    * Each bin has limits lb <= value.index < ub
+    *
+    * @param thresholds input array of user-defined threshold values
+    *
+    * @return the function that finds intervals from constants
+    */
+  def mkInterval(thresholds: Array[Double], symbols2domain: Map[String, String]): String => String = {
+    val sortedThresholds = thresholds.sorted
+
+    (x: String) =>
+      val pos = x.last.toString.toInt
+      val symbol = x.head.toString
+      s"${symbols2domain(symbol)} >= ${sortedThresholds(pos)} and ${symbols2domain(symbol)} < ${sortedThresholds(pos + 1)}"
+  }
+
+  /**
+    * Translates a time duration string value into seconds.
+    *
+    * @param duration a time duration string
+    *
+    * @return the time duration in seconds
+    */
+  def duration2Seconds(duration: String): Int = {
+    val values = duration.split(":")
+    values(0).toInt * 3600 + values(1).toInt * 60 + values(2).toInt
+  }
+
+  /**
+    * Translates a date-time value into a unix time-stamp (in seconds) according to a
+    * given date format for the date-times and a second short date-format in case some
+    * date-time values are shorter (e.g. seconds are missing). Moreover, the unix
+    * time-stamp can be shifted by a specified offset, translated into a time-stamp
+    * relative to a given starting time-stamp and/or rounded to seconds (0, 15, 30, 45).
+    *
+    * @param dateTime a date-time string value
+    * @param dateFormat a date format
+    * @param dateFormatShort a short date format
+    * @param offset an offset used to shift the produced time-stamp
+    * @param startTs a starting time-stamp used to find the relative time-distance
+    * @param round if true the date-time is rounded into seconds (0, 15, 30, 45)
+    *
+    * @return a unix time-stamp
+    */
+  def ts2UnixTS(dateTime: String, dateFormat: String, dateFormatShort: String,
+                offset: Int = 0, startTs: Long = 0, round: Boolean = false) = {
+
+    val validSeconds = Vector(0, 15, 30, 45)
+    val components = dateTime.split(":")
+
+    // Step 1. Round date to seconds 0, 15, 30 or 45
+    val roundedDateTime =
+      if (round && dateTime.trim.length == 19 && !validSeconds.contains(components.last.toInt)) {
+        val replacement = validSeconds.minBy(v => math.abs(v - components.last.toInt))
+        var result = StringBuilder.newBuilder
+        for (i <- 0 until components.length - 1)
+          result ++= components(i) + ":"
+        result ++= replacement.toString
+        result.result()
+      }
+      else dateTime
+
+    // Step 2. Format date. In case not full date is available use short date format
+    val simpleDateFormat =
+      new SimpleDateFormat(
+        if (roundedDateTime.trim.length == 19) dateFormat
+        else dateFormatShort
+      )
+
+    // Step 3. Get unix time-stamp in seconds. If an offset is specified also shift the seconds by that offset
+    val seconds = (simpleDateFormat.parse(roundedDateTime).getTime / 1000) + offset
+
+    // Step 4. Return the result
+    if (startTs > 0 && round)
+      (startTs + ((seconds - startTs) / 15)).toInt
+    else seconds.toInt
   }
 
 }

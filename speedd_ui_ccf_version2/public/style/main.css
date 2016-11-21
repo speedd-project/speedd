@@ -1,0 +1,318 @@
+* 
+        {
+            box-sizing: border-box;
+            -moz-box-sizing: border-box;
+            -webkit-box-sizing: border-box;
+        }
+		
+		path.country {
+            stroke: #AAA;
+            stroke-width: .5;
+        }
+        path.country:hover {
+            stroke: #000;
+			stroke-width: 1;
+			cursor:pointer;
+        }
+     
+        path.countryNormal {
+            stroke: #AAA;
+            stroke-width: .5;
+        }
+        path.countryNormal:hover {
+            stroke: #000;
+            stroke-width: 1;
+			cursor:pointer;
+        }
+       path.countrySelected {
+            stroke: #F1C40F;
+            stroke-width: 3;
+        }
+        path.countrySelected:hover {
+            stroke: #F1C40F;
+            stroke-width: 1.5;
+            cursor:pointer;
+        }
+     
+        html 
+		{
+            height: 100%;
+            width:100%;
+        }
+
+        body 
+		{
+            height: 100%;
+            width: 100%;
+            margin: 0;
+            padding: 0;
+        }
+        .top-bar-div {
+            border: 2px solid #a1a1a1;
+            float: left;
+            text-align: center;
+            position: absolute;
+            height: 80%;
+            width: 23%;
+            top: 10%;
+            align-content: center;
+            font-weight: bold;
+            font-family: Helvetica;
+        }
+        .headers {
+            height: 30px;
+            width: 100%;
+            position: absolute;
+            top: 0px;
+            right: 0px;
+            background-color: black;
+            border-bottom: 2px solid #a1a1a1;
+            text-align: center;
+            font-weight: bold;
+            font-size: 20px;
+            vertical-align: middle;
+            color: #C4C4C4;
+            font-family: Helvetica;
+        }
+        .containers {
+            height: calc(100% - 30px);
+            width: 100%;
+            position: absolute;
+            top: 30px;
+            left: 0px;
+            background-color: #C4C4C4;
+            font-family: Helvetica;
+        }
+        .node 
+        {
+            border: solid 1px white;
+            font: 10px sans-serif;
+            line-height: 12px;
+            overflow: hidden;
+            position: absolute;
+            text-indent: 2px;
+        }
+		
+		.panel-title{
+			font-size: 24px;
+			font-weight: bold;
+		}
+		
+		.panel-body{
+			height: 480px;
+		}
+		.panel{
+			margin: 100px 50px;
+			
+		}
+		.panel-heading{
+		}
+		.navbar{
+			border-radius: 0px;
+		}
+		h2 {
+			margin-bottom:0;
+			margin-top: 0;
+		}
+		
+		.top-widget {
+			
+            width: 100%;
+		}
+		.top-widget-body {
+			height: 40px;
+            width: 100%;
+			background-color: orangered;
+			border-bottom-left-radius: 3px;
+			border-bottom-right-radius: 3px;
+			background-color: white;
+		}
+		.top-widget-title {
+			color:white;
+			font-weight:bold;
+			text-align: center;
+		}
+		.top-widget-heading{
+			height:60px;
+            
+            width: 100%;
+			text-align: center;
+			color:white;
+		}
+        .bdy{
+            height: calc(100%-60px);
+            width: 100%;
+        }
+
+		#histogramd3 .bar{
+			cursor:pointer;
+		}
+		#top-t .bar{
+			fill: #4FC1E9;
+			cursor:pointer;
+		}
+		#top-t .bar:hover{
+			fill: #70DAFF;
+			cursor:pointer;
+		}
+		#top-f .bar{
+			fill: #FF6B6B;
+			cursor:pointer;
+		}
+		#top-f .bar:hover{
+			fill: #FFB7B7;
+			cursor:pointer;
+		}
+		#top-a .bar{
+			fill: #43B1A9;
+			cursor:pointer;
+		}
+		#top-a .bar:hover{
+			fill: #79FDF4;
+			cursor:pointer;
+		}
+		#top-v .bar{
+			fill: #444C57;
+			cursor:pointer;
+		}
+		#top-v .bar:hover{
+			fill: #CCD1D9;
+			cursor:pointer;
+		}
+		
+		
+		#draggablePanelList .panel-heading {
+			cursor: move;
+			list-style-type: none; width: 100%;
+		}
+		#draggablePanelList li { margin-bottom:25px; float: left; height: 535px; font-size: 4em; text-align: center; list-style-type: none;}
+		#draggablePanelList li-map {margin-bottom:25px; float: left; height: 520px; font-size: 4em; text-align: center; list-style-type: none;}
+        #draggablePanelList li-map-analyst {margin-bottom:25px; float: left; height: 800px; font-size: 4em; text-align: center; list-style-type: none;}
+		.ui-state-highlight {width: 33%; height: 1.5em; line-height: 1.2em; }
+        #draggablePanelList li-hist {margin-bottom:25px; float: left; height: 230px; font-size: 4em; text-align: center; list-style-type: none;}
+		#draggablePanelList li-list {margin-bottom:25px; float: left; height: 1300px; font-size: 4em; text-align: center; list-style-type: none;}
+		
+		
+		.overviewBox{
+			
+		}
+		
+		
+		.ngHeaderCell {
+			  position: absolute;
+			  top: 0;
+			  bottom: 0;
+		}
+		.ngHeaderContainer {
+			  position: relative;
+			  overflow: hidden;
+			  font-weight: bold;
+			  font-color: white;
+		}
+		.ngRow .selected{ 
+			background-color:#F1C40F!important;
+		}
+		
+		
+		
+		
+
+
+        form {
+            position: absolute;
+            right: 10px;
+            top: 10px;
+        }
+
+        .node3d {
+            border: solid 1px white;
+            line-height: 0.95;
+            overflow: hidden;
+            position: absolute;
+            border-radius: 6px;
+            background-image: -webkit-linear-gradient(top, hsla(0,0%,100%,.3), hsla(0,0%,100%,0));
+            background-image: -moz-linear-gradient(top, hsla(0,0%,100%,.3), hsla(0,0%,100%,0));
+            background-image: -ms-linear-gradient(top, hsla(0,0%,100%,.3), hsla(0,0%,100%,0));
+            background-image: -o-linear-gradient(top, hsla(0,0%,100%,.3), hsla(0,0%,100%,0));
+            background-image: linear-gradient(top, hsla(0,0%,100%,.3), hsla(0,0%,100%,0));
+            text-shadow: -1px -1px 2px hsla(0,0%,100%,0.25),
+            -1px -1px 2px hsla(0,0%,100%,0.25),
+            -1px 1px 2px hsla(0,0%,100%,0.25),
+            1px -1px 2px hsla(0,0%,100%,0.25),
+            -1px 0 2px hsla(0,0%,100%,0.25),
+            1px 0 2px hsla(0,0%,100%,0.25);
+        }
+
+        .node3d div {
+            padding: 6px 4%;
+        }
+
+        .controls {
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 20;
+        }
+
+        .controls button {
+            width: 100px;
+            height: 20px;
+            margin: 1px;
+            cursor: pointer;
+            font-size: 11px;
+            font-family: "Arial";
+            color: #333333;
+            border-radius: 2px;
+            background-color: #FFFFFF;
+            border: 1px solid #999999;
+        }
+
+        .instructions {
+            position: relative;
+            left: 30px;
+            top: 960px;
+            z-index: 10;
+            font-size: 11px;
+            font-family: "Arial";
+            color: #777777;
+            width: 400px;
+        }
+        .heading{
+            
+        }
+        
+        .arc {
+            fill: none;
+ /*           stroke: #F1C40F;    */
+            stroke: #F68275;
+            stroke-width: 3px;
+        }
+        .modal-backdrop {
+            bottom: 0;
+            opacity: 0.9;
+        }
+        
+   
+        .transactionDot{
+            stroke:black;
+            stroke-width:0;
+            fill: black;
+            r:6;
+        }
+        .transactionDot:hover{
+            stroke:#70DAFF;
+            stroke-width:6;
+            fill: black;
+            r: 10;
+            cursor:pointer;
+        }
+        
+        .transactionLine{
+            stroke:black;
+            stroke-width:2;
+            
+        }
+        
+        
+        /* clock styles*/ 
+        #Date { font-family:'BebasNeueRegular', Arial, Helvetica, sans-serif; text-align:center; text-shadow:0 0 5px #70DAFF; }

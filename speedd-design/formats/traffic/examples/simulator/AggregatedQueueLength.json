@@ -1,16 +1,19 @@
 {
-  "Cost": "0.0",
-  "Certainty": "1",
-  "Name": "AggregatedQueueLength",
-  "maxQueueLength": "37.5",
-  "EventSource": "",
-  "OccurrenceTime": "16/12/2015 18:01:15",
-  "Duration": "0",
-  "Annotation": "",
-  "sensorId": "4134",
-  "queueLength": "27",
-  "EventId": "c6f42454-0a1a-4af2-9891-eb0804452861",
-  "dmPartition": "section2",
-  "location": "0024a4dc00000ddd",
-  "DetectionTime": "11/02/2016 13:36:54"
+	"timestamp":0,
+	"name":"AggregatedQueueLength",
+	"attributes":	{
+		"Cost": "0.0",
+		"Certainty": "1",	
+		"maxQueueLength": "37.5",
+		"EventSource": "",
+		"OccurrenceTime": "16/12/2015 18:01:15",
+		"Duration": "0",
+		"Annotation": "",
+		"sensorId": "4134",
+		"queueLength": "27",
+		"EventId": "c6f42454-0a1a-4af2-9891-eb0804452861",
+		"dmPartition": "section2",
+		"location": "0024a4dc00000ddd",
+		"DetectionTime": "11/02/2016 13:36:54"
+	}
 }

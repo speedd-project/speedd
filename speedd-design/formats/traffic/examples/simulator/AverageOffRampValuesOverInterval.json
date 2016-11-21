@@ -1,17 +1,23 @@
 {
-  "location": "0024a4dc000021d1",
-  "average_flow": "2.0",
-  "EventId": "ce174add-aa28-4b26-89f6-f16f0cd0916b",
-  "dmPartition": "section4",
-  "DetectionTime": "11/02/2016 15:13:52",
+	"timestamp":0,
+	"name":"AverageOffRampValuesOverInterval",
+	"attributes":	{
+  "location": "0024a4dc000025ea",
+  "average_flow": "4.0",
+  "EventId": "d2750bf4-a127-4b1c-9b9e-54f844bec993",
+  "dmPartition": "section5",
+  "DetectionTime": "12/09/2016 13:37:19",
   "Name": "AverageOffRampValuesOverInterval",
   "Cost": "0.0",
   "Certainty": "1",
   "EventSource": "",
-  "OccurrenceTime": "11/02/2016 15:13:52",
-  "average_occupancy": "0.5092",
+  "OccurrenceTime": "16/12/2015 18:01:15",
+  "average_occupancy": "0.6362963333333334",
+  "standard_dev_flow": "0.6849348892187752",
+  "standard_dev_density": "31.74596285918485",
   "Duration": "0",
   "Annotation": "",
-  "sensorId": "1662",
-  "average_speed": "17.1237744"
+  "sensorId": "1646",
+  "average_speed": "27.99170488888889"
+}
 }

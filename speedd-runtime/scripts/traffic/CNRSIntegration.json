@@ -674,7 +674,7 @@
         "inputEvents": [
           {
             "name": "AverageDensityAndSpeedPerLocation",
-            "filterExpression": "(!EqualsIgnoreCase(AverageDensityAndSpeedPerLocation.lane,'onramp')) AND (!EqualsIgnoreCase(AverageDensityAndSpeedPerLocation.lane,'offramp')) AND (!EqualsIgnoreCase(AverageDensityAndSpeedPerLocation.lane,'queue')) AND (AverageDensityAndSpeedPerLocation.average_speed != -1) AND (AverageDensityAndSpeedPerLocation.average_density > 0.6) AND (AverageDensityAndSpeedPerLocation.average_speed < 30)",
+            "filterExpression": "(!EqualsIgnoreCase(AverageDensityAndSpeedPerLocation.lane,'onramp')) AND (!EqualsIgnoreCase(AverageDensityAndSpeedPerLocation.lane,'offramp')) AND (!EqualsIgnoreCase(AverageDensityAndSpeedPerLocation.lane,'queue')) AND (AverageDensityAndSpeedPerLocation.average_speed != -1) AND (AverageDensityAndSpeedPerLocation.average_occupancy > 0.45) AND (AverageDensityAndSpeedPerLocation.average_speed < 40)",
             "consumptionPolicy": "Consume",
             "instanceSelectionPolicy": "First"
           }
@@ -691,7 +691,7 @@
             "AverageDensityAndSpeedPerLocation": "AverageDensityAndSpeedPerLocation.density"
           }
          ],
-          "assertion": "Count >14",
+          "assertion": "Count >3",
         "evaluationPolicy": "Immediate",
         "cardinalityPolicy": "Single",
         "internalSegmentation": [],
@@ -720,7 +720,7 @@
         "inputEvents": [
           {
             "name": "AverageDensityAndSpeedPerLocation",
-            "filterExpression": "(!EqualsIgnoreCase(AverageDensityAndSpeedPerLocation.lane,'onramp')) AND (!EqualsIgnoreCase(AverageDensityAndSpeedPerLocation.lane,'queue')) AND (!EqualsIgnoreCase(AverageDensityAndSpeedPerLocation.lane,'offramp')) AND (AverageDensityAndSpeedPerLocation.average_speed != -1) AND (AverageDensityAndSpeedPerLocation.average_density < 0.5) AND (AverageDensityAndSpeedPerLocation.average_speed>80)",
+            "filterExpression": "(!EqualsIgnoreCase(AverageDensityAndSpeedPerLocation.lane,'onramp')) AND (!EqualsIgnoreCase(AverageDensityAndSpeedPerLocation.lane,'queue')) AND (!EqualsIgnoreCase(AverageDensityAndSpeedPerLocation.lane,'offramp')) AND (AverageDensityAndSpeedPerLocation.average_speed != -1) AND (AverageDensityAndSpeedPerLocation.average_occupancy < 0.3) AND (AverageDensityAndSpeedPerLocation.average_speed>80)",
             "consumptionPolicy": "Consume",
             "instanceSelectionPolicy": "First"
           }
@@ -732,7 +732,7 @@
             "AverageDensityAndSpeedPerLocation": "1"
           }
          ],
-         "assertion": "Count >14",
+         "assertion": "Count >3",
         "evaluationPolicy": "Immediate",
         "cardinalityPolicy": "Single",
         "internalSegmentation": [],
@@ -769,13 +769,13 @@
         "computedVariables": [],
         "evaluationPolicy": "Immediate",
         "cardinalityPolicy": "Unrestricted",
-        "trendN": "5",
+        "trendN": "3",
         "trendRelation": "Increase",
         "internalSegmentation": [],
         "derivedEvents": [
           {
             "name": "PredictedTrend",
-            "condition": "((GetAttribute(ArrayGet(trend.participants,ArraySize(trend.participants)-1),\"average_density\") >=0.5) AND (GetAttribute(ArrayGet(trend.participants,ArraySize(trend.participants)-1),\"average_speed\") <= 40))",
+            "condition": "((GetAttribute(ArrayGet(trend.participants,ArraySize(trend.participants)-1),\"average_occupancy\") >=0.2) AND (GetAttribute(ArrayGet(trend.participants,ArraySize(trend.participants)-1),\"average_speed\") <= 50))",
             "reportParticipants": false,
             "expressions": {
               "Certainty": "if ((NOT IsWeekend(GetAttribute(ArrayGet(trend.participants,ArraySize(trend.participants)-1),\"timestamp\"))) AND ((GetHours(GetAttribute(ArrayGet(trend.participants,ArraySize(trend.participants)-1),\"timestamp\")) > 8 AND GetHours(GetAttribute(ArrayGet(trend.participants,ArraySize(trend.participants)-1),\"timestamp\")) < 9) OR (GetHours(GetAttribute(ArrayGet(trend.participants,ArraySize(trend.participants)-1),\"timestamp\")) > 17 AND GetHours(GetAttribute(ArrayGet(trend.participants,ArraySize(trend.participants)-1),\"timestamp\")) < 18))) then (if (Sigmoid(-6.667,70.086,0.447,1.010,(GetAttribute(ArrayGet(trend.participants,ArraySize(trend.participants)-1),\"average_density\")-GetAttribute(ArrayGet(trend.participants,0),\"average_density\"))/((GetAttribute(ArrayGet(trend.participants,ArraySize(trend.participants)-1),\"timestamp\")-GetAttribute(ArrayGet(trend.participants,0),\"timestamp\"))/1000),GetAttribute(ArrayGet(trend.participants,ArraySize(trend.participants)-1),\"average_density\"),trend.count)+0.1 <=1.0) then (Sigmoid(-6.667,70.086,0.447,1.010,(GetAttribute(ArrayGet(trend.participants,ArraySize(trend.participants)-1),\"average_density\")-GetAttribute(ArrayGet(trend.participants,0),\"average_density\"))/((GetAttribute(ArrayGet(trend.participants,ArraySize(trend.participants)-1),\"timestamp\")-GetAttribute(ArrayGet(trend.participants,0),\"timestamp\"))/1000),GetAttribute(ArrayGet(trend.participants,ArraySize(trend.participants)-1),\"average_density\"),trend.count)+0.1) else (1.0) endif) else (if (Sigmoid(-6.667,70.086,0.447,1.010,(GetAttribute(ArrayGet(trend.participants,ArraySize(trend.participants)-1),\"average_density\")-GetAttribute(ArrayGet(trend.participants,0),\"average_density\"))/((GetAttribute(ArrayGet(trend.participants,ArraySize(trend.participants)-1),\"timestamp\")-GetAttribute(ArrayGet(trend.participants,0),\"timestamp\"))/1000),GetAttribute(ArrayGet(trend.participants,ArraySize(trend.participants)-1),\"average_density\"),trend.count) <=1.0) then (Sigmoid(-6.667,70.086,0.447,1.010,(GetAttribute(ArrayGet(trend.participants,ArraySize(trend.participants)-1),\"average_density\")-GetAttribute(ArrayGet(trend.participants,0),\"average_density\"))/((GetAttribute(ArrayGet(trend.participants,ArraySize(trend.participants)-1),\"timestamp\")-GetAttribute(ArrayGet(trend.participants,0),\"timestamp\"))/1000),GetAttribute(ArrayGet(trend.participants,ArraySize(trend.participants)-1),\"average_density\"),trend.count)) else (1.0) endif) endif",

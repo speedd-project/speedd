@@ -1,17 +1,23 @@
 {
-  "location": "0024a4dc000025ec",
-  "average_flow": "24.0",
-  "EventId": "d42a4d9c-8bb5-4b68-9048-3cbdf5211d3b",
-  "dmPartition": "section5",
-  "DetectionTime": "11/02/2016 15:13:52",
-  "Name": "AverageDensityAndSpeedPerLocationOverInterval",
-  "Cost": "0.0",
-  "Certainty": "1",
-  "EventSource": "",
-  "OccurrenceTime": "11/02/2016 15:13:52",
-  "average_occupancy": "7.9988",
-  "Duration": "0",
-  "Annotation": "",
-  "sensorId": "4052",
-  "average_speed": "73.65587200000002"
+	"timestamp":0,
+	"name":"AverageDensityAndSpeedPerLocationOverInterval",
+	"attributes":{
+  		"location": "0024a4dc000025ec",
+  		"average_flow": "6.0",
+  		"EventId": "7a2fb07a-f0ae-4d9b-bec0-bfbf69d7f3d2",
+  		"dmPartition": "section5",
+  		"DetectionTime": "12/09/2016 13:37:18",
+  		"Name": "AverageOnRampValuesOverInterval",
+  		"Cost": "0.0",
+  		"Certainty": "1",
+  		"EventSource": "",
+  		"OccurrenceTime": "16/12/2015 18:01:15",
+  		"average_occupancy": "1.2103704444444443",
+  		"standard_dev_flow": "0.6666666666666666",
+  		"standard_dev_density": "65.58980823347362",
+  		"Duration": "0",
+  		"Annotation": "",
+  		"sensorId": "1634",
+  		"average_speed": "36.105405222222224"
+}
 }
