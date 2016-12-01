@@ -3,14 +3,14 @@ package org.speedd.dm;
 public class FreewayController {
 	
 	// reference to state estimators
-	private final FreewayStateEstimator mainline;
+	// private final FreewayStateEstimator mainline;
 	private final FreewayStateEstimator queue;
 	
 	// Ramp metering constants
 	private final double MAX_RATE = 1800; // ... cars/h, i.e. one car every two seconds
 	private final double MAX_QUEUE_DENSITY = 110.; // Purposefully chosen slightly lower than the standard 1car/(0.008km)
 	
-	private double K1 = 70; // 70: default value for ALINEA
+	private double K1 = 35; // 70: default value for ALINEA, but we sample at 60sec instead of 120sec
 	private double K2 = 0.; // 0: default value for ALINEA
 	private double K_overflow = 0.33; // DON'T tune. 0 < K_overflow < 1, but close to 1 may lead to instabilities
 	
@@ -19,7 +19,7 @@ public class FreewayController {
 
 	// control targets
 	private double target_density_mainline;
-	private double target_density_queue = this.MAX_QUEUE_DENSITY;
+	private double target_density_queue = -1;
 	private final double q_length;
 	
 	// ui-overwrite
@@ -38,7 +38,7 @@ public class FreewayController {
 	 * @param dt						sampling time
 	 */
 	public FreewayController(FreewayStateEstimator mainline, FreewayStateEstimator queue, double target_density_mainline, double q_length, double dt) {
-		this.mainline = mainline;
+		// this.mainline = mainline;
 		this.queue = queue;
 		
 		this.target_density_mainline = target_density_mainline;
@@ -62,7 +62,7 @@ public class FreewayController {
 		if (target_density_queue > 0) {
 			this.target_density_queue = Math.min( this.MAX_QUEUE_DENSITY, target_density_queue );
 		} else {
-			this.target_density_queue = this.MAX_QUEUE_DENSITY;
+			this.target_density_queue = -1;
 		}
 	}
 	
@@ -96,18 +96,12 @@ public class FreewayController {
 	 * Computes the metering rate based on most recent state estimate, externally defined control targets and internal state.
 	 * @return	metering rate in cars/h
 	 */
-	public double computeMeteringRate() {
+	public double computeMeteringRate(double merge_density) {
 		
 		// (1) get variables
-		// (1a) mainline
-		double mainline_density = this.mainline.getDensity();
-		double mainline_flow = this.mainline.getFlow();
-		// (1b) onramp
 		double queue_density = this.queue.getDensity();
 		double demand_estimate = this.queue.getInflow();
 		double inflow_estimate = this.queue.getFlow();
-		// (1c) estimation of downstream density in the merge-area
-		double merge_density = mainline_density * ((mainline_flow + inflow_estimate) / (mainline_flow + (1e-6)));
 		
 		// (2) compute rate
 		// (2a) compute mainline-tracking metering rate
@@ -115,7 +109,9 @@ public class FreewayController {
 
 		// (2b) compute onramp-tracking metering rate if applicable
 		double queue_control = demand_estimate - this.K_overflow * (this.q_length / this.dt) * ( this.target_density_queue - queue_density );
-		meteringRate = Math.min(meteringRate, queue_control);
+		if (this.target_density_queue > 0) {
+			meteringRate = Math.min(meteringRate, queue_control);
+		}
 		
 		// (2c) ... considering threat of queue overflow - safety mechanism even if there's no event warning DM.
 		double queue_overflow = demand_estimate - this.K_overflow * (this.q_length / this.dt) * ( this.MAX_QUEUE_DENSITY - queue_density );

@@ -20,9 +20,9 @@ public class FreewayCoordination {
 	
 	// coordination constants
 	private final double GAMMA_1 = 0.8; // % of critical density to turn ON ramp metering
-	private final double GAMMA_2 = 0.6; // % of critical density to turn OFF ramp metering 
-	private final double GAMMA_3 = 0.3; // % of queue occupancy to turn OFF queue coordination 
-	private final double GAMMA_4 = 0.7; // % of queue occupancy to turn ON queue coordination
+	private final double GAMMA_2 = 0.7; // % of critical density to turn OFF ramp metering 
+	private final double GAMMA_3 = 0.7; // % of queue occupancy to turn OFF queue coordination 
+	private final double GAMMA_4 = 0.8; // % of queue occupancy to turn ON queue coordination
 	
 	/**
 	 * Default constructor.
@@ -78,15 +78,15 @@ public class FreewayCoordination {
 	 */
 	public double evaluateCoordination() {
 		double queue_occupancy = queue.getDensity();
-		double mainline_density = mainline.getDensity();
+		double mainline_density = main_class.get_merge_density();
 		
 		// update 
 		this.delta_rho = mainline_density - rho_last;
 		this.rho_last = mainline_density;
 		
-		// check if coordination request is outdated
+		// check if coordination request is out-dated
 		if (this.queue_control) {
-			if (this.last_coordination_event > 5) {
+			if (this.last_coordination_event > 2) {
 				this.queue_control = false;
 				this.last_coordination_event = 0;
 			} else {
@@ -119,7 +119,7 @@ public class FreewayCoordination {
 			return queue_occupancy;
 		} else {
 			// else coordination not active
-			if ( this.density_control && (queue_occupancy >= GAMMA_4 * 125.) ) {
+			if ( (this.density_control || this.queue_control) && (queue_occupancy >= GAMMA_4 * 125.) ) {
 				// coordination condition is satisfied
 				this.request_coordination = true;
 				return queue_occupancy;
