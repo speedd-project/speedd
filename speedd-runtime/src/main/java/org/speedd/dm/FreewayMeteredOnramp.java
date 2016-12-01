@@ -71,9 +71,10 @@ public class FreewayMeteredOnramp extends FreewayCell {
 		 * (0) Debug events
 		 */
 		if ( eventName.equals("End") ) {
-			out.close(); // write to debug log
+			if (TrafficDecisionMakerBolt.DEBUG) {
+				out.close(); // write to debug log
+			}
 		}
-		
 		
 		/* ====================================================================
 		 * (1) State estimation and System Identification
@@ -153,7 +154,7 @@ public class FreewayMeteredOnramp extends FreewayCell {
 	        		}
 	        		
 	        		// (3c.2) decide on metering rate
-	        		double rate = this.controller.computeMeteringRate();
+	        		double rate = this.controller.computeMeteringRate(this.merge_density);
 			        Map<String, Object> outAttrs = new HashMap<String, Object>();
 			        outAttrs.put("junction_id", this.id_table.actu_id );
 			        outAttrs.put("dmPartition", GrenobleTopology.get_dm_partition(this.k));
@@ -187,7 +188,8 @@ public class FreewayMeteredOnramp extends FreewayCell {
         		// Write to debug log.
         		if ( TrafficDecisionMakerBolt.DEBUG ) {
         			String str_q = Double.toString( this.onramp_stateEstimator.getDensity() ) ;
-        			String str_rho = Double.toString( this.mainline_stateEstimator.getDensity() );
+        			String str_rho = Double.toString( this.get_merge_density() );
+        			// String str_rho = Double.toString( this.mainline_stateEstimator.getDensity() );
         			String str_phi = Double.toString( this.mainline_stateEstimator.getFlow() );
         			String str_density_control = Integer.toString( this.coordination.get_density_control() ? 1 : 0 );
         			String str_queue_control = Integer.toString( this.coordination.get_queue_control() ? 1 : 0 );
