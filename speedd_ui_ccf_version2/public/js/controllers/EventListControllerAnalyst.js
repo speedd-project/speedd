@@ -100,6 +100,7 @@ app.controller('EventListControllerAnalyst', ['$scope','$interval','$window','da
         event.certainty = (dataToFormat.attributes.Certainty != undefined)? (parseFloat(dataToFormat.attributes.Certainty)*100).toFixed(2) : "";
 		event.confirmed = "false";
         event.analyst = "img/analyst_idle.png";
+        event.card_pan = (dataToFormat.attributes.card_pan != undefined)? dataToFormat.attributes.card_pan : "";
         
         /// formatting data for transaction view window
         timestamps = [];
@@ -203,7 +204,8 @@ app.controller('EventListControllerAnalyst', ['$scope','$interval','$window','da
         columnDefs: [{ field: 'id'},
                     { field: 'time', displayName: "Time"},
                     { field: 'country', displayName: "Country"},
-                    { field: 'cost', displayName: "Cost"},
+                    { field: 'cost', displayName: "Cost", visible: false},
+                    { field: 'card_pan', displayName: "Card Pan"},
                     { field: 'name', displayName: "Reason"},
                     { field: 'confirmed', displayName: "Investigated"},
                     { field: 'certainty', displayName: "Certainty", cellTemplate: 'views/certaintyCellTemplate.html'},
