@@ -420,7 +420,7 @@
             "Transaction": "1"
           }
         ],
-        "assertion": "Count >= 4",
+        "assertion": "Count >= 5",
         "evaluationPolicy": "Immediate",
         "cardinalityPolicy": "Unrestricted",
         "internalSegmentation": [],
