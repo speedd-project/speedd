@@ -74,7 +74,7 @@ topic.actions.confirmed=speedd-fraud-actions-confirmed
 topic.admin=speedd-fraud-admin
 
 # Path to Proton's Event Processing Network definition file (JSON)
-proton.epnPath=FeedzaiFraudIntegration-perf.json
+proton.epnPath=FeedzaiFraudIntegration.json
 
 speedd.inEventScheme=org.speedd.fraud.FraudAggregatedReadingScheme
 
