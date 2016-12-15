@@ -147,7 +147,7 @@ public class TestRandomEventStream {
 					 assertTrue(phase_time >= 0);
 					 assertTrue(phase_time <= 60);
 					 assertTrue(junction_id.equals("4489") || junction_id.equals("4488") || junction_id.equals("4487") || 
-							 junction_id.equals("4486") || junction_id.equals("4453") || junction_id.equals("4490"));
+							 junction_id.equals("4486") || junction_id.equals("4453") || junction_id.equals("4490") || junction_id.equals("0"));
 					 N_setTrafficLightPhases += 1;
 				 } else if (outEvent.getEventName().equals("AggregatedQueueRampLength")) {
 					 double queueLength = (Double)(outEvent.getAttributes().get("queueLength"));

@@ -25,15 +25,22 @@ public class GrenobleTopology {
 		// 											11			12			13    		14			15			16 			17			18			19		 	20
 											 "section3",  "section4", "section4", "section4", "section4", "section5", "section5", "section5", "section5", "section5"};
 
+	// road parameters   			  1     2     3     4     5     6     7     8     9    10    11   11o    12    13    14    15    15o   16    17    18    19
 	// index             		      1    x2     3     4     5     6    x7     8     9    10   x11    12    13   x14    15   x16     17   18   x19    20    21
-    final static double[] ql   = {  0.1,  0.4,   0.,   0., 0.12,   0., 0.15, 0.12,   0.,   0.,  0.3,    0,   0.,  0.2,   0.,  0.2,    0.,   0.,  0.2,   0., 0.06 };
-	// final static double[] ql   = {  0.1,  0.4,   0.,   0., 0.12,   0.,  0.4, 0.12,   0.,   0.,  0.4,    0,   0.,  0.4,   0.,  0.4,   0.,   0.,  0.4,   0., 0.06 }; // ONLY for test purposes!!
-	final static double[] length={  2.0,  0.4,  0.8,  0.4,  0.4,  0.8,  0.5, 0.45, 0.75,  1.3,  0.5,  0.4,  0.5,  0.5, 0.65,  0.4,  0.4,  0.4, 0.55, 0.45,  0.4 };
-	final static double[] v    = {  90.,  90.,  90.,  90.,  90.,  90.,  90.,  90.,  90.,  90.,  90.,  90.,  90.,  90.,  90.,  90.,  90.,  90.,  90.,  90.,  90. };
-	final static double[] rhoc = {  50.,  50.,  50.,  50.,  50.,  50.,  50.,  50.,  50.,  50.,  50.,  50.,  50.,  50.,  50.,  50.,  50.,  50.,  50.,  50.,  50. };
-	final static double[] rhom = { 250., 250., 250., 250., 250., 250., 250., 250., 250., 250., 250., 250., 250., 250., 250., 250., 250., 250., 250., 250., 250. };
-	final static double[] beta = {   0.,   0.,   0.,  0.2,   0.,  0.2,   0.,   0.,   0.,  0.2,   0.,   0.,  0.2,   0.,  0.2,   0.,   0.,  0.2,   0.,  0.2,   0. };
-	// private final double[] beta = {   0.,   0.,   0.,  0.2,   0.,  0.2,   0.,   0.,   0.,  0.2,   0.,        0.2,   0.,  0.2,   0.,        0.2,   0.,  0.2,   0.      }; // currently unused
+	final static double[] dF   = {  0.07,  0.07,  0.07,  0.07,  0.07,  0.07,  0.07,  0.07,  0.07,  0.07,  0.07,  0.07,  0.07,  0.07,  0.07,  0.07,  0.07,  0.07,  0.07,  0.07,   0.07 }; //conservative estimate
+	final static double[] length={  2.0,  0.4,  0.8,  0.4,  0.4,  0.8,  0.5, 0.45, 0.75,  1.3,  0.5,  0.4,  0.5,  0.5, 0.65,  0.4,  0.4,  0.4, 0.55, 0.45,  0.4 }; // google maps
+	final static double[] v    = {  90.,  90.,  90.,  90.,  90.,  90.,  90.,  90.,  90.,  90.,  90.,  90.,  90.,  90.,  90.,  90.,  90.,  90.,  90.,  90.,  90. }; // speed limit
+	final static double[] rhom = { 250., 250., 250., 250., 250., 250., 250., 250., 250., 250., 250., 250., 250., 250., 250., 250., 250., 250., 250., 250., 1.5*250. }; // default value
+	// index             		      1    x2     3     4     5     6    x7     8     9    10   x11    12    13   x14    15   x16     17   18   x19    20    21
+	final static double[] beta = {   0.,   0.,   0., 0.10,   0., 0.18,   0.,   0.,   0., 0.11,   0.,   0., 0.10,   0., 0.16,   0.,   0., 0.10,   0., 0.08,   0. }; // estimated from data
+	final static double[] rhoc = { 49.0, 59.6, 55.0, 55.0, 47.9, 47.9, 52.0, 55.0, 51.1, 54.2, 48.0, 48.0, 51.6, 49.5, 54.7, 51.2, 51.2, 56.1, 56.1, 56.1, 1.5*56.1 }; // estimated from data
+	final static double[] ql   = {  0.1,  0.4,   0.,   0., 0.12,   0., 0.15, 0.12,   0.,   0.,  0.3,    0,   0.,  0.2,   0.,  0.2,    0.,   0.,  0.2,   0., 0.06}; // google maps
+	
+	// final static double[] ql   = {  0.1,  0.4,   0.,   0., 0.12,   0.,  0.4, 0.12,   0.,   0.,  0.4,    0,   0.,  0.4,   0.,  0.4,   0.,   0.,  0.4,   0., 0.06 }; // google maps, extended assumption
+	// final static double[] rhom = { 2500., 2500., 2500., 2500., 2500., 2500., 2500., 2500., 2500., 2500., 2500., 2500., 2500., 2500., 2500., 2500., 2500., 2500., 2500., 2500., 1.5*2500. }; // default value
+	// final static double[] rhoc = {  500.,  500.,  500.,  500.,  500.,  500.,  500.,  500.,  500.,  500.,  500.,  500.,  500.,  500.,  500.,  500.,  500.,  500.,  500.,  500.,  500. };
+	// final static double[] dF   = {   0.,0.071,   0.,   0.,   0.,   0.,0.153,   0.,   0.,   0.,0.073,   0.,   0.,0.073,   0.,0.065,   0.,   0.,0.065,   0.,   0. }; // NOTE: capacity drop only estimated for metered onramp sections
+	// final static double[] dF   = {  0.1,  0.1,  0.1,  0.1,  0.1,  0.1,  0.1,  0.1,  0.1,  0.1,  0.1,  0.1,  0.1,  0.1,  0.1,  0.1,  0.1,  0.1,  0.1,  0.1,   0.1 }; // ONLY for testing purposes!!
 	
 	// convenction     ---- CELL X-1 ---> ( LOCATION X ) ---- CELL X ---> ( LOCATION X+1 ) ---- CELL X+1 ---> ....
 	
@@ -43,7 +50,7 @@ public class GrenobleTopology {
 	 * @return	the corresponding ctm struct
 	 */
 	public static Ctm getCtm(int k) {
-		return new Ctm(v[k], rhoc[k], rhom[k], length[k]);
+		return new Ctm(v[k], rhoc[k], rhom[k], length[k], dF[k]);
 	}
 	
 	/**

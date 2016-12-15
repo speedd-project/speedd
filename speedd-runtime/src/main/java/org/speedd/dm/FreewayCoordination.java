@@ -19,10 +19,10 @@ public class FreewayCoordination {
 	private double delta_rho = 0.;
 	
 	// coordination constants
-	private final double GAMMA_1 = 0.8; // % of critical density to turn ON ramp metering
-	private final double GAMMA_2 = 0.7; // % of critical density to turn OFF ramp metering 
-	private final double GAMMA_3 = 0.7; // % of queue occupancy to turn OFF queue coordination 
-	private final double GAMMA_4 = 0.8; // % of queue occupancy to turn ON queue coordination
+	private final double GAMMA_1 = 0.7; // % of critical density to turn ON ramp metering
+	private final double GAMMA_2 = 0.5; // % of critical density to turn OFF ramp metering 
+	private final double GAMMA_3 = 0.5; // % of queue occupancy to turn OFF queue coordination 
+	private final double GAMMA_4 = 0.7; // % of queue occupancy to turn ON queue coordination
 	
 	/**
 	 * Default constructor.
@@ -40,6 +40,7 @@ public class FreewayCoordination {
 		this.main_class = main_class;
 	}
 	
+	// j7Gw94hfy
 	
 	// (0) Getter functions for (discrete) state
 	
@@ -66,6 +67,7 @@ public class FreewayCoordination {
 	public boolean get_request_coordination() {
 		return this.request_coordination;
 	}
+	
 	
 	
 	// (1) State transitions based on periodic checks
@@ -107,25 +109,26 @@ public class FreewayCoordination {
 			}
 		}
 		
-		// check ramp coordination last
-		if (this.request_coordination) {
-			// coordination active
-			if ( (queue_occupancy < GAMMA_3 * 125.) || (!this.density_control && !this.queue_control) ) {
-				// release conditions satisfied. NOTE: 125 = max. queue occupancy
+		if ( (queue_occupancy < GAMMA_3 * 125.) ) { // release coordination
+			if ( this.request_coordination ) {
 				this.request_coordination = false;
 				return 0.;
-			} 
-			// else continue coordination
-			return queue_occupancy;
-		} else {
-			// else coordination not active
-			if ( (this.density_control || this.queue_control) && (queue_occupancy >= GAMMA_4 * 125.) ) {
-				// coordination condition is satisfied
-				this.request_coordination = true;
-				return queue_occupancy;
+			} else {
+				return -1.;
 			}
-			// else continue not coordinating
-			return -1; }
+		}
+		if ( (queue_occupancy >= GAMMA_4 * 125.) ) { // request coordination
+			this.request_coordination = true;
+			// return Math.max(queue_occupancy - 125*0.2, 0.);
+			return queue_occupancy * 0.8;
+		}
+		
+		if (this.request_coordination) {
+			// return Math.max(queue_occupancy - 125*0.2, 0.);
+			return queue_occupancy * 0.8;
+		} else {
+			return -1.;
+		} 
 		
 	}
 
@@ -194,10 +197,10 @@ public class FreewayCoordination {
 		this.last_coordination_event = 0;
 		// check if valid metering rate
 		if (target_queue_density > 0) {
-			controller.set_target_density_queue(target_queue_density);
+			controller.set_target_density_queue( target_queue_density );
 			this.queue_control = true;
 		} else {
-			controller.set_target_density_queue(-1); // turn off
+			controller.set_target_density_queue( -1000. ); // turn off
 			this.queue_control = false;
 		}
 
@@ -228,8 +231,8 @@ public class FreewayCoordination {
 		
 		double T = TrafficDecisionMakerBolt.dt * (rhoc_ds - rho_t_ds) / this.delta_rho;
 		
-		double capacity_drop = 0.1 * this.sysId.predictFlow(rhoc_ds); // FIXME: capacity drop, replace with data-driven estimates, in %
-		double duration = 2; // FIXME: congestion duration, replace with data-driven estimates, in hours
+		double capacity_drop = GrenobleTopology.dF[1] * this.sysId.predictFlow(rhoc_ds);
+		double duration = 1.5; // FIXME: congestion duration, replace with data-driven estimates, in hours
 		
 		double delta_T_ml = p_con * q_us * T * capacity_drop * duration / (l_ds*(rhoc_ds-rho_t_ds) + l_q_ds*(125-q_t_ds));
 		double delta_T_ramp =  T * (q_ds * q_us)/(q_ds + q_us) ;
