@@ -9,6 +9,8 @@ public class Pwa_freeway {
 	
 	private boolean NON_MONOTONIC = true;
 	
+	private double CRIT_RANGE = 20.;
+	
 	private double[] rho = {0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.};
 	private double[] q   = {0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.};
 	private double[] r   = {0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.};
@@ -19,6 +21,7 @@ public class Pwa_freeway {
 	private final double[] rhoc   = GrenobleTopology.rhoc;
 	private final double[] rhom   = GrenobleTopology.rhom;
 	private final double[] beta   = GrenobleTopology.beta;
+	private final double[] dF     = GrenobleTopology.dF;
 	
 	private final int n = 21;
 
@@ -40,24 +43,14 @@ public class Pwa_freeway {
 		// update densities & queues
 		for (int k=0; k<n; k++) {
 			
-			double inflow;
-			
-			if (k>0) {
-				inflow = Math.min(rates[k-1], q[k-1]/dt + demand[k-1]);
-				inflow = Math.min(1800., Math.max(0., inflow)); // hard inflow bounds
-			}
-			else {
-				inflow = 0.;
-			}
+			double inflow = Math.min(rates[k], q[k]/dt + demand[k]);
+			inflow = Math.min(1800., Math.max(0., inflow)); // hard inflow bounds
+			q[k] = q[k] + dt * (demand[k] - inflow);
+			r[k] = inflow;
+			d[k] = demand[k];
 			
 			rho[k] = rho[k] + (dt/this.length[k]) * ( phi[k] - phi[k+1]/(1-beta[k]) + inflow );
-			if (k>0) {
-				q[k-1] = q[k-1] + dt * (demand[k-1] - inflow);
-				r[k-1] = inflow;
-				d[k-1] = demand[k-1];
-			}
 		}
-		
 		return phi;
 	}
 
@@ -107,31 +100,47 @@ public class Pwa_freeway {
 	 * @return
 	 */
 	private double compute_flow(int k, double d_ml) {
-		double demand;
-		double F = Math.min(rhoc[Math.max(0,k-1)]*v[Math.max(0,k-1)], rhoc[Math.min(18,k)]*v[Math.min(18,k)]);
 		
+		double scale_us = 1.;
+		// if (this.NON_MONOTONIC && (k > 0)) {
+		if ( (k > 0) ) {
+			scale_us = 1 + dF[k-1];
+		}
+		double scale_ds = 1.;
+		// if (this.NON_MONOTONIC && (k < dF.length)) {
+		if ( (k < dF.length)) {
+			scale_ds = 1 + dF[k];
+		}
+		
+		double F_us = scale_us * rhoc[Math.max(0,k-1)] * v[Math.max(0,k-1)];
+		double F_ds = scale_ds * rhoc[ Math.min(rhoc.length-1,k) ] * v[Math.min(v.length-1,k)];
+		if ( k == 18 ) {
+			F_ds = scale_ds * 4450.; // NOTE: Modification to replicate real-world traffic patterns.
+		} else if (k == 19 ) {
+			F_us = scale_us * 4450.; // ... 
+		}
+
+		double demand; // compute traffic DEMAND
 		if (k > 0) {
-			demand = this.v[k-1] * this.rho[k-1] * (1-this.beta[k-1]);
-			if ((this.rho[k-1] > this.rhoc[k-1]) && this.NON_MONOTONIC) {
-				demand = 0.85 * F ; // - ( this.rho[k-1] - this.rhoc[k-1] )*3;
+			demand = scale_us * this.v[k-1] * this.rho[k-1] * (1-this.beta[k-1]);
+			demand = Math.min(F_us, demand);
+			if (this.NON_MONOTONIC && ( this.rho[k-1] > this.rhoc[k-1] + CRIT_RANGE )) {
+				demand = F_us / scale_us ;
 			}
 		} else {
 			demand = d_ml;
 		}
 		
-		double supply;
-		if (k < n) {
-			double w = this.v[k] * (rhoc[k])/(rhom[k]-rhoc[k]);
-			supply = (this.rhom[k] - this.rho[k]) * w;
-			if (k == 0) {
-				supply = 100000; // essentially infinity - IMPORTANT to prevent lock-out of demand!!!
-			}
+		double supply; // compute SUPPLY of free space
+		if ((k > 0) && (k < n)) {
+			double w = this.v[k] * rhoc[k] / (rhom[k] - (rhoc[k] + CRIT_RANGE));
+			supply = scale_ds * (this.rhom[k] - this.rho[k]) * w;
+			supply = Math.min(F_ds, supply);
 		} else {
-			supply = 100000; // essentially infinity.
+			supply = 100000; // essentially infinity - IMPORTANT to prevent lock-out of demand!!!
 		}
 		
-		
-		return Math.min(F, Math.min(demand,  supply));
+		return Math.min(demand, supply);
 	}
 
 	public double compute_TTT() {

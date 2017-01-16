@@ -4,11 +4,13 @@ public class FreewayStateEstimator {
 
 	// estimate mean
 	private double mu_flow_in;
+	private double mu_flow_ramp;
 	private double mu_flow_out;
 	private double mu_density = 0; // assume empty freeway initially
 	
 	// estimate variance
 	private double v2_flow_in;
+	private double v2_flow_ramp;
 	private double v2_flow_out;
 	private double v2_density = 50; // uncertainty in the order of the critical density
 	
@@ -17,8 +19,11 @@ public class FreewayStateEstimator {
 	private final double length;
 	private final double dt;
 	
+	private final double GAMMA_5 = 0.5;
+	
 	// internal buffer to achieve synchronous measurement processing
 	private boolean new_in_measurement = false; // no measurement stored initially
+	private boolean new_ramp_measurement = false; // no measurement stored initially
 
 	/*
 	 *  	       +-------------------+
@@ -83,12 +88,26 @@ public class FreewayStateEstimator {
 	 * @param velocity		empirical mean of the velocity (km/h)
 	 */
 	public void processInMeasurement(double mean_flow, double stdv_flow, double mean_dens, double stdv_dens, double velocity) {
-		
 		// update flows, no dynamics
 		this.mu_flow_in = Math.max(0., mean_flow);
 		this.v2_flow_in = stdv_flow * stdv_flow;
-		
 		new_in_measurement = true;
+	}
+	
+	/**
+	 * Process a measurement of the ramp flow INTO the cell at "SensorRamp"
+	 * 
+	 * @param mean_flow		empirical mean of the inflow (cars/h)
+	 * @param stdv_flow		empirical standard deviation of the inflow (cars/h)
+	 * @param mean_dens		empirical mean of the density (cars/km)
+	 * @param stdv_dens		empirical standard deviation of the density (cars/km)
+	 * @param velocity		empirical mean of the velocity (km/h)
+	 */
+	public void processRampMeasurement(double mean_flow, double stdv_flow, double mean_dens, double stdv_dens, double velocity) {
+		// update flows, no dynamics
+		this.mu_flow_ramp = Math.max(0., mean_flow);
+		this.v2_flow_ramp = stdv_flow * stdv_flow;
+		new_ramp_measurement = true;
 	}
 	
 	/**
@@ -107,11 +126,11 @@ public class FreewayStateEstimator {
 		this.v2_flow_out = stdv_flow * stdv_flow;
 		
 		// compute density estimate
-		if (this.new_in_measurement && (this.length > 0) && (this.dt > 0) && (stdv_dens < 100)) {
+		if ( this.new_in_measurement && this.new_ramp_measurement &&  (stdv_dens < 100) ) {
 			// Kalman filter
 			// (1) prediction step
-			double mu_density_pred = this.mu_density + (dt/this.length) * (this.mu_flow_in - this.mu_flow_out);
-			double v2_density_pred = this.v2_density + (dt*dt)/(this.length*this.length) * (this.v2_flow_in*this.v2_flow_in + this.v2_flow_out*this.v2_flow_out);
+			double mu_density_pred = this.mu_density + (dt/this.length) * ( (this.mu_flow_in+this.mu_flow_ramp) - this.mu_flow_out);
+			double v2_density_pred = this.v2_density + (dt*dt)/(this.length*this.length) * (this.v2_flow_in + this.v2_flow_ramp + this.v2_flow_out);
 			
 			// (2) estimate covariance
 			double S = v2_density_pred + stdv_dens*stdv_dens;
@@ -122,16 +141,13 @@ public class FreewayStateEstimator {
 			this.v2_density = v2_density_pred - K*S*K;
 		} else {
 			// insufficient measurements to use Kalman filter
-			this.mu_density = Math.max(0., Math.min( this.max_dens, mean_dens ));
+			this.mu_density = Math.max(0., Math.min( this.max_dens, this.GAMMA_5 * mean_dens + (1-this.GAMMA_5) * this.mu_density ));
 			this.v2_density = stdv_dens*stdv_dens;
-		}
-		
-		if (this.new_in_measurement && (this.length > 0) && (this.dt > 0) && (stdv_dens > 100)) {
-			this.mu_density = Math.max(0., Math.min( this.max_dens, this.mu_density + (dt/this.length) * (this.mu_flow_in - this.mu_flow_out) ) );
 		}
 		
 		// Last inflow measurement has been used
 		new_in_measurement = false;
+		new_ramp_measurement = false;
 	}
 
 }

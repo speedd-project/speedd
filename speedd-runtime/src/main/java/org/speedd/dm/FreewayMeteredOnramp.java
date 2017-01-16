@@ -73,6 +73,7 @@ public class FreewayMeteredOnramp extends FreewayCell {
 		if ( eventName.equals("End") ) {
 			if (TrafficDecisionMakerBolt.DEBUG) {
 				out.close(); // write to debug log
+				System.out.println( "Critical density of cell " + Integer.toString(this.k) + " : " + Double.toString(this.mainline_sysId.get_rhoc()) );
 			}
 		}
 		
@@ -128,38 +129,60 @@ public class FreewayMeteredOnramp extends FreewayCell {
         	
         	if (sens_id == this.id_table.sens_on) {
         		
-        		out_events = new Event[3];
+        		out_events = new Event[5];
         		
         		// (3a) re-estimate FD if necessary
         		this.counter++;
         		if (this.counter >= this.reestimation_interval) {
-        			this.controller.set_target_density_mainline( this.mainline_sysId.reestimateGP() ); // set new critical density
+        			this.controller.set_target_density_mainline( this.mainline_sysId.reestimateGP() ); // set new critical density	
         		}
+        		
+        		// Actual crit. densities, only for debugging
+    			/* if (this.k == 1) {
+        			this.controller.set_target_density_mainline( 59.6 ); // set new critical density
+    			} else if (this.k == 6) {
+        			this.controller.set_target_density_mainline( 52 ); // set new critical density
+    			} else if (this.k == 10) {
+        			this.controller.set_target_density_mainline( 48 ); // set new critical density
+    			} else if (this.k == 13) {
+        			this.controller.set_target_density_mainline( 49.5 ); // set new critical density
+    			} else if (this.k == 15) {
+        			this.controller.set_target_density_mainline( 51.2 ); // set new critical density
+    			} else if (this.k == 18) {
+        			this.controller.set_target_density_mainline( 56.1 ); // set new critical density
+    			} */
         		
         		// (3b) periodic update of coordination algorithm
         		double target_queue_density = this.coordination.evaluateCoordination();
+        		
+        		// (3c.1) send coordination event if appropriate
+        		if (target_queue_density >= -0.1) {
+        			// Create upstream coordination event
+			        Map<String, Object> outAttrs = new HashMap<String, Object>();
+			        int upstream_ramp_id = GrenobleTopology.get_upstream_ramp( this.id_table.actu_id ); // get upstream id
+			        outAttrs.put("junction_id", Integer.toString( upstream_ramp_id ) );
+			        outAttrs.put("dmPartition", GrenobleTopology.get_dm_partition(this.k));
+			        outAttrs.put("target_occupancy", target_queue_density);
+			        out_events[0] = eventFactory.createEvent(TrafficDecisionMakerBolt.COORDINATE, timestamp, outAttrs);
+        		}
 
         		// (3c) send metering rates, coordination information & queue length estimates, if appropriate
         		if ( this.coordination.get_density_control() || this.coordination.get_queue_control()) {
 	        		
-        			// (3c.1) send coordination event if appropriate
-	        		if (target_queue_density >= 0) {
-	        			// Create upstream coordination event
-				        Map<String, Object> outAttrs = new HashMap<String, Object>();
-				        int upstream_ramp_id = GrenobleTopology.get_upstream_ramp( this.id_table.actu_id ); // get upstream id
-				        outAttrs.put("junction_id", Integer.toString( upstream_ramp_id ) );
-				        outAttrs.put("dmPartition", GrenobleTopology.get_dm_partition(this.k));
-				        outAttrs.put("target_occupancy", target_queue_density);
-				        out_events[0] = eventFactory.createEvent(TrafficDecisionMakerBolt.COORDINATE, timestamp, outAttrs);
-	        		}
-	        		
 	        		// (3c.2) decide on metering rate
-	        		double rate = this.controller.computeMeteringRate(this.merge_density);
+	        		double rate = this.controller.computeMeteringRate( this.get_merge_density() );
 			        Map<String, Object> outAttrs = new HashMap<String, Object>();
 			        outAttrs.put("junction_id", this.id_table.actu_id );
 			        outAttrs.put("dmPartition", GrenobleTopology.get_dm_partition(this.k));
 			        outAttrs.put("phase_id", 1);
 			        outAttrs.put("phase_time", (int) (rate * TrafficDecisionMakerBolt.RATE2GREEN_INTERVAL)); // ASSUMPTION: phase 1 is "green"
+			        out_events[3] = eventFactory.createEvent(TrafficDecisionMakerBolt.SET_RATES, timestamp, outAttrs);
+			        
+			        outAttrs = new HashMap<String, Object>();
+			        outAttrs.put("junction_id", this.id_table.actu_id );
+			        outAttrs.put("dmPartition", GrenobleTopology.get_dm_partition(this.k));
+			        outAttrs.put("phase_id", 2);
+			        outAttrs.put("phase_time", (int) (60 - rate * TrafficDecisionMakerBolt.RATE2GREEN_INTERVAL)); // ASSUMPTION: phase 2 is "red"
 			        out_events[2] = eventFactory.createEvent(TrafficDecisionMakerBolt.SET_RATES, timestamp, outAttrs);
 			        
 	        		// (3c.3) sent onramp queue length information
@@ -183,6 +206,15 @@ public class FreewayMeteredOnramp extends FreewayCell {
 			        outAttrs.put("phase_time", (int) (rate * TrafficDecisionMakerBolt.RATE2GREEN_INTERVAL)); // ASSUMPTION: phase 1 is "green"
 			        out_events[2] = eventFactory.createEvent(TrafficDecisionMakerBolt.SET_RATES, timestamp, outAttrs);
 			        this.just_active = false;
+        		}
+        		
+        		if (this.k == 18) { // Synchronisation event
+        			Map<String, Object> outAttrs = new HashMap<String, Object>();
+			        outAttrs.put("junction_id", 0 );
+			        outAttrs.put("dmPartition", "null");
+			        outAttrs.put("phase_id", 0);
+			        outAttrs.put("phase_time", (int) 0);
+			        out_events[4] = eventFactory.createEvent(TrafficDecisionMakerBolt.SET_RATES, timestamp, outAttrs);
         		}
 
         		// Write to debug log.

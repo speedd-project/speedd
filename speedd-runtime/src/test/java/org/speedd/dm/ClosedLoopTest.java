@@ -52,7 +52,7 @@ public class ClosedLoopTest {
 	public void test() {
 		
 		// simulation parameters - modify as desired
-		Boolean CLOSED_LOOP = false;
+		Boolean CLOSED_LOOP = true;
 		Boolean NOISE = true;
 
 		double std_dens = 0.2;

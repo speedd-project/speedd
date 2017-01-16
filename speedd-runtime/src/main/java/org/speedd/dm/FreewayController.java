@@ -10,16 +10,18 @@ public class FreewayController {
 	private final double MAX_RATE = 1800; // ... cars/h, i.e. one car every two seconds
 	private final double MAX_QUEUE_DENSITY = 110.; // Purposefully chosen slightly lower than the standard 1car/(0.008km)
 	
-	private double K1 = 35; // 70: default value for ALINEA, but we sample at 60sec instead of 120sec
+	private double K1 = 70; // 70: default value for ALINEA, but we sample at 60sec instead of 120sec
 	private double K2 = 0.; // 0: default value for ALINEA
-	private double K_overflow = 0.33; // DON'T tune. 0 < K_overflow < 1, but close to 1 may lead to instabilities
+	private double K_overflow = 0.75; // DON'T tune. 0 < K_overflow < 1, but close to 1 may lead to instabilities
+	private double K_queue = 0.33; // DON'T tune. 0 < K_overflow < 1, but close to 1 may lead to instabilities
+	private double GAMMA_CRIT = 0.95;
 	
 	// internal state
 	private double last_mainline_density = 0.;
 
 	// control targets
 	private double target_density_mainline;
-	private double target_density_queue = -1;
+	private double target_density_queue = -1000.;
 	private final double q_length;
 	
 	// ui-overwrite
@@ -62,7 +64,7 @@ public class FreewayController {
 		if (target_density_queue > 0) {
 			this.target_density_queue = Math.min( this.MAX_QUEUE_DENSITY, target_density_queue );
 		} else {
-			this.target_density_queue = -1;
+			this.target_density_queue = -1.; // deactived
 		}
 	}
 	
@@ -105,11 +107,11 @@ public class FreewayController {
 		
 		// (2) compute rate
 		// (2a) compute mainline-tracking metering rate
-		double meteringRate = alinea(merge_density, this.target_density_mainline, this.last_mainline_density, inflow_estimate);
+		double meteringRate = alinea(merge_density, this.target_density_mainline * GAMMA_CRIT , this.last_mainline_density, inflow_estimate);
 
 		// (2b) compute onramp-tracking metering rate if applicable
-		double queue_control = demand_estimate - this.K_overflow * (this.q_length / this.dt) * ( this.target_density_queue - queue_density );
 		if (this.target_density_queue > 0) {
+			double queue_control = demand_estimate - this.K_queue * (this.q_length / this.dt) * ( this.target_density_queue - queue_density );
 			meteringRate = Math.min(meteringRate, queue_control);
 		}
 		

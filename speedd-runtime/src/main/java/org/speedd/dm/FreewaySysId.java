@@ -34,9 +34,9 @@ public class FreewaySysId {
 	 * @param rhom	jam density (cars/km)
 	 * @param l		cell lenght (km)
 	 */
-	public FreewaySysId(double v, double rhoc, double rhom, double l) {
+	public FreewaySysId(double v, double rhoc, double rhom, double l, double dF) {
 		// create ctm
-		this.priorCtm = new Ctm(v, rhoc, rhom, l);
+		this.priorCtm = new Ctm(v, rhoc, rhom, l, dF);
 		
 		// create Gaussian Processes
 		double[] buffer = {0.};
@@ -203,7 +203,7 @@ public class FreewaySysId {
 		// one-dimensional problem, accuracy is not critical, therefore, gridding is prefered to gradient methods
 		double best_flow = 0.;
 		double best_dens = 0.;
-		for (int ii=0; ii<70; ii++) {
+		for (int ii=0; ii<100; ii++) {
 			double ii_dens = (double) ii;
 			double ii_flow = predictFlow( ii_dens );
 			if ( ii_flow > best_flow) {
