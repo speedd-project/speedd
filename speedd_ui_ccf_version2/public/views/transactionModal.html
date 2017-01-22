@@ -1,0 +1,27 @@
+<div class="form-group" id="transactionModal.html">
+	<div class="modal-header">
+        <h3 class="modal-title">
+			<span class="glyphicon glyphicon-list-alt"></span>
+			Transaction Details
+		</h3>
+		
+    </div>	
+	<div class="modal-body">
+		<h3>{{selection.name}}</h3>
+		<h4>ID: {{selection.attributes.transaction_id}}</h4>
+		<br>
+		<h4>Occurrence time: {{occurrenceTime}}</h4>
+		<h4>Card expiration date: {{cardExpiration}}</h4>
+		<h4>Detection time: {{detectionTime}}</h4>
+		<h4>Card country: {{cardCountry}}</h4>
+		<h4>Amout: {{selection.attributes.amount_eur}} €</h4>
+        <h4>Card used in: {{acquirer_country}} </h4>
+        <h4>Card not present: {{selection.attributes.is_cnp}} </h4>
+		<!--to be implemented-->
+<!--		<div histogram-directive chart-data="data"></div>	-->
+	</div>		
+	<div class="modal-footer">
+        <button class="btn btn-warning" ng-click="cancel()" style="background-color:#F1C40F; border-color:#F1C40F;">Cancel</button>
+        <button class="btn btn-primary" ng-click="fraud()" style="background-color:#3598DB; border-color:#3598DB;" >Contact Client</button>
+    </div>
+</div>

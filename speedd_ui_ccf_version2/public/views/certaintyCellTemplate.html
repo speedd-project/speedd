@@ -1,0 +1,7 @@
+<div class="ngCellText" ng-class="col.colIndex()">
+
+    <img ng-src="{{row.getProperty(col.field) > 70 && 'img/system_fraud.png' || 'img/system_yellow.png' }}" style="height:20px"/>
+
+    <span ng-cell-text>{{row.getProperty(col.field)}}</span>
+
+</div>;

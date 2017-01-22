@@ -42,17 +42,18 @@ var rl = readline.createInterface({
 });
 
 var testMessages = [
-	{ "name": "PredictedCongestion", "timestamp": 12151, "attributes": { "location": "0024a4dc0000343f", "problem_id": 3, "Certainty": 0.2, "average_density": 60 } },
-	{ "name": "ClearCongestion", "timestamp": 12151, "attributes": { "location": "0024a4dc0000343f", "problem_id": 3, "Certainty": 0.2 , "average_density": 30} },
-	{ "name": "Congestion", "timestamp": 12151, "attributes": { "location": "0024a4dc0000343f", "problem_id": 3, "Certainty": 1, "average_density": 78 } },
-	{ "name": "UpdateMeteringRateAction", "timestamp": 1424439193610, "attributes": { "density": 89 ,"location": "0024a4dc0000343b", "newMeteringRate": 50, "controlType": "auto", "lane": "offramp"} },
-	{ "name": "UpdateMeteringRateAction", "timestamp": 1424439205378, "attributes": { "density": 76 ,"location": "0024a4dc0000343b", "newMeteringRate": 12, "controlType": "auto", "lane": "offramp"} },
-	{ "name": "UpdateMeteringRateAction", "timestamp": 1424439214019, "attributes": { "density": 27 ,"location": "0024a4dc0000343b", "newMeteringRate": 39, "controlType": "auto", "lane": "onramp"} },
-//	{ "name": "UpdateMeteringRateAction", "timestamp": 1426341045368, "attributes": { "density": 89 ,"location": "0024a4dc0000343b", "newMeteringRate": 50, "controlType": "auto", "lane": "offramp"} },
-//	{ "name": "UpdateMeteringRateAction", "timestamp": 1426341055520, "attributes": { "density": 76 ,"location": "0024a4dc0000343b", "newMeteringRate": 12, "controlType": "auto", "lane": "offramp"} },
-//	{ "name": "UpdateMeteringRateAction", "timestamp": 1426341062831, "attributes": { "density": 27 ,"location": "0024a4dc0000343b", "newMeteringRate": 39, "controlType": "auto", "lane": "onramp"} },
-	{ "name": "AverageDensityAndSpeedPerLocation", "timestamp": 1426341062831, "attributes": { "average_density": 0 ,"location": "0024a4dc00003356", "average_speed": 39, "average_flow": 30} },
-	{ "name": "AverageDensityAndSpeedPerLocation", "timestamp": 1426341062831, "attributes": { "average_density": 70 ,"location": "0024a4dc00003356", "average_speed": 150, "average_flow": 90} }
+	{ "name": "PredictedCongestion", "timestamp": 12151, "attributes": { "location": "0024a4dc0000343f", "problem_id": 3, "Certainty": 0.2, "average_density": 0.6 } },
+	{ "name": "ClearCongestion", "timestamp": 12151, "attributes": { "location": "0024a4dc0000343f", "problem_id": 3, "Certainty": 0.2 , "average_density": 0.3} },
+	{ "name": "Congestion", "timestamp": 12151, "attributes": { "location": "0024a4dc0000343f", "problem_id": 3, "Certainty": 1, "average_density": 0.78 } },
+	{ "name": "SetTrafficLightPhases", "timestamp": 1424439193610, "attributes": { "density": 0.89 ,"location": "0024a4dc0000343b", "phase_id": 2, "phase_time": 50, "controlType": "auto", "lane": "offramp"} },
+	{ "name": "SetTrafficLightPhases", "timestamp": 1424439205378, "attributes": { "density": 0.76 ,"location": "0024a4dc0000343b", "phase_id": 2, "phase_time": 12, "controlType": "auto", "lane": "offramp"} },
+	{ "name": "PossibleIncident", "timestamp": 1424439205378, "attributes": {"problem_id": "4052", "density": 0.76 ,"location": "0024a4dc0000343b", "Certainty": 0.6, "OccurrenceTime": 1426341062831} },
+	{ "name": "AverageOffRampValuesOverInterval", "timestamp": 1426341062831, "attributes": { "OccurrenceTime": 1426341062831, "average_occupancy": 0.7 ,"location": "0024a4dc00003356", "average_speed": 150, "average_flow": 90} },
+    { "name": "AverageOnRampValuesOverInterval", "timestamp": 1426341062831, "attributes": {"OccurrenceTime": 1426341062831, "average_occupancy": 0.7 ,"location": "0024a4dc00003356", "average_speed": 150, "average_flow": 90} },
+	{ "name": "ClearRampOverflow", "timestamp": 1426341055520, "attributes": { "density": 76 ,"location": "0024a4dc0000343b", "newMeteringRate": 12, "controlType": "auto", "lane": "offramp"} },
+	{ "name": "PredictedRampOverflow", "timestamp": 1426341062831, "attributes": { "density": 27 ,"location": "0024a4dc0000343b", "newMeteringRate": 39, "controlType": "auto", "lane": "onramp"} },
+	{ "name": "AverageDensityAndSpeedPerLocation", "timestamp": 1426341062831, "attributes": {"OccurrenceTime": 1426341055520, "average_density": 0.1 ,"location": "0024a4dc00003356", "average_speed": 39, "average_flow": 30} },
+	{ "name": "AverageDensityAndSpeedPerLocation", "timestamp": 1426341062831, "attributes": {"OccurrenceTime": 1426341055520, "average_density": 0.7 ,"location": "0024a4dc00003356", "average_speed": 150, "average_flow": 90} }
 ];
 
 var stdin = process.openStdin(); 

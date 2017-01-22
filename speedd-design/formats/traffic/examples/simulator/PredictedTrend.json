@@ -1,4 +1,8 @@
 {
+	"timestamp":0,
+	"name":"PredictedTrend",
+	"attributes":	{
+
   "problem_id": "4166",
   "count": 5,
   "location": "0024a4dc000025eb",
@@ -16,5 +20,6 @@
   "Duration": 0,
   "average_density": 1356.071228,
   "ExpirationTime": null
+}
 }
 
