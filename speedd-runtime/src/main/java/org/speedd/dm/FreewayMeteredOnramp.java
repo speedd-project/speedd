@@ -170,20 +170,23 @@ public class FreewayMeteredOnramp extends FreewayCell {
         		if ( this.coordination.get_density_control() || this.coordination.get_queue_control()) {
 	        		
 	        		// (3c.2) decide on metering rate
+        			
+        			// System.out.println( Double.toString(this.get_merge_density()) ); // ... was a debug check
+        			
 	        		double rate = this.controller.computeMeteringRate( this.get_merge_density() );
 			        Map<String, Object> outAttrs = new HashMap<String, Object>();
 			        outAttrs.put("junction_id", this.id_table.actu_id );
 			        outAttrs.put("dmPartition", GrenobleTopology.get_dm_partition(this.k));
-			        outAttrs.put("phase_id", 1);
-			        outAttrs.put("phase_time", (int) (rate * TrafficDecisionMakerBolt.RATE2GREEN_INTERVAL)); // ASSUMPTION: phase 1 is "green"
+			        outAttrs.put("phase_id", 2);
+			        outAttrs.put("phase_time", (int) (rate * TrafficDecisionMakerBolt.RATE2GREEN_INTERVAL)); // ASSUMPTION: phase 2 is "green"
 			        out_events[3] = eventFactory.createEvent(TrafficDecisionMakerBolt.SET_RATES, timestamp, outAttrs);
 			        
-			        outAttrs = new HashMap<String, Object>();
+			        /* outAttrs = new HashMap<String, Object>();
 			        outAttrs.put("junction_id", this.id_table.actu_id );
 			        outAttrs.put("dmPartition", GrenobleTopology.get_dm_partition(this.k));
-			        outAttrs.put("phase_id", 2);
-			        outAttrs.put("phase_time", (int) (60 - rate * TrafficDecisionMakerBolt.RATE2GREEN_INTERVAL)); // ASSUMPTION: phase 2 is "red"
-			        out_events[2] = eventFactory.createEvent(TrafficDecisionMakerBolt.SET_RATES, timestamp, outAttrs);
+			        outAttrs.put("phase_id", 1);
+			        outAttrs.put("phase_time", (int) (60 - rate * TrafficDecisionMakerBolt.RATE2GREEN_INTERVAL)); // ASSUMPTION: phase 1 is "red"
+			        out_events[2] = eventFactory.createEvent(TrafficDecisionMakerBolt.SET_RATES, timestamp, outAttrs); */
 			        
 	        		// (3c.3) sent onramp queue length information
 			        double queue_density = this.onramp_stateEstimator.getDensity();
@@ -191,7 +194,7 @@ public class FreewayMeteredOnramp extends FreewayCell {
 			        outAttrs.put("sensorid", Integer.toString(this.id_table.sens_on));
 			        outAttrs.put("dmPartition", GrenobleTopology.get_dm_partition(this.k));
 			        outAttrs.put("queueLength", queue_density * this.q_length); // in what units?
-			        outAttrs.put("queueLength", 125 * this.q_length); // same units as line before
+			        outAttrs.put("maxQueueLength", 125 * this.q_length); // same units as line before
 			        out_events[1] = eventFactory.createEvent(TrafficDecisionMakerBolt.QUEUE_LENGTH, timestamp, outAttrs);
 			        
 			        this.just_active = true; // delayed update, this block is executed once more after ramp metering has been deactivated.
@@ -202,20 +205,20 @@ public class FreewayMeteredOnramp extends FreewayCell {
 			        Map<String, Object> outAttrs = new HashMap<String, Object>();
 			        outAttrs.put("junction_id", this.id_table.actu_id );
 			        outAttrs.put("dmPartition", GrenobleTopology.get_dm_partition(this.k));
-			        outAttrs.put("phase_id", 1);
-			        outAttrs.put("phase_time", (int) (rate * TrafficDecisionMakerBolt.RATE2GREEN_INTERVAL)); // ASSUMPTION: phase 1 is "green"
+			        outAttrs.put("phase_id", 2);
+			        outAttrs.put("phase_time", (int) (rate * TrafficDecisionMakerBolt.RATE2GREEN_INTERVAL)); // ASSUMPTION: phase 2 is "green"
 			        out_events[2] = eventFactory.createEvent(TrafficDecisionMakerBolt.SET_RATES, timestamp, outAttrs);
 			        this.just_active = false;
         		}
         		
-        		if (this.k == 18) { // Synchronisation event
+        		/* if (this.k == 18) { // Synchronisation event
         			Map<String, Object> outAttrs = new HashMap<String, Object>();
 			        outAttrs.put("junction_id", 0 );
 			        outAttrs.put("dmPartition", "null");
 			        outAttrs.put("phase_id", 0);
 			        outAttrs.put("phase_time", (int) 0);
 			        out_events[4] = eventFactory.createEvent(TrafficDecisionMakerBolt.SET_RATES, timestamp, outAttrs);
-        		}
+        		} */
 
         		// Write to debug log.
         		if ( TrafficDecisionMakerBolt.DEBUG ) {

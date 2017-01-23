@@ -58,7 +58,7 @@ public class TrafficDecisionMakerBolt extends BaseRichBolt {
 	
 	// conversion factors
 	public static double RATE2GREEN_INTERVAL = dt * 2.;						// ASSUMPTION: One car every 2sec.
-	public static double OCCU_2_DENS = 2.; 									// ASSUMPTION: attribute 'density' is percentage of sensor coverage ('occupancy')
+	public static double OCCU_2_DENS = 125.; 								// ASSUMPTION: attribute 'density' is sensor coverage ('occupancy', [0..1])
 	public static double CARS_2_FLOW = 1. / TrafficDecisionMakerBolt.dt; 	// ASSUMPTION: attribute 'flow' is in [cars / observation_interval]
 	
 

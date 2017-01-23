@@ -7,6 +7,7 @@ public class FreewayStateEstimator {
 	private double mu_flow_ramp;
 	private double mu_flow_out;
 	private double mu_density = 0; // assume empty freeway initially
+	private double mu_dens_in = 0;
 	
 	// estimate variance
 	private double v2_flow_in;
@@ -91,6 +92,7 @@ public class FreewayStateEstimator {
 		// update flows, no dynamics
 		this.mu_flow_in = Math.max(0., mean_flow);
 		this.v2_flow_in = stdv_flow * stdv_flow;
+		this.mu_dens_in = mean_dens;
 		new_in_measurement = true;
 	}
 	
@@ -127,6 +129,9 @@ public class FreewayStateEstimator {
 		
 		// compute density estimate
 		if ( this.new_in_measurement && this.new_ramp_measurement &&  (stdv_dens < 100) ) {
+			
+			mean_dens = Math.max( mean_dens, this.mu_dens_in ); // safeguard: congestion may start downstream and propagate or start upstream of me-sensor
+			
 			// Kalman filter
 			// (1) prediction step
 			double mu_density_pred = this.mu_density + (dt/this.length) * ( (this.mu_flow_in+this.mu_flow_ramp) - this.mu_flow_out);
