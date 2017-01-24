@@ -574,7 +574,8 @@ app.controller('CircularMapController', ['$scope','$interval','$window','dataSer
             dataService.nodes[nodeIndex].phase2 = (phase_time >= 0)? phase_time:0;
         else;
        
-        var rateValue = dataService.nodes[nodeIndex].phase2 / (dataService.nodes[nodeIndex].phase1 + dataService.nodes[nodeIndex].phase2) * 60;
+//        var rateValue = dataService.nodes[nodeIndex].phase2 / (dataService.nodes[nodeIndex].phase1 + dataService.nodes[nodeIndex].phase2) * 60;
+        var rateValue = dataService.nodes[nodeIndex].phase2;
 //        console.log(rateValue);
         
         // change bar height
