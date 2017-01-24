@@ -200,10 +200,10 @@ public class FreewaySysId {
 	 * @return
 	 */
 	private double find_rhoc() {
-		// one-dimensional problem, accuracy is not critical, therefore, gridding is prefered to gradient methods
+		// one-dimensional problem, accuracy is not critical, therefore, gridding is preferred to gradient methods
 		double best_flow = 0.;
 		double best_dens = 0.;
-		for (int ii=0; ii<100; ii++) {
+		for (int ii=45; ii<60; ii++) { // warm-start for AIMSUN
 			double ii_dens = (double) ii;
 			double ii_flow = predictFlow( ii_dens );
 			if ( ii_flow > best_flow) {

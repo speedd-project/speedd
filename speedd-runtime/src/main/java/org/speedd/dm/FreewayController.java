@@ -56,6 +56,10 @@ public class FreewayController {
 		this.target_density_mainline = target_density_mainline;
 	}
 	
+	public double get_target_density_mainline() {
+		return this.target_density_mainline;
+	}
+	
 	/**
 	 * Setter for target density queue
 	 * @param target_density_queue - in veh/km (normalization w.r.t. queue lenght is helpful for coordination)
