@@ -6,6 +6,7 @@ public class FreewayStateEstimator {
 	private double mu_flow_in;
 	private double mu_flow_ramp;
 	private double mu_flow_out;
+	private double mu_flow_off = 0;
 	private double mu_density = 0; // assume empty freeway initially
 	private double mu_dens_in = 0;
 	
@@ -13,6 +14,7 @@ public class FreewayStateEstimator {
 	private double v2_flow_in;
 	private double v2_flow_ramp;
 	private double v2_flow_out;
+	private double v2_flow_off = 0;
 	private double v2_density = 50; // uncertainty in the order of the critical density
 	
 	// invariant
@@ -25,6 +27,7 @@ public class FreewayStateEstimator {
 	// internal buffer to achieve synchronous measurement processing
 	private boolean new_in_measurement = false; // no measurement stored initially
 	private boolean new_ramp_measurement = false; // no measurement stored initially
+	// private boolean new_off_measurement = false; // no measurement stored initially
 
 	/*
 	 *  	       +-------------------+
@@ -113,6 +116,22 @@ public class FreewayStateEstimator {
 	}
 	
 	/**
+	 * Process a measurement of the ramp flow INTO the cell at "SensorRamp"
+	 * 
+	 * @param mean_flow		empirical mean of the inflow (cars/h)
+	 * @param stdv_flow		empirical standard deviation of the inflow (cars/h)
+	 * @param mean_dens		empirical mean of the density (cars/km)
+	 * @param stdv_dens		empirical standard deviation of the density (cars/km)
+	 * @param velocity		empirical mean of the velocity (km/h)
+	 */
+	public void processOffMeasurement(double mean_flow, double stdv_flow, double mean_dens, double stdv_dens, double velocity) {
+		// update flows, no dynamics
+		this.mu_flow_off = Math.max(0., mean_flow);
+		this.v2_flow_off = stdv_flow * stdv_flow;
+		// this.new_off_measurement = true; // not required as not every metered onramp has a downstream offramp
+	}
+	
+	/**
 	 * Process a measurement of the flow OUT of the cell at "SensorOUT"
 	 * 
 	 * @param mean_flow		empirical mean of the outflow (cars/h)
@@ -128,14 +147,14 @@ public class FreewayStateEstimator {
 		this.v2_flow_out = stdv_flow * stdv_flow;
 		
 		// compute density estimate
-		if ( this.new_in_measurement && this.new_ramp_measurement &&  (stdv_dens < 100) ) {
+		if ( this.new_in_measurement && this.new_ramp_measurement && (stdv_dens < 100) ) {
 			
 			mean_dens = Math.max( mean_dens, this.mu_dens_in ); // safeguard: congestion may start downstream and propagate or start upstream of me-sensor
 			
 			// Kalman filter
 			// (1) prediction step
-			double mu_density_pred = this.mu_density + (dt/this.length) * ( (this.mu_flow_in+this.mu_flow_ramp) - this.mu_flow_out);
-			double v2_density_pred = this.v2_density + (dt*dt)/(this.length*this.length) * (this.v2_flow_in + this.v2_flow_ramp + this.v2_flow_out);
+			double mu_density_pred = this.mu_density + (dt/this.length) * ( (this.mu_flow_in+this.mu_flow_ramp) - (this.mu_flow_out+this.mu_flow_off));
+			double v2_density_pred = this.v2_density + (dt*dt)/(this.length*this.length) * (this.v2_flow_in + this.v2_flow_ramp + this.v2_flow_out + this.v2_flow_off);
 			
 			// (2) estimate covariance
 			double S = v2_density_pred + stdv_dens*stdv_dens;

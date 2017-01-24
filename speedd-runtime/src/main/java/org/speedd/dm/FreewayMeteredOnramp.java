@@ -80,7 +80,7 @@ public class FreewayMeteredOnramp extends FreewayCell {
 		/* ====================================================================
 		 * (1) State estimation and System Identification
 		 */
-        if (eventName.equals(TrafficDecisionMakerBolt.MAINLINE_MEASUREMENT) || eventName.equals(TrafficDecisionMakerBolt.ONRAMP_MEASUREMENT)) {
+        if (eventName.equals(TrafficDecisionMakerBolt.MAINLINE_MEASUREMENT) || eventName.equals(TrafficDecisionMakerBolt.ONRAMP_MEASUREMENT) || eventName.equals(TrafficDecisionMakerBolt.OFFRAMP_MEASUREMENT)) {
         	// call superclass function
         	this.processMeasurement(event);
         }
@@ -178,6 +178,8 @@ public class FreewayMeteredOnramp extends FreewayCell {
 			        outAttrs.put("junction_id", this.id_table.actu_id );
 			        outAttrs.put("dmPartition", GrenobleTopology.get_dm_partition(this.k));
 			        outAttrs.put("phase_id", 2);
+			        outAttrs.put("merge_density", this.get_merge_density() );
+			        outAttrs.put("target_density", this.controller.get_target_density_mainline() );
 			        outAttrs.put("phase_time", (int) (rate * TrafficDecisionMakerBolt.RATE2GREEN_INTERVAL)); // ASSUMPTION: phase 2 is "green"
 			        out_events[3] = eventFactory.createEvent(TrafficDecisionMakerBolt.SET_RATES, timestamp, outAttrs);
 			        

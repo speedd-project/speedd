@@ -44,6 +44,7 @@ public class TrafficDecisionMakerBolt extends BaseRichBolt {
 	public static String PREDICTED_CONGESTION = "PredictedCongestion"; // NOTE: Not defined on github.
 	public static String MAINLINE_MEASUREMENT = "AverageDensityAndSpeedPerLocationOverInterval";
 	public static String ONRAMP_MEASUREMENT = "AverageOnRampValuesOverInterval";
+	public static String OFFRAMP_MEASUREMENT = "AverageOffRampValuesOverInterval";
 	public static String PREDICTED_OVERFLOW = "PredictedRampOverflow";
 	public static String CLEAR_RAMP_OVERFLOW = "ClearRampOverflow";
 	public static String INCIDENT = "PossibleIncident";
@@ -58,7 +59,7 @@ public class TrafficDecisionMakerBolt extends BaseRichBolt {
 	
 	// conversion factors
 	public static double RATE2GREEN_INTERVAL = dt * 2.;						// ASSUMPTION: One car every 2sec.
-	public static double OCCU_2_DENS = 125.; 								// ASSUMPTION: attribute 'density' is sensor coverage ('occupancy', [0..1])
+	public static double OCCU_2_DENS = 200.; 								// ASSUMPTION: attribute 'density' is sensor coverage ('occupancy', [0..1])
 	public static double CARS_2_FLOW = 1. / TrafficDecisionMakerBolt.dt; 	// ASSUMPTION: attribute 'flow' is in [cars / observation_interval]
 	
 

@@ -58,7 +58,7 @@ public class FreewayCell {
 	public void processMeasurement(Event event) {
 
 		String eventName = event.getEventName();
-        if (eventName.equals("AverageDensityAndSpeedPerLocationOverInterval") || eventName.equals("AverageOnRampValuesOverInterval"))
+        if (eventName.equals("AverageDensityAndSpeedPerLocationOverInterval") || eventName.equals("AverageOnRampValuesOverInterval") || eventName.equals(TrafficDecisionMakerBolt.OFFRAMP_MEASUREMENT))
         {
         	// read attributes
     		// long timestamp = event.getTimestamp();
@@ -95,9 +95,12 @@ public class FreewayCell {
             		this.onramp_stateEstimator.processInMeasurement(mean_flow, stdv_flow, mean_density, stdv_density, velocity);
             	} else if (sensorId == this.id_table.sens_on) {
             		stdv_density = 1000.; // density cannot be inferred from occupancy on onramps
+            		this.mainline_stateEstimator.processRampMeasurement(mean_flow, stdv_flow, mean_density, stdv_density, velocity);
             		mean_flow = Math.max(mean_flow, TrafficDecisionMakerBolt.RMIN); // adjust to min. metering rate
             		this.onramp_stateEstimator.processOutMeasurement(mean_flow, stdv_flow, mean_density, stdv_density, velocity);
-            		this.mainline_stateEstimator.processRampMeasurement(mean_flow, stdv_flow, mean_density, stdv_density, velocity);
+            	} else if (sensorId == this.id_table.sens_of) {
+            		stdv_density = 1000.; // density cannot be inferred from occupancy on offramps
+            		this.mainline_stateEstimator.processOffMeasurement(mean_flow, stdv_flow, mean_density, stdv_density, velocity);
             	}
             	
         	} // end if <correct event>
