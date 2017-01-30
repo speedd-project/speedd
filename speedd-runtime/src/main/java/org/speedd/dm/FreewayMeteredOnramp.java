@@ -176,6 +176,7 @@ public class FreewayMeteredOnramp extends FreewayCell {
 	        		double rate = this.controller.computeMeteringRate( this.get_merge_density() );
 			        Map<String, Object> outAttrs = new HashMap<String, Object>();
 			        outAttrs.put("junction_id", this.id_table.actu_id );
+			        outAttrs.put("location", this.lookupLocation( this.id_table.actu_id ) );
 			        outAttrs.put("dmPartition", GrenobleTopology.get_dm_partition(this.k));
 			        outAttrs.put("phase_id", 2);
 			        outAttrs.put("merge_density", this.get_merge_density() );
@@ -206,6 +207,7 @@ public class FreewayMeteredOnramp extends FreewayCell {
 	        		double rate = 1800.; // ramp metering is deactivated --> set rate to maximum.
 			        Map<String, Object> outAttrs = new HashMap<String, Object>();
 			        outAttrs.put("junction_id", this.id_table.actu_id );
+			        outAttrs.put("location", this.lookupLocation( this.id_table.actu_id ) );
 			        outAttrs.put("dmPartition", GrenobleTopology.get_dm_partition(this.k));
 			        outAttrs.put("phase_id", 2);
 			        outAttrs.put("phase_time", (int) (rate * TrafficDecisionMakerBolt.RATE2GREEN_INTERVAL)); // ASSUMPTION: phase 2 is "green"
@@ -239,6 +241,54 @@ public class FreewayMeteredOnramp extends FreewayCell {
         } 
         
 		return out_events; // return array of newly created events
+	}
+	
+	/**
+	 * Lookup table for "old" location id.
+	 * USED FOR UI, EVEN IN CLOSED LOOP WITH AIMSUN.
+	 */
+	private String lookupLocation(int id) {
+		if ((id == 4078) || (id == 1708)) {
+			return new String("0024a4dc00003356");
+		} else 		if ((id == 4048) || (id == 1703) || (id == 4085) || (id == 4489)) {
+			return new String("0024a4dc00003354");
+		} else 		if ((id == 4244)) {
+			return new String("0024a4dc0000343c");
+		} else 		if ((id == 1687) || (id == 1691) || (id == 3813) || (id == 3814)) {
+			return new String("0024a4dc0000343b");
+		} else 		if ((id == 1679) || (id == 1683) || (id == 3811) || (id == 4132) || (id == 3812) || (id == 4488)) {
+			return new String("0024a4dc00003445");
+		} else 		if ((id == 3810) || (id == 1675) || (id == 3810)) {
+			return new String("0024a4dc00001b67");
+		} else 		if ((id == 4355)) {
+			return new String("0024a4dc00003357");
+		} else 		if ((id == 4061) || (id == 1670) || (id == 4134)) {
+			return new String("0024a4dc00000ddd");
+		} else 			if ((id == 4381) || (id == 1666) || (id == 4391) || (id == 4487)) {
+			return new String("0024a4dc00003355");
+		} else 			if ((id == 4375) || (id == 1662)) {
+			return new String("0024a4dc000021d1");
+		} else 			if ((id == 4058) || (id == 1658) || (id == 4135) || (id == 4486)) {
+			return new String("0024a4dc0000343f");
+		} else 			if ((id == 4057) || (id == 1654) || (id == 4136)) {
+			return new String("0024a4dc00001b5c");
+		} else 			if ((id == 4056) || (id == 1650) || (id == 4166) || (id == 4453)) {
+			return new String("0024a4dc000025eb");
+		} else 			if ((id == 4055) || (id == 1646)) {
+			return new String("0024a4dc000025ea");
+		} else 			if ((id == 4138)) {
+			return new String("0024a4dc00001c99");
+		} else 			if ((id == 4054) || (id == 1642) || (id == 4490)) {
+			return new String("0024a4dc000013c6");
+		} else 			if ((id == 4053) || (id == 1638)) {
+			return new String("0024a4dc00003444");
+		} else 			if ((id == 4052) || (id == 1634)) {
+			return new String("0024a4dc000025ec");
+		} else 			if ((id == 1629) || (id == 1630) || (id == 1628)) {
+			return new String("0024a4dc0000343e");
+		} else {
+			return new String("locationIdNotFound");
+		}
 	}
 
 
