@@ -27,13 +27,15 @@ final class TrainingBatchLoader(kb: KB,
     * @param startTs starting time point
     * @param endTs end time point
     * @param simulationId simulation id (optional)
+    * @param useOnlyConstants a subset of constant domain to be used (optional)
     *
     * @return a batch [[org.speedd.ml.loaders.Batch]] subclass specified during implementation
     */
-  override def forInterval(startTs: Int, endTs: Int, simulationId: Option[Int] = None): TrainingBatch = {
+  override def forInterval(startTs: Int, endTs: Int, simulationId: Option[Int] = None,
+                           useOnlyConstants: Option[DomainMap] = None): TrainingBatch = {
 
     val (constantsDomain, functionMappings, annotatedLocations) =
-      loadAll[Int, Int, Int, String](kbConstants, kb.functionSchema, None, startTs, endTs, simulationId, loadFor)
+      loadAll[Int, Int, Int, String](kbConstants, kb.functionSchema, useOnlyConstants, startTs, endTs, simulationId, loadFor)
 
     // ---
     // --- Create a new evidence builder
@@ -261,6 +263,15 @@ final class TrainingBatchLoader(kb: KB,
                   AND simulation_id = #${simulationId.get} AND timestamp between #$startTs AND #$endTs""".as[Int]
           }
 
+         /* for {
+            t <- timeStamps
+            mapper <- functionMappingsMap.get(eventSignature)
+            resultingSymbol <- mapper.get(constants.map(_.toText).toVector)
+            groundTerms = Vector(Constant(resultingSymbol), Constant(t.toString))
+          } {
+            println(s"HappensAt($symbol(${constants.map(_.toText).mkString(",")}), $t)")
+          }*/
+
          for {
             t <- timeStamps
             mapper <- functionMappingsMap.get(eventSignature)
@@ -295,6 +306,14 @@ final class TrainingBatchLoader(kb: KB,
         )
 
         val tuple = domain.map(domainMap)
+
+        /*for {
+          mapper <- functionMappingsMap.get(fluentSignature)
+          resultingSymbol <- mapper.get(tuple.map(_.toText))
+          groundTerms = Vector(Constant(resultingSymbol), Constant(r._1.toString))
+        } {
+          println(s"HoldsAt(${fluentSignature.symbol}(${tuple.map(_.toText).mkString(",")}), ${Constant(r._1.toString)})")
+        }*/
 
         if(r._4 == fluentSignature.symbol)
           for {

@@ -10,6 +10,7 @@ import lomrf.util.evaluation.{Evaluate, Metrics, _}
 import org.speedd.ml.inference.Reasoner
 import org.speedd.ml.loaders.InferenceBatch
 import org.speedd.ml.loaders.fz.InferenceBatchLoader
+import org.speedd.ml.util.data._
 import org.speedd.ml.util.logic.{Term2SQLParser, TermMapping}
 
 final class InferenceEngine private(kb: KB,
@@ -30,9 +31,12 @@ final class InferenceEngine private(kb: KB,
     * @param startTs       start time point
     * @param endTs         end time point
     * @param batchSize     batch size for each inference step
+    * @param useOnlyConstants a subset of constant domain to be used (optional)
     * @param simulationIds a set of simulation ids to be used for inference
     */
-  override def inferFor(startTs: Int, endTs: Int, batchSize: Int, simulationIds: List[Int] = List.empty) = {
+  override def inferFor(startTs: Int, endTs: Int, batchSize: Int,
+                        useOnlyConstants: Option[DomainMap] = None,
+                        simulationIds: List[Int] = List.empty) = {
 
     val range = startTs to endTs by batchSize
     val intervals = if (!range.contains(endTs)) range :+ endTs else range

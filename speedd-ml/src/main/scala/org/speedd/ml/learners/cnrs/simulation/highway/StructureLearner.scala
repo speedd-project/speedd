@@ -22,11 +22,16 @@ final class StructureLearner private(kb: KB,
                                      modes: ModeDeclarations,
                                      maxLength: Int,
                                      threshold: Int,
-                                     theta: Double) extends Learner {
+                                     theta: Double,
+                                     lambda: Double,
+                                     eta: Double) extends Learner {
 
   private lazy val batchLoader = new TrainingBatchLoader(kb, kbConstants, predicateSchema, inputSignatures, nonEvidenceAtoms, termMappings)
 
-  private lazy val learner = OSLa(kb, kbConstants, nonEvidenceAtoms, targetSignatures, modes, maxLength, allowFreeVariables = false, threshold, theta)
+  private lazy val learner =
+    OSLa(kb, kbConstants, nonEvidenceAtoms, targetSignatures, modes, maxLength,
+    allowFreeVariables = false, threshold, theta, printLearnedWeightsPerIteration = true, initialWeightValue = 0.5,
+    lambda = this.lambda, eta = this.eta, lossAugmented = true)
 
   /**
     * Train the MLN model for the specified interval using the given batch size. Furthermore,
@@ -111,11 +116,11 @@ final class StructureLearner private(kb: KB,
       }
 
       info(s"Average number of SDEs across all micro batches: ${averageSDEs / microIntervals.length}")
-
-      learner.writeResults(new PrintStream(outputKB))
-
-      info(s"Resulting trained MLN file is written to '${outputKB.getPath}'.")
     }
+
+    learner.writeResults(new PrintStream(outputKB))
+
+    info(s"Resulting trained MLN file is written to '${outputKB.getPath}'.")
   }
 
 }
@@ -129,6 +134,8 @@ object StructureLearner extends Logging {
             maxLength: Int,
             threshold: Int,
             theta: Double,
+            lambda: Double,
+            eta: Double,
             inputSignatures: Set[AtomSignature],
             targetSignatures: Set[AtomSignature],
             nonEvidenceAtoms: Set[AtomSignature]): StructureLearner = {
@@ -150,6 +157,6 @@ object StructureLearner extends Logging {
 
     new StructureLearner(
       kb, kbConstants, kb.predicateSchema, sqlFunctionMappings, inputKB,
-      outputKB, inputSignatures, targetSignatures, nonEvidenceAtoms, modes, maxLength, threshold, theta)
+      outputKB, inputSignatures, targetSignatures, nonEvidenceAtoms, modes, maxLength, threshold, theta, lambda, eta)
   }
 }

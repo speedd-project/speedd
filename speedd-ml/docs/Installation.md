@@ -12,17 +12,10 @@ $ cd auxlib
 $ sbt ++2.11.8 publishLocal
 ```
 
-**2.** Clone and publish locally the Optimus project (additional instructions can be found [here](https://github.com/vagm/Optimus)).
-```bash
-$ git clone -b v1.2.1 --depth 1 https://github.com/vagm/Optimus.git
-$ cd Optimus
-$ sbt publishLocal
-```
-
-**3.** Clone and publish locally the LoMRF project (additional instructions can be found [here](https://github.com/anskarl/LoMRF)).
+**2.** Clone and publish locally the LoMRF project (additional instructions can be found [here](https://github.com/anskarl/LoMRF)).
 
 ```bash
-$ git clone -b v0.5.1 --depth 1 https://github.com/anskarl/LoMRF.git
+$ git clone -b v0.5.2 --depth 1 https://github.com/anskarl/LoMRF.git
 $ cd LoMRF
 $ sbt publishLocal
 ```

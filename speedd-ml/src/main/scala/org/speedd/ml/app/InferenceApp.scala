@@ -24,6 +24,7 @@ object InferenceApp extends App with OptionParser with Logging {
   private var intervalOpt: Option[(Int, Int)] = None
   private var batchSizeOpt: Option[Int] = None
   private var simulationIdsOpt: Option[List[Int]] = None
+  private var locationIdsOpt: Option[Iterable[String]] = None
   private var taskOpt: Option[String] = None
 
   private var queryPredicates = Set(AtomSignature("HoldsAt", 2))
@@ -97,6 +98,10 @@ object InferenceApp extends App with OptionParser with Logging {
       }
   })
 
+  opt("lids", "location-ids", "Comma separated <lid>", "Specify the location id set used for training, e.g. 1324,2454,5128", {
+    v: String => locationIdsOpt = Option(v.split(",").toIterable)
+  })
+
   opt("t", "task", "<string>", "The name of the task to call (cnrs.collected, cnrs.simulation.highway or fz).", {
     v: String => taskOpt = Some(v.trim.toLowerCase)
   })
@@ -166,6 +171,13 @@ object InferenceApp extends App with OptionParser with Logging {
   // Check if simulation ids exist, otherwise return an empty list
   val simulationIds = simulationIdsOpt.getOrElse(List.empty)
 
+  // Check if location ids exist, otherwise return an empty list
+  val locationIds = if (locationIdsOpt.isDefined) taskOpt match {
+    case Some("cnrs.collected") => Some(Map("loc_id" -> locationIdsOpt.get))
+    case Some("cnrs.simulation.highway") => Some(Map("section_id" -> locationIdsOpt.get))
+  }
+  else None
+
   import org.speedd.ml.util.data.DatabaseManager._
 
   // --- 1. Create the appropriate instance of inference engine
@@ -183,7 +195,7 @@ object InferenceApp extends App with OptionParser with Logging {
 
   // --- 2. Perform inference for all intervals
   val t = System.currentTimeMillis()
-  inferenceEngine.inferFor(startTime, endTime, batchSize, simulationIds)
+  inferenceEngine.inferFor(startTime, endTime, batchSize, locationIds, simulationIds)
   info(s"Inference for task ${taskOpt.get} completed in ${msecTimeToTextUntilNow(t)}")
 
   // --- 3. Close database connection

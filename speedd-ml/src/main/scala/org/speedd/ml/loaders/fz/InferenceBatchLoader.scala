@@ -27,9 +27,12 @@ final class InferenceBatchLoader(kb: KB,
     * @param startTs starting time point
     * @param endTs end time point
     * @param simulationId simulation id (optional)
+    * @param useOnlyConstants a subset of constant domain to be used (optional)
+    *
     * @return a batch [[org.speedd.ml.loaders.Batch]] subclass specified during implementation
     */
-  def forInterval(startTs: Int, endTs: Int, simulationId: Option[Int] = None): InferenceBatch = {
+  def forInterval(startTs: Int, endTs: Int, simulationId: Option[Int] = None,
+                  useOnlyConstants: Option[DomainMap] = None): InferenceBatch = {
 
     val (constantsDomain, functionMappings, annotatedCards) =
       loadAll[Int, String, Int, Int](kbConstants, kb.functionSchema, None, startTs, endTs, simulationId, loadFor)

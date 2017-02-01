@@ -38,6 +38,8 @@ object StructureLearningApp extends App with OptionParser with Logging {
   private var maxLength: Int = 8
   private var threshold: Int = 1
   private var theta: Double = 0.0
+  private var lambda: Double = 0.01
+  private var eta: Double = 1.0
 
   // -------------------------------------------------------------------------------------------------------------------
   // --- Command-line options
@@ -172,6 +174,14 @@ object StructureLearningApp extends App with OptionParser with Logging {
     v: Double => if (v < 0) fatal("The pruning theta threshold must be any double above zero, but you gave: " + v) else theta = v
   })
 
+  doubleOpt("lambda", "lambda", "Regularization parameter (default is " + lambda + ").", {
+    v: Double => if (v < 0) fatal("Regularization parameter must be any double above zero, but you gave: " + v) else lambda = v
+  })
+
+  doubleOpt("eta", "eta", "Learning rate (default is " + eta + ").", {
+    v: Double => if (v < 0) fatal("Learning rate must be any double above zero, but you gave: " + v) else eta = v
+  })
+
   flagOpt("h", "help", "Print usage options.", {
     println(usage)
     sys.exit(0)
@@ -243,14 +253,14 @@ object StructureLearningApp extends App with OptionParser with Logging {
   val structureLearner: Learner = taskOpt.getOrElse(fatal("Please specify a task name")) match {
     case "cnrs.collected" =>
       cnrs.collected.StructureLearner(kbFile, outputFile, sqlMappingsFile, modes, maxLength,
-        threshold, theta, evidencePredicates, targetPredicates, nonEvidencePredicates)
+        threshold, theta, lambda, eta, evidencePredicates, targetPredicates, nonEvidencePredicates)
     case "cnrs.simulation.highway" =>
       if (simulationIds.isEmpty) fatal("Please specify a set of simulation ids for this task!")
       cnrs.simulation.highway.StructureLearner(kbFile, outputFile, sqlMappingsFile, modes, maxLength,
-        threshold, theta, evidencePredicates, targetPredicates, nonEvidencePredicates)
+        threshold, theta, lambda, eta, evidencePredicates, targetPredicates, nonEvidencePredicates)
     case "fz" =>
       fz.StructureLearner(kbFile, outputFile, sqlMappingsFile, modes, maxLength,
-        threshold, theta, evidencePredicates, targetPredicates, nonEvidencePredicates)
+        threshold, theta, lambda, eta, evidencePredicates, targetPredicates, nonEvidencePredicates)
     case "cnrs.simulation.city" =>
       fatal(s"Task '${taskOpt.get}' is not implemented yet!")
     case _ => fatal(s"Unknown task '${taskOpt.get}'. Please specify a valid task name.")

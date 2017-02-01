@@ -2,7 +2,7 @@ import com.typesafe.sbt.packager.archetypes.JavaAppPackaging
 
 name := "SPEEDD-ML"
 
-version := "0.5"
+version := "0.7"
 
 scalaVersion := "2.11.8"
 
@@ -44,16 +44,13 @@ libraryDependencies ++= Seq(
 libraryDependencies += "com.github.anskarl" %% "auxlib" % "0.2.0"
 
 // Logical Markov Random Fields
-libraryDependencies += "com.github.anskarl" %% "lomrf" % "0.5.1"
+libraryDependencies += "com.github.anskarl" %% "lomrf" % "0.5.2"
 
 // Unit testing
 libraryDependencies += "org.scalatest" %% "scalatest" % "2.2.4" % "test"
 
 // Optimized Range foreach loops
 libraryDependencies += "com.nativelibs4java" %% "scalaxy-streams" % "0.3.4" % "provided"
-
-// lpsolve library for optimization
-libraryDependencies += "com.datumbox" % "lpsolve" % "5.5.2.0"
 
 // CSV parsing
 libraryDependencies += "com.univocity" % "univocity-parsers" % "2.0.2"

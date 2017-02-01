@@ -1,6 +1,7 @@
 package org.speedd.ml.inference
 
 import auxlib.log.Logging
+import org.speedd.ml.util.data._
 
 /**
   * Reasoner interface. Should be implemented by all reasoning engine classes.
@@ -15,7 +16,10 @@ trait Reasoner extends Logging {
     * @param startTs start time point
     * @param endTs end time point
     * @param batchSize batch size for each inference step
+    * @param useOnlyConstants a subset of constant domain to be used (optional)
     * @param simulationIds a set of simulation ids to be used for inference
     */
-  def inferFor(startTs: Int, endTs: Int, batchSize: Int, simulationIds: List[Int] = List.empty): Unit
+  def inferFor(startTs: Int, endTs: Int, batchSize: Int,
+               useOnlyConstants: Option[DomainMap] = None,
+               simulationIds: List[Int] = List.empty): Unit
 }

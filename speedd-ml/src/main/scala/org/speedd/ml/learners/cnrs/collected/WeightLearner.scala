@@ -23,7 +23,8 @@ final class WeightLearner private(kb: KB,
                                   outputKB: File,
                                   inputSignatures: Set[AtomSignature],
                                   targetSignatures: Set[AtomSignature],
-                                  nonEvidenceAtoms: Set[AtomSignature]) extends Learner {
+                                  nonEvidenceAtoms: Set[AtomSignature],
+                                  lambda: Double, eta: Double) extends Learner {
 
   private lazy val batchLoader =
     new TrainingBatchLoader(kb, kbConstants, predicateSchema, inputSignatures, nonEvidenceAtoms, termMappings)
@@ -93,7 +94,7 @@ final class WeightLearner private(kb: KB,
 
     for ( ((currStartTime, currEndTime), idx) <- microIntervals.zipWithIndex) {
       info(s"Loading micro-batch training data no. $idx, for the temporal interval [$currStartTime, $currEndTime]")
-      val batch: TrainingBatch = batchLoader.forInterval(currStartTime, currEndTime)
+      val batch: TrainingBatch = batchLoader.forInterval(currStartTime, currEndTime, None, useOnlyConstants)
 
       val domainSpace = PredicateSpace(batch.mlnSchema, nonEvidenceAtoms, batch.trainingEvidence.constants)
 
@@ -115,7 +116,7 @@ final class WeightLearner private(kb: KB,
       val mrf = mrfBuilder.buildNetwork
 
       if(idx == 0) learner = new OnlineLearner(mln, algorithm = Algorithm.ADAGRAD_FB,
-        printLearnedWeightsPerIteration = true, ilpSolver = Solver.LPSOLVE)
+        printLearnedWeightsPerIteration = true, ilpSolver = Solver.LPSOLVE, lambda = lambda, eta = eta)
 
       learner.learningStep(idx + 1, mrf, batch.annotation)
     }
@@ -135,7 +136,8 @@ object WeightLearner extends Logging {
             sqlFunctionMappingsFile: File,
             inputSignatures: Set[AtomSignature],
             targetSignatures: Set[AtomSignature],
-            nonEvidenceAtoms: Set[AtomSignature]): WeightLearner = {
+            nonEvidenceAtoms: Set[AtomSignature],
+            lambda: Double, eta: Double): WeightLearner = {
 
     // ---
     // --- Prepare the KB:
@@ -155,6 +157,6 @@ object WeightLearner extends Logging {
 
     new WeightLearner(
       kb, kbConstants, kb.predicateSchema, sqlFunctionMappings, inputKB,
-      outputKB, inputSignatures, targetSignatures, nonEvidenceAtoms)
+      outputKB, inputSignatures, targetSignatures, nonEvidenceAtoms, lambda, eta)
   }
 }
