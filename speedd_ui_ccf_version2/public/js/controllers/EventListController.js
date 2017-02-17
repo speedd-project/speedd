@@ -36,15 +36,13 @@ app.controller('EventListController', ['$scope','$interval','$window','dataServi
 		formatEvent(event);
 		console.log(event);
 	});
+    
 	$scope.$on("broadcastIncreasingAmounts", function(){
 		var event = clone(dataService.rawEventList[dataService.rawEventList.length-1]);
 		$scope.eventList.push(event);
-
 		formatEvent(event);
-		
 		console.log(event);
 	});
-    
     $scope.$on("SuddenCardUseNearExpirationDate", function(){
 		var event = clone(dataService.rawEventList[dataService.rawEventList.length-1]);
 		$scope.eventList.push(event);
@@ -77,6 +75,7 @@ app.controller('EventListController', ['$scope','$interval','$window','dataServi
 		event.reason = (dataToFormat.reason != undefined)? dataToFormat.reason : "";
         event.certainty = (dataToFormat.attributes.Certainty != undefined)? (parseFloat(dataToFormat.attributes.Certainty)*100).toFixed(2) : "";
 		event.confirmed = "false";
+        event.card_pan = (dataToFormat.attributes.card_pan != undefined)? dataToFormat.attributes.card_pan : "";
         //
         /*
         $scope.an = dataService.analysts;
@@ -137,7 +136,8 @@ app.controller('EventListController', ['$scope','$interval','$window','dataServi
         columnDefs: [{ field: 'id', width: 60},
                     { field: 'time', displayName: "Time", width: 200},
                     { field: 'country', displayName: "Country"},
-                    { field: 'cost', displayName: "Cost", width: 60},
+                    { field: 'cost', displayName: "Cost", width: 60, visible: false},
+                    { field: 'card_pan', displayName: "Card Pan", width: 250},
                     { field: 'name', displayName: "Reason", width: 200},
                     { field: 'countries', displayName: "Used In"},
                     { field: 'confirmed', displayName: "Investigated"},

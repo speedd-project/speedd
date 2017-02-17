@@ -65,6 +65,69 @@
           }
         ]
       },
+      {
+        "name": "CoordinateRamps",
+        "attributes": [
+          {
+            "dimension": 0,
+            "description": "The certainty that this event happen (value between 0 to 1)",
+            "name": "Certainty",
+            "defaultValue": "1",
+            "type": "Double"
+          },
+          {
+            "dimension": 0,
+            "description": "No value means it equals the event detection time, other option is to use one of the defined distribution functions with parameters",
+            "name": "OccurrenceTime",
+            "type": "Date"
+          },
+          {
+            "dimension": 0,
+            "description": "Only till this time the cost and certainty parameters of the event are valid, and only till this time a proactive action is considered",
+            "name": "ExpirationTime",
+            "type": "Date"
+          },
+          {
+            "dimension": 0,
+            "description": "The cost of this event occurrence. Negative if this is an opportunity",
+            "name": "Cost",
+            "type": "Double"
+          },
+          {
+            "dimension": 0,
+            "description": "Used in case the this event occur within an interval",
+            "name": "Duration",
+            "defaultValue": "0",
+            "type": "Double"
+          },
+          {
+            "dimension": 0,
+            "name": "location",
+            "type": "String"
+          },
+          {
+            "dimension": 0,
+            "name": "sensorId",
+            "type": "String"
+          },
+          {
+            "dimension": 0,
+            "name": "targetOccupancy",
+            "type": "Double"
+          },
+          {
+            "dimension": 0,
+            "name": "problem_id",
+            "type": "String"
+          },
+          {
+            "dimension": 0,
+            "name": "dmPartition",
+            "type": "String"
+          }
+        ],
+        "createdDate": "Wed Jun 08 2016"
+      },
         {
         "name": "AggregatedQueueLength",
         "createdDate": "Sun Aug 31 2014",
@@ -431,7 +494,17 @@
             "name": "dmPartition",
             "type": "String",
             "dimension": 0
-          }        
+          },
+          {
+            "name": "standard_dev_flow",
+            "type": "Double",
+            "dimension": 0
+          },
+            {
+            "name": "standard_dev_density",
+            "type": "Double",
+            "dimension": 0
+          }                
           
         ]
       },
@@ -499,6 +572,16 @@
           {
             "name": "dmPartition",
             "type": "String",
+            "dimension": 0
+          },
+          {
+            "name": "standard_dev_flow",
+            "type": "Double",
+            "dimension": 0
+          },
+            {
+            "name": "standard_dev_density",
+            "type": "Double",
             "dimension": 0
           }        
           
@@ -660,7 +743,17 @@
             "name": "dmPartition",
             "type": "String",
             "dimension": 0
-          }
+          },
+          {
+            "name": "standard_dev_flow",
+            "type": "Double",
+            "dimension": 0
+          },
+            {
+            "name": "standard_dev_density",
+            "type": "Double",
+            "dimension": 0
+          }        
         ]
       }   
     ],
@@ -871,7 +964,7 @@
         "inputEvents": [
           {
             "name": "AverageDensityAndSpeedPerLocation",
-            "filterExpression": "EqualsIgnoreCase(AverageDensityAndSpeedPerLocation.lane,'onramp')",
+            "filterExpression": "EqualsIgnoreCase(AverageDensityAndSpeedPerLocation.lane,'onramp') || EqualsIgnoreCase(AverageDensityAndSpeedPerLocation.lane,'queue')",
             "consumptionPolicy": "Consume",
             "instanceSelectionPolicy": "First"
           }
@@ -908,7 +1001,10 @@
               "OccurrenceTime":"ArrayGet(AverageDensityAndSpeedPerLocation.OccurrenceTime,ArraySize(AverageDensityAndSpeedPerLocation.OccurrenceTime)-1)",
               "average_flow": "AverageFlow",             
               "average_speed": "AverageSpeed",
-              "average_occupancy":"AverageOccupancy"
+              "average_occupancy":"AverageOccupancy",
+              "standard_dev_flow":"ArrayStandardDev(AverageDensityAndSpeedPerLocation.average_flow)",
+              "standard_dev_density":"ArrayStandardDev(AverageDensityAndSpeedPerLocation.density)"              
+              
             }
           }
         ],
@@ -959,7 +1055,9 @@
               "OccurrenceTime":"ArrayGet(AverageDensityAndSpeedPerLocation.OccurrenceTime,ArraySize(AverageDensityAndSpeedPerLocation.OccurrenceTime)-1)",
               "average_flow": "AverageFlow",             
               "average_speed": "AverageSpeed",
-              "average_occupancy":"AverageOccupancy"
+              "average_occupancy":"AverageOccupancy",
+              "standard_dev_flow":"ArrayStandardDev(AverageDensityAndSpeedPerLocation.average_flow)",
+              "standard_dev_density":"ArrayStandardDev(AverageDensityAndSpeedPerLocation.density)"
             }
           }
         ],
@@ -1010,7 +1108,9 @@
               "OccurrenceTime":"ArrayGet(AverageDensityAndSpeedPerLocation.OccurrenceTime,ArraySize(AverageDensityAndSpeedPerLocation.OccurrenceTime)-1)",
               "average_flow": "AverageFlow",             
               "average_speed": "AverageSpeed",
-              "average_occupancy":"AverageOccupancy"
+              "average_occupancy":"AverageOccupancy",
+              "standard_dev_flow":"ArrayStandardDev(AverageDensityAndSpeedPerLocation.average_flow)",
+              "standard_dev_density":"ArrayStandardDev(AverageDensityAndSpeedPerLocation.density)"
             }
           }
         ],
@@ -1100,7 +1200,7 @@
               "name": "ClearCongestion"
             }
           ]
-        },
+        },       
          {
           "name": "TemporalMonitoringRampOverflow",
           "createdDate": "Sun Nov 09 2014",
@@ -1161,7 +1261,7 @@
               "initiatorType": "Event",
               "initiatorPolicy": "Ignore",
               "name": "AverageDensityAndSpeedPerLocation",
-              "condition": "EqualsIgnoreCase(AverageDensityAndSpeedPerLocation.lane,'onramp')"
+              "condition": "EqualsIgnoreCase(AverageDensityAndSpeedPerLocation.lane,'onramp') || EqualsIgnoreCase(AverageDensityAndSpeedPerLocation.lane,'queue')"
             }
           ],
           "terminators": [
@@ -1406,6 +1506,9 @@
           {
             "name": "PredictedTrend"
           },
+          {
+            "name": "CoordinateRamps"
+          },
           {       
             "name": "Congestion"
           },
@@ -1448,7 +1551,7 @@
         "properties": [
           {
             "name": "filename",
-            "value": "D:/EP/Projects/Proton/MergeOpenSourceUncertaintyWorkspace/ProtonEU/SPEEDD/Grenoble/for integration (prototype demo)/2015/simulator_data_incident_enriched.csv"
+            "value": "D:/EP/Projects/Proton/MergeOpenSourceUncertaintyWorkspace/ProtonEU/SPEEDD/Grenoble/for integration (prototype demo)/2015/simulator_data_incident_enriched_timed.csv"
           },
           {
             "name": "pollingInterval",
@@ -1479,8 +1582,8 @@
             "value": "timestamp,sensorId,average_speed,vehicle_count_car,vehicle_count_truck,density,density_car,density_truck,average_occupancy,average_density,average_flow,lane,location,dmPartition,queueLength,OccurrenceTime"
           },
           {
-            "name": "dateFormat",
-            "value": "dd/MM/yyyy HH:mm:ss"
+            "name": "dateFormat",                        
+            "value": "yyyy-MM-dd HH:mm:ss"
           }
         ],
         "events": []

@@ -52,6 +52,7 @@
 	<script src="js/directives/costChartDirective.js"></script>
 	<script src="js/directives/clockDirective.js"></script>
 	<script src="js/directives/transactionSequenceDirective.js"></script>
+	<script src="js/directives/increasingAmountsDirective.js"></script>
 	<script src="js/directives/mapsDirective.js"></script>
 	<script src="js/controllers/CartogramController.js"></script>
 	<script src="js/controllers/CartogramModalController.js"></script>
@@ -158,7 +159,7 @@
 					<h3 class="panel-title">
 		<!--				<img src="img/traffic_light_stop.png" height="28px">	-->
 						
-							Transactions to Investigate
+							Patterns to Investigate
 						
 					</h3>
 				</div>
@@ -180,7 +181,7 @@
 					<h3 class="panel-title">
 		<!--				<img src="img/traffic_light_stop.png" height="28px">	-->
 						
-							Transaction View
+							Pattern View
 						
 						<a href="#" style="overflow: hidden;"><span class="glyphicon glyphicon-refresh pull-right" ng-click="refreshClick()" aria-hidden="true"></span></a>
 					</h3>
@@ -194,8 +195,9 @@
                             </div>
                           
                             <div class="col-lg-6 col-md-6 col-xs-6">
-                                <label style="font-size: 20px">Sum</label>
-                                <svg cost-chart data="amountSum" style="height:60px; width:100%"></svg>
+                                <label ng-show="transactionData.name != 'IncreasingAmounts'" style="font-size: 20px">Sum</label>
+                                <svg id = "sums" ng-show="transactionData.name != 'IncreasingAmounts'" cost-chart data="amountSum" style="height:60px; width:100%"></svg>
+                                <svg id = "increasing" ng-show="transactionData.name == 'IncreasingAmounts'" increasing-amounts data="increasingAmounts" style="height:161px; width:100%"></svg>  
                             </div>
                       </div>
                       
