@@ -17,7 +17,6 @@ final class TrainingBatchLoader(kb: KB,
                                 evidencePredicates: Set[AtomSignature],
                                 nonEvidencePredicates: Set[AtomSignature],
                                 sqlFunctionMappings: List[TermMapping]) extends BatchLoader {
-
   /**
     * Loads a (micro) batch, either training [[org.speedd.ml.loaders.TrainingBatch]] or
     * inference [[org.speedd.ml.loaders.InferenceBatch]], that holds the data for the
@@ -27,13 +26,15 @@ final class TrainingBatchLoader(kb: KB,
     * @param startTs starting time point
     * @param endTs end time point
     * @param simulationId simulation id (optional)
+    * @param useOnlyConstants a subset of constant domain to be used (optional)
     *
     * @return a batch [[org.speedd.ml.loaders.Batch]] subclass specified during implementation
     */
-  def forInterval(startTs: Int, endTs: Int, simulationId: Option[Int] = None): TrainingBatch = {
+  def forInterval(startTs: Int, endTs: Int, simulationId: Option[Int] = None,
+                  useOnlyConstants: Option[DomainMap] = None): TrainingBatch = {
 
     val (constantsDomain, functionMappings, annotatedLocations) =
-      loadAll[Int, Long, String, Option[String]](kbConstants, kb.functionSchema, None, startTs, endTs, simulationId, loadFor)
+      loadAll[Int, Long, String, Option[String]](kbConstants, kb.functionSchema, useOnlyConstants, startTs, endTs, simulationId, loadFor)
 
     // ---
     // --- Create a new evidence builder

@@ -27,10 +27,11 @@ trait BatchLoader extends Logging {
     * @param startTs starting time point
     * @param endTs end time point
     * @param simulationId simulation id (optional)
+    * @param useOnlyConstants a subset of constant domain to be used (optional)
     *
     * @return a batch [[org.speedd.ml.loaders.Batch]] subclass specified during implementation
     */
-  def forInterval(startTs: Int, endTs: Int, simulationId: Option[Int] = None): Batch
+  def forInterval(startTs: Int, endTs: Int, simulationId: Option[Int] = None, useOnlyConstants: Option[DomainMap] = None): Batch
 
   /**
     * Loads a training evidence batch [[lomrf.mln.learning.structure.TrainingEvidence]] that holds
@@ -40,11 +41,11 @@ trait BatchLoader extends Logging {
     * @param startTs starting time point
     * @param endTs end time point
     * @param simulationId simulation id (optional)
-    * @param excludeConstants a constant domain to be excluded (optional)
+    * @param useOnlyConstants a subset of constant domain to be used (optional)
     *
     * @return a training evidence batch [[lomrf.mln.learning.structure.TrainingEvidence]]
     */
-  def forIntervalSL(startTs: Int, endTs: Int, simulationId: Option[Int] = None, excludeConstants: Option[DomainMap] = None): TrainingEvidence
+  def forIntervalSL(startTs: Int, endTs: Int, simulationId: Option[Int] = None, useOnlyConstants: Option[DomainMap] = None): TrainingEvidence
 
   /**
     * Creates the constant domain, function mappings and loads the annotation tuples
@@ -57,7 +58,7 @@ trait BatchLoader extends Logging {
     *
     * @param kbConstants a constant domain containing the KB constants
     * @param functionSchema a function schema
-    * @param useOnlyConstants a constant domain to be used (optional)
+    * @param useOnlyConstants a subset of constant domain to be used (optional)
     * @param startTs start time point
     * @param endTs end time point
     * @param simulationId simulation id (optional)

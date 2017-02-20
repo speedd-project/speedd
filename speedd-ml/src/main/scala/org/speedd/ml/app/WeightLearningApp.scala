@@ -1,6 +1,7 @@
 package org.speedd.ml.app
 
 import java.io.File
+
 import auxlib.log.Logging
 import auxlib.opt.OptionParser
 import lomrf.logic.AtomSignature
@@ -9,6 +10,7 @@ import org.speedd.ml.ModuleVersion
 import org.speedd.ml.learners.cnrs._
 import org.speedd.ml.learners.Learner
 import org.speedd.ml.util.logic._
+
 import scala.util.{Success, Try}
 
 object WeightLearningApp extends App with OptionParser with Logging {
@@ -26,7 +28,11 @@ object WeightLearningApp extends App with OptionParser with Logging {
   private var excludeIntervalOpt: Option[(Int, Int)] = None
   private var batchSizeOpt: Option[Long] = None
   private var simulationIdsOpt: Option[List[Int]] = None
+  private var locationIdsOpt: Option[Iterable[String]] = None
   private var taskOpt: Option[String] = None
+
+  private var lambda: Double = 0.01
+  private var eta: Double = 1.0
 
   private var targetPredicates = Set(AtomSignature("InitiatedAt", 2), AtomSignature("TerminatedAt", 2))
   private var evidencePredicates = Set(AtomSignature("HappensAt", 2))
@@ -110,6 +116,10 @@ object WeightLearningApp extends App with OptionParser with Logging {
       }
   })
 
+  opt("lids", "location-ids", "Comma separated <lid>", "Specify the location id set used for training, e.g. 1324,2454,5128", {
+    v: String => locationIdsOpt = Option(v.split(",").toIterable)
+  })
+
   opt("t", "task", "<string>", "The name of the task to call (cnrs.collected, cnrs.simulation.city, cnrs.simulation.highway or fz).", {
     v: String => taskOpt = Some(v.trim.toLowerCase)
   })
@@ -143,6 +153,14 @@ object WeightLearningApp extends App with OptionParser with Logging {
         fatal(s"Failed to parse the atomic signatures of the specified evidence predicates '$v'. " +
           s"Please make sure that you gave the correct format.")
       }
+  })
+
+  doubleOpt("lambda", "lambda", "Regularization parameter (default is " + lambda + ").", {
+    v: Double => if (v < 0) fatal("Regularization parameter must be any double above zero, but you gave: " + v) else lambda = v
+  })
+
+  doubleOpt("eta", "eta", "Learning rate (default is " + eta + ").", {
+    v: Double => if (v < 0) fatal("Learning rate must be any double above zero, but you gave: " + v) else eta = v
   })
 
   flagOpt("v", "version", "Print version and exit.", sys.exit(0))
@@ -197,17 +215,24 @@ object WeightLearningApp extends App with OptionParser with Logging {
   // Check if simulation ids exist, otherwise return an empty list
   val simulationIds = simulationIdsOpt.getOrElse(List.empty)
 
+  // Check if location ids exist, otherwise return an empty list
+  val locationIds = if (locationIdsOpt.isDefined) taskOpt match {
+    case Some("cnrs.collected") => Some(Map("loc_id" -> locationIdsOpt.get))
+    case Some("cnrs.simulation.highway") => Some(Map("section_id" -> locationIdsOpt.get))
+  }
+  else None
+
   import org.speedd.ml.util.data.DatabaseManager._
 
   // --- 1. Create the appropriate instance of weight learner
   val weightLearner: Learner = taskOpt.getOrElse(fatal("Please specify a task name")) match {
     case "cnrs.collected" =>
       collected.WeightLearner(kbFile, outputFile, sqlFunctionMappingsFile,
-        evidencePredicates, targetPredicates, nonEvidencePredicates)
+        evidencePredicates, targetPredicates, nonEvidencePredicates, lambda, eta)
     case "cnrs.simulation.highway" =>
       if (simulationIds.isEmpty) fatal("Please specify a set of simulation ids for this task!")
       simulation.highway.WeightLearner(kbFile, outputFile, sqlFunctionMappingsFile,
-        evidencePredicates, targetPredicates, nonEvidencePredicates)
+        evidencePredicates, targetPredicates, nonEvidencePredicates, lambda, eta)
     case "cnrs.simulation.city" | "fz" =>
       fatal(s"Task '${taskOpt.get}' is not implemented yet!")
     case _ => fatal(s"Unknown task '${taskOpt.get}'. Please specify a valid task name.")
@@ -215,7 +240,7 @@ object WeightLearningApp extends App with OptionParser with Logging {
 
   // --- 2. Perform training for all intervals and simulation ids (if any exists)
   val t = System.currentTimeMillis()
-  weightLearner.trainFor(startTime, endTime, batchSize, excludeIntervalOpt, None, simulationIds)
+  weightLearner.trainFor(startTime, endTime, batchSize, excludeIntervalOpt, locationIds, simulationIds)
   info(s"Weight learning for task ${taskOpt.get} completed in ${msecTimeToTextUntilNow(t)}")
 
   // --- 3. Close database connection

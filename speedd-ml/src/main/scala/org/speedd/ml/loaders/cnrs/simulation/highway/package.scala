@@ -18,12 +18,12 @@ package object highway {
     // Append all time points in the given interval
     domainsMap += "timestamp" -> (startTs to endTs).map(_.toString)
 
-    val excludeLocations = useOnlyConstants.getOrElse("section_id", Iterable.empty).toVector
+    val includeOnlyLocations = useOnlyConstants.getOrElse("section_id", Iterable.empty).toVector
 
     // Append all section ids (locations)
     domainsMap += "section_id" -> blockingExec {
       LocationData.map(l => l.sectionId).result
-    }.map(_.toString).filter(excludeLocations.contains)
+    }.map(_.toString).filter(x => if (includeOnlyLocations.nonEmpty) includeOnlyLocations.contains(x) else true)
 
     val annotationIntervalQuery =
       AnnotationData

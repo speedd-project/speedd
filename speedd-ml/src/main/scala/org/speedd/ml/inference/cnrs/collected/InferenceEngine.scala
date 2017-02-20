@@ -10,6 +10,7 @@ import lomrf.util.evaluation._
 import org.speedd.ml.inference.Reasoner
 import org.speedd.ml.loaders.InferenceBatch
 import org.speedd.ml.loaders.cnrs.collected.InferenceBatchLoader
+import org.speedd.ml.util.data._
 import org.speedd.ml.util.logic.{Term2SQLParser, TermMapping}
 
 final class InferenceEngine private(kb: KB,
@@ -30,9 +31,12 @@ final class InferenceEngine private(kb: KB,
     * @param startTs       start time point
     * @param endTs         end time point
     * @param batchSize     batch size for each inference step
+    * @param useOnlyConstants a subset of constant domain to be used (optional)
     * @param simulationIds a set of simulation ids to be used for inference
     */
-  override def inferFor(startTs: Int, endTs: Int, batchSize: Int, simulationIds: List[Int] = List.empty) = {
+  override def inferFor(startTs: Int, endTs: Int, batchSize: Int,
+                        useOnlyConstants: Option[DomainMap] = None,
+                        simulationIds: List[Int] = List.empty) = {
 
     val range = startTs to endTs by batchSize
     val intervals = if (!range.contains(endTs)) range :+ endTs else range
@@ -44,7 +48,7 @@ final class InferenceEngine private(kb: KB,
 
     for ( ((currStartTime, currEndTime), idx) <- microIntervals.zipWithIndex) {
       info(s"Loading micro-batch training data no. $idx, for the temporal interval [$currStartTime, $currEndTime]")
-      val batch: InferenceBatch = batchLoader.forInterval(currStartTime, currEndTime)
+      val batch: InferenceBatch = batchLoader.forInterval(currStartTime, currEndTime, None, useOnlyConstants)
 
       info {
         s"""

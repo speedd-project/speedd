@@ -22,11 +22,14 @@ final class StructureLearner private(kb: KB,
                                      modes: ModeDeclarations,
                                      maxLength: Int,
                                      threshold: Int,
-                                     theta: Double) extends Learner {
+                                     theta: Double,
+                                     lambda: Double,
+                                     eta: Double) extends Learner {
 
   private lazy val batchLoader = new TrainingBatchLoader(kb, kbConstants, predicateSchema, inputSignatures, nonEvidenceAtoms, termMappings)
 
-  private lazy val learner = OSLa(kb, kbConstants, nonEvidenceAtoms, targetSignatures, modes, maxLength, allowFreeVariables = false, threshold, theta)
+  private lazy val learner = OSLa(kb, kbConstants, nonEvidenceAtoms, targetSignatures, modes, maxLength, allowFreeVariables = false,
+    threshold, theta, lambda = this.lambda, eta = this.eta)
 
   /**
     * Train the MLN model for the specified interval using the given batch size. Furthermore,
@@ -123,6 +126,8 @@ object StructureLearner extends Logging {
             maxLength: Int,
             threshold: Int,
             theta: Double,
+            lambda: Double,
+            eta: Double,
             inputSignatures: Set[AtomSignature],
             targetSignatures: Set[AtomSignature],
             nonEvidenceAtoms: Set[AtomSignature]): StructureLearner = {
@@ -144,6 +149,6 @@ object StructureLearner extends Logging {
 
     new StructureLearner(
       kb, kbConstants, kb.predicateSchema, sqlFunctionMappings, inputKB,
-      outputKB, inputSignatures, targetSignatures, nonEvidenceAtoms, modes, maxLength, threshold, theta)
+      outputKB, inputSignatures, targetSignatures, nonEvidenceAtoms, modes, maxLength, threshold, theta, lambda, eta)
   }
 }
